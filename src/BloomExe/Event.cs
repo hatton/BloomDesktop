@@ -224,4 +224,14 @@ namespace Bloom
 
 		}
 	}
+
+	//raised by html
+	public class CommandReceivedEvent : Event<Command>
+	{
+		public CommandReceivedEvent()
+			: base("CommandReceivedEvent", LoggingLevel.Major)
+		{
+
+		}
+	}
 }

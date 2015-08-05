@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -28,6 +29,7 @@ namespace Bloom.Edit
 	{
 		private readonly EditingModel _model;
 		private PageListView _pageListView;
+		private readonly BookCommandBar _bookCommandBar;
 		private TemplatePagesView _templatePagesView;
 		private readonly CutCommand _cutCommand;
 		private readonly CopyCommand _copyCommand;
@@ -44,13 +46,19 @@ namespace Bloom.Edit
 		public delegate EditingView Factory(); //autofac uses this
 
 
-		public EditingView(EditingModel model, PageListView pageListView, TemplatePagesView templatePagesView,
-			CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand, DuplicatePageCommand duplicatePageCommand,
+		public EditingView(EditingModel model, PageListView pageListView, BookCommandBar bookCommandBar, TemplatePagesView templatePagesView,
+			CommandReceivedEvent commandReceivedEvent,
+			CutCommand cutCommand, CopyCommand copyCommand, PasteCommand pasteCommand, UndoCommand undoCommand,
+			DuplicatePageCommand duplicatePageCommand,
 			DeletePageCommand deletePageCommand, NavigationIsolator isolator)
 		{
 			_model = model;
 			_pageListView = pageListView;
+			_bookCommandBar = bookCommandBar;
 			_templatePagesView = templatePagesView;
+			commandReceivedEvent.Subscribe(QueueCommand);
+			Application.Idle += new EventHandler(CheckCommandQueue);
+
 			_cutCommand = cutCommand;
 			_copyCommand = copyCommand;
 			_pasteCommand = pasteCommand;
@@ -81,6 +89,20 @@ namespace Bloom.Edit
 			Controls.Remove(_topBarPanel);
 		}
 
+		private void CheckCommandQueue(object sender, EventArgs e)
+		{
+			if (_pendingCommands.Count > 0)
+			{
+				_pendingCommands.Dequeue().Execute();
+			}
+		}
+
+		private Queue<Command> _pendingCommands = new Queue<Command>();
+		private void QueueCommand(Command command)
+		{
+			_pendingCommands.Enqueue(command);
+		}
+
 #if TooExpensive
 		void OnBrowserFocusChanged(object sender, GeckoDomEventArgs e)
 		{
@@ -100,13 +122,14 @@ namespace Bloom.Edit
 			_cutButton.Left += shift;
 			_copyButton.Left += shift;
 			_undoButton.Left += shift;
-			_duplicatePageButton.Left += shift;
-			_deletePageButton.Left += shift;
+//			_duplicatePageButton.Left += shift;
+//			_deletePageButton.Left += shift;
 			_menusToolStrip.Left += shift;
 			_topBarPanel.Width = _menusToolStrip.Left + _menusToolStrip.Width + 1;
 		}
 
-		private void BackgroundColorsForLinux() {
+		private void BackgroundColorsForLinux()
+		{
 
 			var bmp = new Bitmap(_menusToolStrip.Width, _menusToolStrip.Height);
 			using (var g = Graphics.FromImage(bmp))
@@ -121,10 +144,7 @@ namespace Bloom.Edit
 
 		public Control TopBarControl
 		{
-			get
-			{
-				return _topBarPanel;
-			}
+			get { return _topBarPanel; }
 		}
 
 		/// <summary>
@@ -139,7 +159,7 @@ namespace Bloom.Edit
 			}
 		}
 
-		void ParentForm_Activated(object sender, EventArgs e)
+		private void ParentForm_Activated(object sender, EventArgs e)
 		{
 			if (!_visible) //else you get a totally non-responsive Bloom, if you come back to a Bloom that isn't in the Edit tab
 				return;
@@ -190,11 +210,13 @@ namespace Bloom.Edit
 			{
 				if (!_model.CanEditCopyrightAndLicense)
 				{
-					MessageBox.Show(LocalizationManager.GetString("EditTab.CannotChangeCopyright", "Sorry, the copyright and license for this book cannot be changed."));
+					MessageBox.Show(LocalizationManager.GetString("EditTab.CannotChangeCopyright",
+						"Sorry, the copyright and license for this book cannot be changed."));
 					return;
 				}
 
-				_model.SaveNow();//in case we were in this dialog already and made changes, which haven't found their way out to the Book yet
+				_model.SaveNow();
+				//in case we were in this dialog already and made changes, which haven't found their way out to the Book yet
 				Metadata metadata = _model.CurrentBook.GetLicenseMetadata();
 				if (metadata.License is NullLicense && string.IsNullOrWhiteSpace(metadata.CopyrightNotice))
 				{
@@ -218,7 +240,8 @@ namespace Bloom.Edit
 #if DEBUG
 				throw;
 #endif
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "There was a problem recording your changes to the copyright and license.");
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,
+					"There was a problem recording your changes to the copyright and license.");
 			}
 		}
 
@@ -284,8 +307,16 @@ namespace Bloom.Edit
 		{
 			_pageListView.Dock = DockStyle.Fill;
 			_pageListView.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			_templatePagesView.BackColor = _pageListView.BackColor = _splitContainer1.Panel1.BackColor;
 			_splitContainer1.Panel1.Controls.Add(_pageListView);
+			 _templatePagesView.BackColor = _pageListView.BackColor = _splitContainer1.Panel1.BackColor;
+			_bookCommandBar.BackColor = Color.DarkOrange;
+
+			_bookCommandBar.Dock = DockStyle.Bottom;
+			//_bookCommandBar.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+			_splitContainer1.Panel1.Controls.Add(_bookCommandBar);
+			//_splitContainer1.Panel1.Controls.SetChildIndex(_bookCommandBar, 0);
+
+//			_leftSizeTable.SetRow(_pageListView,0);
 
 			_templatePagesView.Dock = DockStyle.Fill;
 			_templatePagesView.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
@@ -309,7 +340,7 @@ namespace Bloom.Edit
 			}
 		}
 
-		void VisibleNowAddSlowContents(object sender, EventArgs e)
+		private void VisibleNowAddSlowContents(object sender, EventArgs e)
 		{
 			//TODO: this is causing green boxes when you quit while it is still working
 			//we should change this to a proper background task, with good
@@ -395,7 +426,7 @@ namespace Bloom.Edit
 			UpdateDisplay();
 		}
 
-		void WebBrowser_ReadyStateChanged(object sender, EventArgs e)
+		private void WebBrowser_ReadyStateChanged(object sender, EventArgs e)
 		{
 			if (_browser1.WebBrowser.Document.ReadyState != "complete")
 				return; // Keep receiving until it is complete.
@@ -558,7 +589,8 @@ namespace Bloom.Edit
 			if (!_model.CanChangeImages())
 			{
 				MessageBox.Show(
-					LocalizationManager.GetString("EditTab.CantPasteImageLocked","Sorry, this book is locked down so that images cannot be changed."));
+					LocalizationManager.GetString("EditTab.CantPasteImageLocked",
+						"Sorry, this book is locked down so that images cannot be changed."));
 				return;
 			}
 
@@ -569,7 +601,8 @@ namespace Bloom.Edit
 				if (clipboardImage == null)
 				{
 					MessageBox.Show(
-						LocalizationManager.GetString("EditTab.NoImageFoundOnClipboard","Before you can paste an image, copy one onto your 'clipboard', from another program."));
+						LocalizationManager.GetString("EditTab.NoImageFoundOnClipboard",
+							"Before you can paste an image, copy one onto your 'clipboard', from another program."));
 					return;
 				}
 
@@ -586,7 +619,7 @@ namespace Bloom.Edit
 				//nb: Taglib# requires an extension that matches the file content type.
 				if (ImageUtils.AppearsToBeJpeg(clipboardImage))
 				{
-					if(ShouldBailOutBecauseUserAgreedNotToUseJpeg(clipboardImage))
+					if (ShouldBailOutBecauseUserAgreedNotToUseJpeg(clipboardImage))
 						return;
 					Logger.WriteMinorEvent("[Paste Image] Pasting jpeg image {0}", clipboardImage.OriginalFilePath);
 					_model.ChangePicture(imageElement, clipboardImage, new NullProgress());
@@ -594,7 +627,7 @@ namespace Bloom.Edit
 				else
 				{
 					//At this point, it could be a bmp, tiff, or PNG. We want it to be a PNG.
-					if(clipboardImage.OriginalFilePath == null) //they pasted an image, not a path
+					if (clipboardImage.OriginalFilePath == null) //they pasted an image, not a path
 					{
 						Logger.WriteMinorEvent("[Paste Image] Pasting image directly from clipboard (e.g. screenshot)");
 						_model.ChangePicture(imageElement, clipboardImage, new NullProgress());
@@ -607,14 +640,15 @@ namespace Bloom.Edit
 					}
 					else // they pasted a path to some other bitmap format
 					{
-						var pathToPngVersion = Path.Combine(Path.GetTempPath(), Path.GetFileNameWithoutExtension(clipboardImage.FileName) + ".png");
+						var pathToPngVersion = Path.Combine(Path.GetTempPath(),
+							Path.GetFileNameWithoutExtension(clipboardImage.FileName) + ".png");
 						Logger.WriteMinorEvent("[Paste Image] Saving {0} ({1}) as {2} and converting to PNG", clipboardImage.FileName,
 							clipboardImage.OriginalFilePath, pathToPngVersion);
 						if (File.Exists(pathToPngVersion))
 						{
 							File.Delete(pathToPngVersion);
 						}
-						using(var temp = TempFile.TrackExisting(pathToPngVersion))
+						using (var temp = TempFile.TrackExisting(pathToPngVersion))
 						{
 							clipboardImage.Image.Save(pathToPngVersion, ImageFormat.Png);
 
@@ -628,7 +662,8 @@ namespace Bloom.Edit
 			}
 			catch (Exception error)
 			{
-				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error, "The program had trouble getting an image from the clipboard.");
+				Palaso.Reporting.ErrorReport.NotifyUserOfProblem(error,
+					"The program had trouble getting an image from the clipboard.");
 			}
 			finally
 			{
@@ -770,9 +805,9 @@ namespace Bloom.Edit
 
 		private bool ShouldBailOutBecauseUserAgreedNotToUseJpeg(PalasoImage imageInfo)
 		{
-			if(ImageUtils.AppearsToBeJpeg(imageInfo) && JpegWarningDialog.ShouldWarnAboutJpeg(imageInfo.Image))
+			if (ImageUtils.AppearsToBeJpeg(imageInfo) && JpegWarningDialog.ShouldWarnAboutJpeg(imageInfo.Image))
 			{
-				using(var jpegDialog = new JpegWarningDialog())
+				using (var jpegDialog = new JpegWarningDialog())
 				{
 					return jpegDialog.ShowDialog() == DialogResult.Cancel;
 				}
@@ -837,7 +872,8 @@ namespace Bloom.Edit
 					if (l.ElementDistribution == Book.Layout.ElementDistributionChoices.SplitAcrossPages)
 					{
 						item.Enabled = false;
-						item.ToolTipText = LocalizationManager.GetString("EditTab.layoutInPublishTabOnlyNotice","This option is only available in the Publish tab.");
+						item.ToolTipText = LocalizationManager.GetString("EditTab.layoutInPublishTabOnlyNotice",
+							"This option is only available in the Publish tab.");
 					}
 					item.Text = text;
 					item.Click += new EventHandler(OnPaperSizeAndOrientationMenuClick);
@@ -845,7 +881,11 @@ namespace Bloom.Edit
 
 				if (layoutChoices.Count() < 2)
 				{
-					ToolStripMenuItem item = (ToolStripMenuItem)_layoutChoices.DropDownItems.Add(LocalizationManager.GetString("EditTab.noOtherLayouts","There are no other layout options for this template.","Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice"));
+					ToolStripMenuItem item =
+						(ToolStripMenuItem)
+							_layoutChoices.DropDownItems.Add(LocalizationManager.GetString("EditTab.noOtherLayouts",
+								"There are no other layout options for this template.",
+								"Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice"));
 					item.Tag = null;
 					item.Enabled = false;
 				}
@@ -855,13 +895,16 @@ namespace Bloom.Edit
 				switch (_model.NumberOfDisplayedLanguages)
 				{
 					case 1:
-						_contentLanguagesDropdown.Text = LocalizationManager.GetString("EditTab.monolingual", "One Language", "Shown in edit tab multilingualism chooser, for monolingual mode, one language per page");
+						_contentLanguagesDropdown.Text = LocalizationManager.GetString("EditTab.monolingual", "One Language",
+							"Shown in edit tab multilingualism chooser, for monolingual mode, one language per page");
 						break;
 					case 2:
-						_contentLanguagesDropdown.Text = LocalizationManager.GetString("EditTab.bilingual", "Two Languages", "Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page");
+						_contentLanguagesDropdown.Text = LocalizationManager.GetString("EditTab.bilingual", "Two Languages",
+							"Shown in edit tab multilingualism chooser, for bilingual mode, 2 languages per page");
 						break;
 					case 3:
-						_contentLanguagesDropdown.Text = LocalizationManager.GetString("EditTab.trilingual", "Three Languages", "Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page");
+						_contentLanguagesDropdown.Text = LocalizationManager.GetString("EditTab.trilingual", "Three Languages",
+							"Shown in edit tab multilingualism chooser, for trilingual mode, 3 languages per page");
 						break;
 				}
 
@@ -869,6 +912,54 @@ namespace Bloom.Edit
 				_layoutChoices.ToolTipText = LocalizationManager.GetString("EditTab.PageSizeAndOrientation.Tooltip",
 					//_layoutChoices.ToolTipText); doesn't work because the scanner needs literals
 					"Choose a page size and orientation");
+//
+//				if (_model.CurrentlyMakingShellbook)
+//				{
+//					_bookModeChoices.Text = LocalizationManager.GetString("EditTab.BookModeChoice.ShellbookMaking", "Shellbook Making");
+//				}
+//				else if (_model.CurrentlyMakingTemplate)
+//				{
+//					_bookModeChoices.Text = LocalizationManager.GetString("EditTab.BookModeChoice.TemplateMaking", "Template Making");
+//				}
+//				else if (_model.CurrentlyTranslatingShellbook)
+//				{
+//					_bookModeChoices.Text = LocalizationManager.GetString("EditTab.BookModeChoice.ShellbookTranslating", "Translating");
+//				}
+//				else if (_model.CurrentlyMakingBook)
+//				{
+//					_bookModeChoices.Text = LocalizationManager.GetString("EditTab.BookModeChoice.BookMaking", "Book Making");
+//				}
+//				_shellbookMaking.Checked = _model.CurrentlyMakingShellbook;
+//				_templateMaking.Checked = _model.CurrentlyMakingTemplate;
+//				_templateMaking.ForeColor = Color.Gray;
+//				_shellTranslating.Checked = _model.CurrentlyTranslatingShellbook;
+//				_bookMaking.Checked = _model.CurrentlyMakingBook;
+//				_bookModeChoices.DropDownItems.Clear();
+//				var unavailableButChoosableColor = Color.FromArgb(90, 90, 90);
+//				if (_model.ShowSourceCollectionOptions)
+//				{
+//					_templateMaking.ForeColor = _shellbookMaking.ForeColor = Color.Black;
+//					_bookModeChoices.DropDownItems.Add(_templateMaking);
+//					_bookModeChoices.DropDownItems.Add(_shellbookMaking);
+//					// and these are visible but grey to show they are not available (though they will give a message)
+//					_shellTranslating.ForeColor = unavailableButChoosableColor;
+//					_bookModeChoices.DropDownItems.Add(_shellTranslating);
+//					//we're not adding _bookMaking because it is just confusing in a source collection.
+//					//_bookMaking is just a choice you select if you need to step outside of the constraints of 
+//					//"Shellbook translating" mode
+//				}
+//				else
+//				{
+//					_bookMaking.ForeColor = _shellTranslating.ForeColor = Color.Black;
+//					_bookModeChoices.DropDownItems.Add(_shellTranslating);
+//					_bookModeChoices.DropDownItems.Add(_bookMaking);
+//					// make "template making" visible but grey to show that is is not available (though choosing it will give a message)
+//					_templateMaking.ForeColor = unavailableButChoosableColor;
+//					_bookModeChoices.DropDownItems.Add(_templateMaking);
+//					//we're not adding _shellbookMaking because it is just confusing in a vernacular collection.
+//					//What you are making *could* become a shellbook, there's nothing special you need to do. 
+//					//Instead "Shellbook Making" is just used to contrast with "Template making" in source collections
+//				}
 			}
 			catch (Exception error)
 			{
@@ -880,14 +971,14 @@ namespace Bloom.Edit
 			}
 		}
 
-		void OnPaperSizeAndOrientationMenuClick(object sender, EventArgs e)
+		private void OnPaperSizeAndOrientationMenuClick(object sender, EventArgs e)
 		{
 			var item = (ToolStripMenuItem) sender;
 			_model.SetLayout((Layout) item.Tag);
 			UpdateDisplay();
 		}
 
-		void OnContentLanguageDropdownItem_CheckedChanged(object sender, EventArgs e)
+		private void OnContentLanguageDropdownItem_CheckedChanged(object sender, EventArgs e)
 		{
 			if (_updatingDisplay)
 				return;
@@ -904,8 +995,8 @@ namespace Bloom.Edit
 			UpdateButtonEnabled(_copyButton, _copyCommand);
 			UpdateButtonEnabled(_pasteButton, _pasteCommand);
 			UpdateButtonEnabled(_undoButton, _undoCommand);
-			UpdateButtonEnabled(_duplicatePageButton, _duplicatePageCommand);
-			UpdateButtonEnabled(_deletePageButton, _deletePageCommand);
+//			UpdateButtonEnabled(_duplicatePageButton, _duplicatePageCommand);
+//			UpdateButtonEnabled(_deletePageButton, _deletePageCommand);
 		}
 
 		public void UpdateButtonLocalizations()
@@ -922,8 +1013,8 @@ namespace Bloom.Edit
 			CycleOneButton(_copyButton, _copyCommand);
 			CycleOneButton(_pasteButton, _pasteCommand);
 			CycleOneButton(_undoButton, _undoCommand);
-			CycleOneButton(_duplicatePageButton, _duplicatePageCommand);
-			CycleOneButton(_deletePageButton, _deletePageCommand);
+//			CycleOneButton(_duplicatePageButton, _duplicatePageCommand);
+//			CycleOneButton(_deletePageButton, _deletePageCommand);
 		}
 
 		private void CycleOneButton(Button button, Command command)
@@ -950,7 +1041,7 @@ namespace Bloom.Edit
 				}
 			}
 			//doesn't work because the forecolor is ignored when disabled...
-			button.ForeColor = button.Enabled ? _enabledToolbarColor : _disabledToolbarColor; //.DimGray;
+			//button.ForeColor = button.Enabled ? _enabledToolbarColor : _disabledToolbarColor; //.DimGray;
 			button.Invalidate();
 		}
 
@@ -981,7 +1072,7 @@ namespace Bloom.Edit
 			_browser1.Navigate("about:blank", false);
 		}
 
-		private void _deletePageButton_Click_1(object sender, EventArgs e)
+		private void _deletePageButton_Click(object sender, EventArgs e)
 		{
 			if (ConfirmRemovePageDialog.Confirm())
 			{
@@ -1005,7 +1096,7 @@ namespace Bloom.Edit
 			{
 				ParentForm.Activated += new EventHandler(ParentForm_Activated);
 				ParentForm.Deactivate += (sender, e1) => {
-					_editButtonsUpdateTimer.Enabled = false;
+					                                         _editButtonsUpdateTimer.Enabled = false;
 				};
 			}
 		}
@@ -1040,5 +1131,80 @@ namespace Bloom.Edit
 				_pageListView.Cursor = Cursor;
 			} 
 		}
+			private void _menusToolStrip_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+		{
+
+		}
+
+		private void _contentLanguagesDropdown_Click(object sender, EventArgs e)
+		{
+
+		}
+
+		private void _bookMaking_Click(object sender, EventArgs e)
+		{
+			_model.CurrentlyMakingBook = true;
+			SetTranslationPanelVisibility();
+			UpdateTemplateList();
+			UpdateDisplay();
+			_model.RefreshDisplayOfCurrentPage();
+		}
+
+		private void _shellTranslating_Click(object sender, EventArgs e)
+		{
+			if (!_model.ShowVernacularCollectionOptions)
+			{
+				var text = LocalizationManager.GetString("EditTab.BookMode.TranslationModeNotAvailable",
+					"Since this is a 'Source Collection', shellbook translation mode is not available. Instead, to enter source texts in other languages, switch to 'Two Languages' mode. To add or change the languages available, open 'Settings'. In this way, you can load this shell book with as many source languages as you want.");
+				MessageBox.Show(text);
+			}
+			else
+			{
+				_model.CurrentlyTranslatingShellbook = true;
+				SetTranslationPanelVisibility();
+				UpdateDisplay();
+				_model.RefreshDisplayOfCurrentPage();
+			}
+		}
+
+		private void _shellbookMaking_Click(object sender, EventArgs e)
+		{
+			_model.CurrentlyMakingTemplate = false;
+			UpdateDisplay();
+		}
+
+		private void _templateMaking_Click(object sender, EventArgs e)
+		{
+			if (!_model.ShowSourceCollectionOptions)
+			{
+				var text = LocalizationManager.GetString("EditTab.BookMode.TemplateMakingNotAvailable",
+					"Sorry, Templates (a set of pages with no content) can only be made from a Source Collection. This is a Vernacular Collection.");
+				MessageBox.Show(text);
+			}
+			else
+			{
+				var text = LocalizationManager.GetString("EditTab.BookMode.ConfirmTemplateMaking",
+					   "Use this option if you are making a collection of re-usable template pages, with no content.", "This appears when you choose 'Template Making' from the Edit Tab, in a Source Collection");
+				if (DialogResult.OK == MessageBox.Show(text, "Confirm Template Mode", MessageBoxButtons.OKCancel))
+				{
+					_model.CurrentlyMakingTemplate = true;
+					UpdateDisplay();
+					text = LocalizationManager.GetString("EditTab.BookMode.TemplateBorderNotice",
+	  "If you go to the 'Collection' tab, you should now see a dashed border around this book, signifying that it is a template. People using this template will see a list of pages to choose from.", "This appears after you have entered the 'Template Making' mode in the Edit Tab, in a Source Collection.");
+					MessageBox.Show(text);
+				}
+			}
+		}
+
+		private void menuStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+		{
+
+		}
+
+		private void toolStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+		{
+
+		}
+
 	}
 }

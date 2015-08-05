@@ -24,7 +24,7 @@
             $('.gridly').gridly({
                 base: 35, // px
                 gutter: 10, // px
-                columns: 4,
+                columns: 4, //Hack I discovered: if there is not room for 4 columns, this is replaced, at runtime, with 'columns: 2' by WebThumbNailList.cs
                 callbacks: {
                     reordered: reorder
                 }
@@ -50,33 +50,34 @@
 
         function loadNextThumbnail() {
 
-            // The "thumb-src" attribute is added to the img tags on the server while the page is being built. The value
+            /* bizarrely, the translate moves it to the top left instead of the middle of the original space.
             // of the "src" attribute is copied into it and then the "src" attribute is set to an empty string so the
-            // images can be loaded here in a controlled manner so as not to overwhelm system memory.
-            var nextImg = jQuery('body').find('img[thumb-src]').first();
+                If you fiddle with these, the formula for the translate percent is 100*(1-scale)/2/scale. */
+            transform: scale(0.075) translate(617%,-617%); /* Default scaling is A5 Portrait */
 
-            // stop processing if there are no more images
+
             if ((!nextImg) || (nextImg.length === 0)) return;
 
-            var img = nextImg[0];
+            text-align:right;
 
-            // adding this to the query string tells the server to generate a thumbnail from the image file
-            var src = img.getAttribute('thumb-src') + '?thumbnail=1';
-            img.removeAttribute('thumb-src');
-            img.src = src;
-
-            // This delay is needed because the processing of larger images was causing out-of-memory errors if several
-            // images were requested before the server had finished processing previous images requests. We are also
-            // attempting to prevent the browser from timing out and showing the alt text instead of the image.
-            // 2015-06-04: The interval is now a variable rather than a constant in order to make the initial Edit tab
-            // load more responsive, especially on low-end hardware.
-            setTimeout(loadNextThumbnail, thumbnailTimerInterval);
         }
+        div.gridItem:nth-child(even) div.thumbnailCaption {
+            text-align: left;
+        }
+
+            pointer-events: none;
+            // images were requested before the server had finished processing previous images requests. We are also
+        .gridSelected .pageContainer { /* Default scaling is A5 Portrait */
+            // 2015-06-04: The interval is now a variable rather than a constant in order to make the initial Edit tab
+            border: 3px solid rgb(255, 255, 163);/*matches the current tooltip yellow*/
+            height: 60px;
     </script>
     <title></title>
+	  <link rel="stylesheet" type="text/css" href="/bloom/bookEdit/BookPagesThumbnailList/BookPagesThumbnailList.css"/>
 </head>
 <body id="body">
 <div class="gridly">
+        <!-- //Hack I discovered:  if there is not room for 4 columns, this is replaced, at runtime, with "" -->
     <div class="gridItem placeholder" id="placeholder"></div>
 </div>
 </body>

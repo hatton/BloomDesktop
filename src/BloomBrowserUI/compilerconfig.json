@@ -1,0 +1,9 @@
+[
+  {
+    "outputFile": "bookLayout/basePage.css",
+    "inputFile": "bookLayout/basePage.less",
+    "minify": true,
+    "includeInProject": true,
+    "sourceMap": true
+  }
+]

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -102,6 +103,7 @@ namespace Bloom
 							typeof (QueueRenameOfCollection),
 							typeof (PageSelection),
 							typeof (LocalizationChangedEvent),
+							typeof (CommandReceivedEvent),
 							typeof (EditingModel)
 						}.Contains(t));
 
@@ -222,9 +224,16 @@ namespace Bloom
 //				}
 //				else
 //				{
-					_httpServer = new EnhancedImageServer(new RuntimeImageProcessor(bookRenameEvent));
+					//_httpServer = new EnhancedImageServer(new RuntimeImageProcessor(bookRenameEvent), _scope.Resolve<Dispatcher>());
 //				}
-					builder.Register((c => _httpServer)).AsSelf().SingleInstance();
+					//builder.Register(c=> )
+					builder.Register((c =>
+					{
+						Debug.Assert(_httpServer==null, "Should only be called once.");
+						_httpServer = new EnhancedImageServer(new RuntimeImageProcessor(bookRenameEvent), c.Resolve<Dispatcher>());
+						return _httpServer;
+
+					})).AsSelf().SingleInstance();
 
 					builder.Register<Func<WorkspaceView>>(c => () =>
 					{

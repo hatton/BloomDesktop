@@ -17,7 +17,6 @@ namespace Bloom.web
 {
 	//Though I didn't use it yet, I've since seen this an insteresting tiny example of a minimal server: https://gist.github.com/369432
 
-	// REVIEW: This class doesn't seem to be intented yet for production use
 	public class BloomServer : EnhancedImageServer
 	{
 		private readonly CollectionSettings _collectionSettings;
@@ -27,7 +26,7 @@ namespace Bloom.web
 
 		public BloomServer(CollectionSettings collectionSettings, BookCollection booksInProjectLibrary,
 						   SourceCollectionsList sourceCollectionsesList, HtmlThumbNailer thumbNailer)
-			:base(new RuntimeImageProcessor(new BookRenamedEvent()))
+			:base(new RuntimeImageProcessor(new BookRenamedEvent()), null)
 		{
 			_collectionSettings = collectionSettings;
 			_booksInProjectLibrary = booksInProjectLibrary;

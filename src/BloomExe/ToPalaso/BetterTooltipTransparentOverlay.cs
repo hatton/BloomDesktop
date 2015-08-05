@@ -59,8 +59,8 @@ namespace Bloom.ToPalaso
 			// otherwise, especially since it is disabled.
 			using (var behind = new Bitmap(Parent.ClientSize.Width, Parent.ClientSize.Height))
 			{
-				_overlayedControl.DrawToBitmap(behind, _overlayedControl.Bounds);
-				e.Graphics.DrawImage(behind, 0, 0);
+//				_overlayedControl.DrawToBitmap(behind, _overlayedControl.Bounds);
+//				e.Graphics.DrawImage(behind, 0, 0);
 			}
 		}
 	}

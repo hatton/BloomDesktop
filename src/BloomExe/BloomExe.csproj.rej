@@ -1,0 +1,10 @@
+diff a/src/BloomExe/BloomExe.csproj b/src/BloomExe/BloomExe.csproj	(rejected hunks)
+@@ -605,8 +605,6 @@
+     <EmbeddedResource Include="CollectionTab\MakeReaderTemplateBloomPackDlg.resx">
+       <DependentUpon>MakeReaderTemplateBloomPackDlg.cs</DependentUpon>
+     </EmbeddedResource>
+-    <EmbeddedResource Include="Collection\ScriptSettingsDialog.resx">
+-      <DependentUpon>ScriptSettingsDialog.cs</DependentUpon>
+     </EmbeddedResource>
+     <EmbeddedResource Include="Edit\ConfirmRemovePageDialog.resx">
+       <DependentUpon>ConfirmRemovePageDialog.cs</DependentUpon>

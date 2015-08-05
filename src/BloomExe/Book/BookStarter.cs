@@ -110,6 +110,15 @@ namespace Bloom.Book
 			bool usingTemplate = storage.MetaData.IsSuitableForMakingShells;
 
 			var bookData = new BookData(storage.Dom, _collectionSettings, null);
+			
+			//if the source was a template (instead of a shellbook), the source for new books should be the template
+			//NB: we need to check this BEFORE we change this IsSuitableForMakingShells value for the child (children are never template (unless the user later makes it a template))
+			if (storage.MetaData.IsSuitableForMakingShells)
+			{
+				storage.Dom.SetPageTemplateSource(Path.GetFileName(sourceFolderPath));
+			}
+
+
 			UpdateEditabilityMetadata(storage);//Path.GetFileName(initialPath).ToLower().Contains("template"));
 
 			// NB: For a new book based on a page template, I think this should remove *everything*,
@@ -160,7 +169,6 @@ namespace Bloom.Book
 			}
 
 			ClearAwayDraftText(storage.Dom.RawDom);
-
 			storage.Save();
 
 			//REVIEW this actually undoes the setting of the intial files name:

@@ -380,15 +380,15 @@ namespace Bloom
 		/// can be added. For now these are in place of our standard extensions; that is, if this
 		/// is non-null the standard ones won't be present.
 		/// </summary>
-		public Action<GeckoContextMenuEventArgs> ContextMenuProvider { get; set; }
+		public Func<GeckoContextMenuEventArgs, bool> ContextMenuProvider { get; set; }
 
 		void OnShowContextMenu(object sender, GeckoContextMenuEventArgs e)
 		{
 			Debug.Assert(!InvokeRequired);
 			if (ContextMenuProvider != null)
 			{
-				ContextMenuProvider(e);
-				return;
+				if(ContextMenuProvider(e))
+					return;
 			}
 			var m = e.ContextMenu.MenuItems.Add("Edit Stylesheets in Stylizer", new EventHandler(OnOpenPageInStylizer));
 			m.Enabled = !string.IsNullOrEmpty(GetPathToStylizer());

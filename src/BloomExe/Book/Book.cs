@@ -344,22 +344,23 @@ namespace Bloom.Book
 			return dom;
 		}
 
-		public HtmlDom GetHtmlDomReadyToAddPages(HtmlDom inputDom)
+		//Enhance: it would be better if the UI code were repsonsible for doing this, not the Book itself
+		public HtmlDom GetHtmlDomReadyToAddPages(HtmlDom pageThumbnailsDom)
 		{
 			var headNode = _storage.Dom.SelectSingleNodeHonoringDefaultNS("/html/head");
-			var inputHead = inputDom.SelectSingleNodeHonoringDefaultNS("/html/head");
+			var inputHead = pageThumbnailsDom.SelectSingleNodeHonoringDefaultNS("/html/head");
 			var insertBefore = inputHead.FirstChild;  // Enhance: handle case where there is no existing child
 			foreach (XmlNode child in headNode.ChildNodes)
 			{
-				inputHead.InsertBefore(inputDom.RawDom.ImportNode(child, true), insertBefore);
+				inputHead.InsertBefore(pageThumbnailsDom.RawDom.ImportNode(child, true), insertBefore);
 			}
 
 			// This version somehow leaves the head in the wrong (empty) namespace and nothing works.
-			//var importNode = inputDom.RawDom.ImportNode(headNode, true);
+			//var importNode = pageThumbnailsDom.RawDom.ImportNode(headNode, true);
 			//foreach (XmlNode child in inputHead.ChildNodes)
 			//	importNode.AppendChild(child);
 			//inputHead.ParentNode.ReplaceChild(importNode, inputHead);
-			return _storage.MakeDomRelocatable(inputDom, _log);
+			return _storage.MakeDomRelocatable(pageThumbnailsDom, _log);
 		}
 
 		public HtmlDom GetPreviewXmlDocumentForPage(IPage page)
@@ -395,7 +396,7 @@ namespace Bloom.Book
 		private static void HideEverythingButFirstPageAndRemoveScripts(XmlDocument bookDom)
 		{
 			bool onFirst = true;
-			foreach (XmlElement node in bookDom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]"))
+			foreach (var node in  HtmlDom.PageNodes(bookDom))
 			{
 				if (!onFirst)
 				{
@@ -410,6 +411,7 @@ namespace Bloom.Book
 				node.ParentNode.RemoveChild(node);
 			}
 		}
+
 
 		private static void DeletePages(XmlDocument bookDom, Func<XmlElement, bool> pageSelectingPredicate)
 		{
@@ -535,30 +537,35 @@ namespace Bloom.Book
 
 		public Book FindTemplateBook()
 		{
-				Guard.AgainstNull(_templateFinder, "_templateFinder");
-				if(Type!=BookType.Publication)
-					return null;
-				string templateKey = OurHtmlDom.GetMetaValue("pageTemplateSource", "");
-
-				Book book=null;
-				if (!String.IsNullOrEmpty(templateKey))
-				{
+			Guard.AgainstNull(_templateFinder, "_templateFinder");
+			if (Type != BookType.Publication)
+				return null;
+			string templateKey = OurHtmlDom.GetMetaValue("pageTemplateSource", "");
+			if (templateKey == "self")
+			{
+				return this;
+			}
+			Book book = null;
+			if (!String.IsNullOrEmpty(templateKey))
+			{
 					if (templateKey.ToLowerInvariant() == "basicbook")//catch this pre-beta spelling with no space
-						templateKey = "Basic Book";
-					book = _templateFinder.FindTemplateBook(templateKey);
-					if(book==null)
-					{
-						ErrorReport.NotifyUserOfProblem("Bloom could not find the source of template pages named {0} (as in {0}.htm).\r\nThis comes from the <meta name='pageTemplateSource' content='{0}'/>.\r\nCheck that name matches the html exactly.",templateKey);
-					}
-				}
-				if(book==null)
+					templateKey = "Basic Book";
+				book = _templateFinder.FindTemplateBook(templateKey);
+				if (book == null)
 				{
-					//re-use the pages in the document itself. This is useful when building
-					//a new, complicated shell, which often have repeating pages but
-					//don't make sense as a new kind of template.
-					return this;
+					ErrorReport.NotifyUserOfProblem(
+						"Bloom could not find the source of template pages named {0} (as in {0}.htm).\r\nThis comes from the <meta name='pageTemplateSource' content='{0}'/>.\r\nCheck that name matches the html exactly.",
+						templateKey);
 				}
-				return book;
+			}
+			if (book == null)
+			{
+				//re-use the pages in the document itself. This is useful when building
+				//a new, complicated shell, which often have repeating pages but
+				//don't make sense as a new kind of template.
+				return this;
+			}
+			return book;
 		}
 
 		public BookType TypeOverrideForUnitTests;
@@ -1077,7 +1084,17 @@ namespace Bloom.Book
 			{
 				return BookInfo.IsSuitableForMakingShells;
 			}
+			set
+			{
+				if (value != BookInfo.IsSuitableForMakingShells)
+				{
+					OurHtmlDom.MakeBookBeATemplate(value);
+				}
+				BookInfo.IsSuitableForMakingShells = value; 
+			}
 		}
+
+
 
 		/// <summary>
 		/// A "Folio" document is one that acts as a wrapper for a number of other books
@@ -1344,7 +1361,7 @@ namespace Bloom.Book
 			if (_log.ErrorEncountered)
 				yield break;
 
-			foreach (XmlElement pageNode in OurHtmlDom.SafeSelectNodes("//div[contains(@class,'bloom-page') and not(contains(@data-page, 'singleton'))]"))
+			foreach (XmlElement pageNode in OurHtmlDom.SafeSelectNodes("//div[contains(@class,'bloom-page') and contains(@data-page, 'extra')]"))
 			{
 				var caption = GetPageLabelFromDiv(pageNode);
 				yield return CreatePageDecriptor(pageNode, caption);
@@ -1727,7 +1744,7 @@ namespace Bloom.Book
 				}
 				printingDom.SortStyleSheetLinks();
 
-				foreach (XmlElement pageDiv in childBook.OurHtmlDom.RawDom.SafeSelectNodes("/html/body//div[contains(@class, 'bloom-page') and not(contains(@class,'bloom-frontMatter')) and not(contains(@class,'bloom-backMatter'))]"))
+				foreach (XmlElement pageDiv in childBook.OurHtmlDom.ContentPageElements())
 				{
 					XmlElement importedPage = (XmlElement) printingDom.RawDom.ImportNode(pageDiv, true);
 					currentLastContentPage.ParentNode.InsertAfter(importedPage, currentLastContentPage);
@@ -1748,8 +1765,7 @@ namespace Bloom.Book
 
 		private XmlElement GetLastPageForInsertingNewContent(HtmlDom printingDom)
 		{
-			var lastPage =
-				   printingDom.RawDom.SelectSingleNode("/html/body//div[contains(@class, 'bloom-page') and not(contains(@class,'bloom-frontMatter')) and not(contains(@class,'bloom-backMatter'))][last()]") as XmlElement;
+			var lastPage = printingDom.ContentPageElements().LastOrDefault();
 			if(lastPage==null)
 			{
 				//currently nothing but front and back matter
@@ -1863,6 +1879,9 @@ namespace Bloom.Book
 			_thumbnailProvider.RemoveFromCache(_storage.Key);
 
 			thumbnailOptions.BorderStyle = (Type == BookType.Publication)?HtmlThumbNailer.ThumbnailOptions.BorderStyles.Solid : HtmlThumbNailer.ThumbnailOptions.BorderStyles.Dashed;
+			if(BookInfo.IsSuitableForMakingShells)
+				thumbnailOptions.BorderStyle = HtmlThumbNailer.ThumbnailOptions.BorderStyles.Dashed;
+
 			GetThumbNailOfBookCoverAsync(thumbnailOptions, image=>callback(this.BookInfo,image),
 				error=>
 					{
@@ -1991,8 +2010,17 @@ namespace Bloom.Book
 			Guard.Against(Type != Book.BookType.Publication, "Tried to save a non-editable book.");
 			_bookData.UpdateVariablesAndDataDivThroughDOM(BookInfo);//will update the title if needed
 			_storage.UpdateBookFileAndFolderName(_collectionSettings); //which will update the file name if needed
+
+			OurHtmlDom.MarkTemplateStatusOfAllPages(BookInfo.IsSuitableForMakingShells);
+			if (BookInfo.IsSuitableForMakingShells)
+			{
+				//OurHtmlDom.SetPageTemplateSource("self");
+			}
+			
 			_storage.Save();
 		}
+		 
+
 
 		//TODO: remove this in favor of meta data (the later currently doesn't appear to have access to lineage, I need to ask JT about that)
 		public string GetBookLineage()

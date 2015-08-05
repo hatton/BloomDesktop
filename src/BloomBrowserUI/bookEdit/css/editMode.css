@@ -438,6 +438,9 @@ SPAN.sentence-too-long {
 .book-too-many-words .marginBox {
   border: 5px solid orange !important;
 }
+div[data-page='extra'] {
+  border: dashed darkgray;
+}
 /*
 
 	this was all a nice idea, but not a localizable approach

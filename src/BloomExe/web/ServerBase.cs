@@ -181,6 +181,8 @@ namespace Bloom.web
 				try
 				{
 					rawurl = context.Request.RawUrl;
+				if(rawurl!="/bloom/authorMode")
+					Debug.WriteLine("");
 
 					// set lower priority for thumbnails in order to have less impact on the UI thread
 					if (rawurl.Contains("thumbnail=1"))

@@ -36,6 +36,7 @@ namespace Bloom.web
 		private bool _sampleTextsChanged = true;
 		static Dictionary<string, string> _urlToSimulatedPageContent = new Dictionary<string, string>(); // see comment on MakeSimulatedPageFileInBookFolder
 		private BloomFileLocator _fileLocator;
+		private Dispatcher _dispatcher;
 
 		public CollectionSettings CurrentCollectionSettings { get; set; }
 
@@ -45,16 +46,19 @@ namespace Bloom.web
 		internal EnhancedImageServer() : base( new RuntimeImageProcessor(new BookRenamedEvent()))
 		{ }
 
-		public EnhancedImageServer(RuntimeImageProcessor cache): base(cache)
-		{ }
+		public EnhancedImageServer(RuntimeImageProcessor cache, Dispatcher dispatcher) : base(cache)
+		{
+			_dispatcher = dispatcher;
+		}
 
 		/// <summary>
 		/// This constructor is used for unit testing
 		/// </summary>
-		public EnhancedImageServer(RuntimeImageProcessor cache, BloomFileLocator fileLocator)
+		public EnhancedImageServer(RuntimeImageProcessor cache, BloomFileLocator fileLocator, Dispatcher dispatcher)
 			: base(cache)
 		{
 			_fileLocator = fileLocator;
+			_dispatcher = dispatcher;
 		}
 
 		// We use two different locks to synchronize access to the methods of this class.
@@ -64,6 +68,7 @@ namespace Bloom.web
 		private object I18NLock = new object();
 		// used to synchronize access to various other methods
 		private object SyncObj = new object();
+
 
 		public string CurrentPageContent { get; set; }
 		public string AccordionContent { get; set; }
@@ -262,8 +267,23 @@ namespace Bloom.web
 				if (File.Exists(temp))
 					localPath = temp;
 			}
+				//enhance: should get it so it's the start we're looking at, not *anywhere* in the url
+			else if(localPath.Contains("command/"))
+			{
+				var result= _dispatcher.Dispatch(localPath);
+				//if we don't return something, the client won't know the transaction is over and will hold its breath for 20 seconds
+				info.ContentType = "text/plain";
+				info.WriteCompleteOutput("OK");//review what should we return?
+				return result;
+			}
+
 
 			return ProcessContent(info, localPath);
+		}
+
+		private void ProcessEvent(IRequestInfo info, string localPath)
+		{
+			
 		}
 
 		/// <summary>

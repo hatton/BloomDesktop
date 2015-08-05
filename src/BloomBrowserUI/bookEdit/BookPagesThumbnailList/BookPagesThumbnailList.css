@@ -1,0 +1,82 @@
+body {
+  background-color: #404040;
+}
+.bloom-page {
+  /* bizarrely, the translate moves it to the top left instead of the middle of the original space.If you fiddle with these, the formula for the translate percent is 100*(1-scale)/2/scale. */
+  transform: scale(0.075) translate(617%, -617%);
+  position: absolute;
+  right: 0px;
+}
+.bloom-page.A4Portrait {
+  transform: scale(0.05) translate(950%, -950%);
+}
+.bloom-page.B5Portrait {
+  transform: scale(0.06) translate(783%, -783%);
+}
+.gridly {
+  position: relative;
+}
+.gridItem {
+  width: 80px;
+  height: 100px;
+  opacity: 1;
+  overflow: hidden;
+}
+.gridItem:nth-child(even) .bloom-page {
+  transform: scale(0.075) translate(-617%, -617%);
+  right: auto;
+  left: 0;
+}
+.gridItem:nth-child(even) .bloom-page.A4Portrait {
+  transform: scale(0.05) translate(-950%, -950%);
+}
+.gridItem:nth-child(even) .bloom-page.B5Portrait {
+  transform: scale(0.06) translate(-783%, -783%);
+}
+.gridItem:nth-child(even) .thumbnailCaption {
+  text-align: left;
+}
+.gridItem.dragging {
+  opacity: .8;
+}
+.thumbnailCaption {
+  position: absolute;
+  top: 60px;
+  color: white;
+  overflow: hidden;
+  text-align: right;
+  width: 80px;
+  line-height: 1;
+  min-height: 1.2em;
+}
+.placeholder {
+  pointer-events: none;
+}
+.gridSelected .pageContainer {
+  border: 3px solid #ffffa3;
+  height: 60px;
+  width: 42px;
+}
+.gridSelected .thumbnailCaption {
+  margin-top: 5px;
+  color: #ffffa3;
+}
+.gridSelected .pageContainer.A4Portrait {
+  height: 56px;
+  width: 40px;
+}
+.gridSelected .pageContainer.A4Landscape {
+  height: 59px;
+  width: 74px;
+}
+.gridSelected .pageContainer.B5Portrait {
+  height: 57px;
+  width: 40px;
+}
+.gridSelected .pageContainer.A5Landscape {
+  height: 42px;
+  width: 60px;
+}
+.gridItem:nth-child(odd) .pageContainer {
+  float: right;
+}

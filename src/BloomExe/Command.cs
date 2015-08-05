@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Windows.Forms;
 
 namespace Bloom
 {
@@ -24,6 +22,7 @@ namespace Bloom
 		{
 			Name = name;
 			_enabled = true;
+			CssName = "UnsetCssCommandName";
 		}
 
 		public bool Enabled
@@ -37,6 +36,7 @@ namespace Bloom
 		}
 		public Action Implementer { get; set; }
 		public string Name { get; set; }
+		public string CssName { get; set; }
 
 		public void Execute()
 		{
@@ -52,19 +52,15 @@ namespace Bloom
 
 	public class CutCommand : Command
 	{
-		public CutCommand()
-			: base("cut")
+		public CutCommand()	: base("cut")
 		{
-
 		}
 	}
 
 	public class CopyCommand : Command
 	{
-		public CopyCommand()
-			: base("copy")
+		public CopyCommand() : base("copy")
 		{
-
 		}
 	}
 
@@ -73,15 +69,13 @@ namespace Bloom
 		public PasteCommand()
 			: base("paste")
 		{
-
 		}
 	}
-	public class UndoCommand : Command
+	public class UndoCommand : Command 
 	{
 		public UndoCommand()
 			: base("undo")
 		{
-
 		}
 	}
 
@@ -90,7 +84,6 @@ namespace Bloom
 		public DuplicatePageCommand()
 			: base("duplicateCurrentPage")
 		{
-
 		}
 	}
 
@@ -99,7 +92,7 @@ namespace Bloom
 		public DeletePageCommand()
 			: base("deleteCurrentPage")
 		{
-
+			
 		}
 	}
 

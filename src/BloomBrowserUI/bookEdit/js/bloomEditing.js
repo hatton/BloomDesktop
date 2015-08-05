@@ -314,6 +314,16 @@ function SetupElements(container) {
         this.innerHTML = this.value;
     });
 
+    // If the user is actually making a template, let them set the page name.
+    $(container).find('.pageLabel').each(function() {
+        //At least for now, we're intentionally not calling this a "bloom-editable", as there is no language or other nice features
+        if ($(this).closest("div[data-page='extra']").length > 0) {
+            $(this).attr('contenteditable', 'true');
+        } else {
+            $(this).attr('contenteditable','false');
+        }
+    });
+
     var model = getReaderToolsModel();
 
     var readerToolsActive;

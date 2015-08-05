@@ -223,6 +223,12 @@
     <Compile Include="Collection\ScriptSettingsDialog.Designer.cs">
       <DependentUpon>ScriptSettingsDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Edit\BookCommandBar.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Edit\BookCommandBar.Designer.cs">
+      <DependentUpon>BookCommandBar.cs</DependentUpon>
+    </Compile>
     <Compile Include="Edit\ConfirmRemovePageDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -420,6 +426,7 @@
     <Compile Include="WebLibraryIntegration\BookDownloadSupport.cs" />
     <Compile Include="web\CommandAvailabilityPublisher.cs" />
     <Compile Include="web\SimulatedPageFile.cs" />
+    <Compile Include="web\Dispatcher.cs" />
     <Compile Include="web\I18NHandler.cs" />
     <Compile Include="web\ReadersHandler.cs" />
     <Compile Include="Wizard\WinForms\WizardControl.cs">
@@ -567,9 +574,7 @@
     <Compile Include="Book\Page.cs" />
     <Compile Include="TempFiles.cs" />
     <Compile Include="SourceCollectionsList.cs" />
-    <Compile Include="Workspace\TabStrip.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="Workspace\TabStrip.cs" />
     <Compile Include="Workspace\TabStripRenderer.cs" />
     <Compile Include="Workspace\WorkspaceModel.cs" />
     <Compile Include="Publish\PublishView.cs">
@@ -1073,6 +1078,10 @@
     <None Include="Resources\greyTriangleButton.png" />
     <None Include="Resources\installerBackground.jpg" />
     <None Include="Resources\videos.png" />
+    <None Include="Resources\gear24x24.png" />
+    <Content Include="Scripts\jquery-1.7.2-vsdoc.js" />
+    <Content Include="Scripts\jquery-1.7.2.js" />
+    <Content Include="Scripts\jquery-1.7.2.min.js" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />

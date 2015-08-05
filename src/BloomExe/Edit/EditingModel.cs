@@ -182,6 +182,13 @@ namespace Bloom.Edit
 
 		internal void DuplicatePage(IPage page)
 		{
+			//review: how can we avoid doing this individually for each command?
+			if(_view.InvokeRequired)
+			{
+				_view.Invoke(new Action<IPage>(DuplicatePage), page);
+				return;
+			}
+
 			try
 			{
 				SaveNow(); //ensure current page is saved first
@@ -319,6 +326,70 @@ namespace Bloom.Edit
 			}
 
 		}
+
+		public bool ShowVernacularCollectionOptions
+		{
+			get
+			{
+				return !ShowSourceCollectionOptions;
+			}
+		}
+		public bool ShowSourceCollectionOptions
+		{
+			get { return _collectionSettings.IsSourceCollection; }
+		}
+
+		/// <summary>
+		/// This makes sense in a Source Collection
+		/// </summary>
+		public bool CurrentlyMakingShellbook
+		{
+			get { return _collectionSettings.IsSourceCollection && !CurrentBook.IsSuitableForMakingShells; }
+			set
+			{
+				CurrentBook.IsSuitableForMakingShells = !value;
+				RethinkPageAndReloadIt();
+			}
+		}
+		/// <summary>
+		/// This makes sense in a Source Collection
+		/// </summary>
+		public bool CurrentlyMakingTemplate
+		{
+			get { return _collectionSettings.IsSourceCollection && CurrentBook.IsSuitableForMakingShells; }
+			set
+			{
+				SaveNow();// store any edits we were doing
+				CurrentBook.IsSuitableForMakingShells = value;
+				CurrentBook.Save();// save it in its new form
+				RethinkPageAndReloadIt();
+			}
+		}
+		/// <summary>
+		/// This makes sense in a Vernacular Collection
+		/// </summary>
+		public bool CurrentlyTranslatingShellbook
+		{
+			get { return !_collectionSettings.IsSourceCollection && CurrentBook.LockedDown; }
+			set
+			{
+				CurrentBook.RecordedAsLockedDown = true;
+				RethinkPageAndReloadIt();
+			}
+		}
+		/// <summary>
+		/// This makes sense in a Vernacular Collection
+		/// </summary>
+		public bool CurrentlyMakingBook
+		{
+			get { return !_collectionSettings.IsSourceCollection && !CurrentBook.LockedDown; }
+			set
+			{
+				CurrentBook.RecordedAsLockedDown = false;
+				RethinkPageAndReloadIt();
+			}
+		}
+
 
 		/// <summary>
 		/// These are the languages available for selecting for bilingual and trilingual
@@ -656,7 +727,12 @@ namespace Bloom.Edit
 			_view.AddMessageEventListener("finishSavingPage", FinishSavingPage);
 		}
 
-		private void RethinkPageAndReloadIt(string obj)
+		public void RethinkPageAndReloadIt()
+		{
+			RethinkPageAndReloadIt(null);
+		}
+		
+		private void RethinkPageAndReloadIt(string unused)
 		{
 			if (CannotSavePage())
 				return;

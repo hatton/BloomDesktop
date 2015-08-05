@@ -601,5 +601,45 @@ namespace Bloom.Book
 				node.Attributes["class"].Value = currentValue.Replace("origami-layout-mode", "");
 			}
 		}
+			public void MarkTemplateStatusOfAllPages(bool isTemplate)
+		{
+			//If the user has marked this book as a template book, each page needs to have that, too.
+			foreach(var contentPage in ContentPageElements())
+			{
+				contentPage.SetAttribute("data-page", isTemplate? "extra":"");
+			}
+			//normally nothing should have added a data-page to an xmatter, but just in case, let's be robust about it
+			foreach(var xmatterPage in XMatterPageElements())
+			{
+				xmatterPage.RemoveAttribute("data-page");
+			}
+		}
+		public IEnumerable<XmlElement> PageNodes()
+		{
+			return PageNodes(_dom);
+		}
+		public IEnumerable<XmlElement> ContentPageElements()
+		{
+			return _dom.SafeSelectNodes("/html/body//div[contains(@class, 'bloom-page') and not(contains(@class,'bloom-frontMatter')) and not(contains(@class,'bloom-backMatter'))]").Cast<XmlElement>();
+		}
+		public IEnumerable<XmlElement> XMatterPageElements()
+		{
+			return _dom.SafeSelectNodes("/html/body//div[contains(@class, 'bloom-page') and (contains(@class,'bloom-frontMatter') or contains(@class,'bloom-backMatter'))]").Cast<XmlElement>();
+		}
+		public static IEnumerable<XmlElement> PageNodes(XmlDocument dom)
+		{
+			return dom.SafeSelectNodes("//div[contains(@class, 'bloom-page')]").Cast<XmlElement>();
+		}
+
+		public void SetPageTemplateSource(string name)
+		{
+			UpdateMetaElement("pageTemplateSource", name);
+		}
+
+		public void MakeBookBeATemplate(bool beATemplate)
+		{
+			RemoveMetaElement("lockedDownAsShell");
+			// note, pages get marked as template pages elsewhere, during saving
+		}
 	}
 }
