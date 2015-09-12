@@ -34,7 +34,9 @@ var scripts = [
     'bookEdit/js/origami.js',
     'lib/long-press/jquery.mousewheel.js',
     'lib/jquery.alphanum.js',
-    'lib/long-press/jquery.longpress.js'
+    'lib/long-press/jquery.longpress.js',
+    'lib/jQuery-contextMenu/jquery.ui.position.js', //needed by jquery.contextMenu
+    'lib/jQuery-contextMenu/jquery.contextMenu.js'
 ];
 
 var styleSheets = [
@@ -47,7 +49,8 @@ var styleSheets = [
     'bookEdit/css/tab.winclassic.css',
     'bookEdit/StyleEditor/StyleEditor.css',
     'bookEdit/css/bloomDialog.css',
-    'lib/long-press/longpress.css'
+    'lib/long-press/longpress.css',
+    'lib/jQuery-contextMenu/jquery.contextMenu.css'
 ];
 
 for (var i = 0; i < scripts.length; i++) {

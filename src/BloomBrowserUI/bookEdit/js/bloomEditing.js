@@ -358,6 +358,53 @@ function SetupElements(container) {
         $(this).append(contentElements);
     });
 
+    //add context menu that shows/hide individual languages
+    //TODO: trigger only if clicking on (or near) the language label (tricky because that label is just an :after)
+    //TODO: actually fill in with the languages
+    //TODO: hide any bubbles that become orphaned by hiding
+    //TODO: don't allow user to hide every visible item. This is extra hard because how do *we* know what is currently visible?
+    //TODO: can we make boxes hide/show as soon as we click on them?
+    $(container).find(".bloom-translationGroup").each(function () {
+        $(this).contextMenu({
+            selector: '.bloom-editable',           
+            items: {
+                //TODO: create this dynamically based on the contents of the translationGroup, or perhaps on those items that have bloom-content1, bloom-content2, bloom-content3?
+                "sry": {
+                    name: "Sera", type: 'checkbox', selected:true,
+                    events: { keyup: function (e) { alert(e.keyCode); } }
+                },
+                "en": { name: "English", type: 'checkbox', selected: false },
+                "fr": { name: "French", type: 'checkbox', selected: true }
+            },
+            zIndex: 20000,
+            callback: function (key, options) {
+                alert("clicked: " + key);
+            },
+            events: {
+                show: function (opt) {
+                    var choices = {};
+                    $(this).parent().find('.bloom-editable').each(function () {
+                        choices[$(this).attr('lang')] = !$(this).hasClass('userHide');;
+                    });
+                    $.contextMenu.setInputValues(opt, choices);
+                },
+                hide: function (opt) {
+                    var choices = {};
+                    $.contextMenu.getInputValues(opt, choices);
+                    $(this).parent().find('.bloom-editable').each(function() {
+                        var selected = choices[$(this).attr('lang')];
+                        if (selected) {
+                            $(this).removeClass('userHide');
+                        }
+                        else {
+                            $(this).addClass('userHide');
+                        }
+                    });
+                }
+            }
+        });
+    });
+    
     //Convert Standard Format Markers in the pasted text to html spans
     $(container).find("div.bloom-editable").on("paste", function (e) {
         if (!e.originalEvent.clipboardData)
