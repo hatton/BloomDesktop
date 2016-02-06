@@ -224,13 +224,13 @@ namespace Bloom.ImageProcessing
 		/// </summary>
 		public static Boolean ShouldChangeFormatToJpeg(Image image)
 		{
-			using (var safetyImage = new Bitmap(image)) //nb: there are cases (notibly http://jira.palaso.org/issues/browse/WS-34711, after cropping a jpeg) where we get out of memory if we are not operating on a copy
+			//using (var safetyImage = new Bitmap(image)) //nb: there are cases (notably http://jira.palaso.org/issues/browse/WS-34711, after cropping a jpeg) where we get out of memory if we are not operating on a copy
 			{
 				using (var jpegFile = new TempFile())
 				using (var pngFile = new TempFile())
 				{
 					image.Save(pngFile.Path, ImageFormat.Png);
-					SaveAsTopQualityJpeg(safetyImage, jpegFile.Path);
+					SaveAsTopQualityJpeg(image, jpegFile.Path);//was using safetyImage, but this method creates its own "safetyImage"
 					var jpegInfo = new FileInfo(jpegFile.Path);
 					var pngInfo = new FileInfo(pngFile.Path);
 					// this is just our heurstic. 

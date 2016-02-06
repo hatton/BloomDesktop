@@ -4,6 +4,7 @@ using Bloom.Book;
 using Bloom.ImageProcessing;
 using SIL.Network;
 using SIL.Progress;
+using SIL.Reporting;
 using SIL.Windows.Forms.ImageToolbox;
 
 namespace Bloom.Edit
@@ -20,6 +21,7 @@ namespace Bloom.Edit
 		public void ChangePicture(string bookFolderPath, ElementProxy imgOrDivWithBackgroundImage, PalasoImage imageInfo,
 			IProgress progress)
 		{
+			Logger.WriteEvent(string.Format("ChangePicture() BookFOlderPath={0}, imageInfo.OriginalFilePath={1}", bookFolderPath,imageInfo.OriginalFilePath));
 			var isSameFile = IsSameFilePath(bookFolderPath, HtmlDom.GetImageElementUrl(imgOrDivWithBackgroundImage).UrlEncoded, imageInfo);
 			var imageFileName = ImageUtils.ProcessAndSaveImageIntoFolder(imageInfo, bookFolderPath, isSameFile);
 			HtmlDom.SetImageElementUrl(imgOrDivWithBackgroundImage,
