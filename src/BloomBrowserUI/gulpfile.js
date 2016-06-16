@@ -95,10 +95,7 @@ gulp.task('copy', function () {
 //     .pipe(gulp.dest(outputDir)); //drop all js's into the same dirs.
 // });
 
-gulp.task('watchInner', function() {
-    watch(paths.less, batch(function (events, done) {
-        gulp.start('copy', done);
-    }));    
+gulp.task('watchInner', function() {  
     watch(paths.less, batch(function (events, done) {
         gulp.start('less', done);
     }));
@@ -107,7 +104,9 @@ gulp.task('watchInner', function() {
     }));
 })
 
-
+gulp.task('watchpages', function() { 
+      runSequence([ 'less', 'jade'],'watchInner');
+});
 gulp.task('watch', function() {
       console.log('****** PLEASE run "webpack --watch" in a separate console *********');     
       runSequence('clean', 'copy',  [ 'less', 'jade'],'watchInner');

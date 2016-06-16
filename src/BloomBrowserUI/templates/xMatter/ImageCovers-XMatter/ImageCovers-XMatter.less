@@ -1,0 +1,29 @@
+@import "../bloom-xmatter-common.less";
+
+@XMatterPackName: "ImageCovers";
+
+.outsideFrontCover, .outsideBackCover {
+     .marginBox{
+        top: 0px !important;
+        left: 0px !important;
+        width: 100% !important;
+        height: 100% !important;
+        border: none !important;
+     }
+    .bloom-imageContainer{
+        margin-top: 0 ;
+        margin-bottom: 0;
+        border: none !important;
+        height: 100%;
+        background-size: cover; // zoom if needed so there is no margin
+
+        // &::before {
+        //     content: " ";
+        //     position: absolute;
+        //     width: 1000px;
+        //     height: 2000px;
+        //     z-index: -1;
+        //     background-image: url("the-princess-4fbafad52d1e4.jpg");
+        // }
+    }
+}

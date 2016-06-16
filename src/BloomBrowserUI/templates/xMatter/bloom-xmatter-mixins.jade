@@ -118,6 +118,13 @@ mixin factoryStandard-credits-interiorPage
 	+page-xmatter("Credits Page").bloom-frontMatter.credits(data-export='front-matter-credits')&attributes(attributes)#2CCC8F26-A797-4A5B-9BA7-E29823D2CB24
 		+credits-contents
 
+mixin traditional-credits-interiorPage
+	+page-xmatter("Credits Page").bloom-frontMatter.credits(data-export='front-matter-credits')#69EF35AE-5BF1-49F1-89E7-2A932DAD932C
+			+field-acknowledgments-originalVersion
+			+block-licenseAndCopyright#versoLicenseAndCopyright
+			+field-ISBN
+			+field-acknowledgments-localizedVersion
+
 mixin credits-contents
 		+block-licenseAndCopyright
 		+field-ISBN

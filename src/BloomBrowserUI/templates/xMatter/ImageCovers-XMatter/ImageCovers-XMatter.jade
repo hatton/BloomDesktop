@@ -1,0 +1,24 @@
+include ../bloom-xmatter-mixins.jade
+
+mixin imageOnly-outsideFrontCover
+	+page-xmatter('Front Cover')(data-export='front-matter-cover')&attributes(attributes).bloom-frontMatter.frontCover.outsideFrontCover#b2ffda14-adcc-4187-9a82-fa177b2323cf
+		.bloom-imageContainer.bloom-backgroundImage(data-book='coverImage', style="background-image:url('placeHolder.png')")
+
+mixin imageOnly-outsideBackCover
+	+page-xmatter('Outside Back Cover').cover.coverColor.outsideBackCover.bloom-backMatter(data-export='back-cover')&attributes(attributes)#02de6043-b26f-46f4-9287-09b4e63e6ba9
+		.bloom-imageContainer.bloom-backgroundImage(data-book='backCoverImage', style="background-image:url('placeHolder.png')")
+
+doctype html
+html
+	head
+		meta(charset='UTF-8')
+		meta(name='BloomFormatVersion', content='2.0')
+		title Image Covers XMatter
+		+stylesheets('ImageCovers-XMatter.css')
+	body
+		+imageOnly-outsideFrontCover
+		+standard-blankInsideFrontCover
+		+factoryStandard-titlePage
+		+traditional-credits-interiorPage
+		+factoryStandard-insideBackCover
+		+imageOnly-outsideBackCover
