@@ -501,34 +501,41 @@ namespace Bloom.Publish
 			_epubPreviewControl.BringToFront();
 
 			_model.PrepareToStageEpub();
-			if (!_publishWithoutAudio && !LameEncoder.IsAvailable() && _model.IsCompressedAudioMissing)
+			Action setupElectronicPublicationControlMethod = SetupEpubControlContent;
+			HandleAudioSituation(setupElectronicPublicationControlMethod, _epubPreviewBrowser);
+			Cursor = Cursors.Default;
+		}
+
+		private void HandleAudioSituation(Action setupElectronicPublicationControlMethod, Browser electronicPublicationBrowser)
+		{
+			if(!_publishWithoutAudio && !LameEncoder.IsAvailable() && _model.IsCompressedAudioMissing)
 			{
 				var fileLocator = _model.BookSelection.CurrentSelection.GetFileLocator();
-				var englishMissingLameModulePath = fileLocator.LocateFileWithThrow("ePUB" + Path.DirectorySeparatorChar + "MissingLameModule-en.html");
-				// I hesitate to change the definition of BloomFileLocator.BrowserRoot to return absolute paths.  But apparently we need to feed
-				// _epubPreviewBrowser an absolute path or it mysteriously tries to open the relative path in an actual browser window, not itself.
+				var englishMissingLameModulePath =
+					fileLocator.LocateFileWithThrow("ePUB" + Path.DirectorySeparatorChar + "MissingLameModule-en.html");
+				// I (JT) hesitate to change the definition of BloomFileLocator.BrowserRoot to return absolute paths.  But apparently we need to feed
+				// electronicPublicationBrowser an absolute path or it mysteriously tries to open the relative path in an actual browser window, not itself.
 				// (See http://issues.bloomlibrary.org/youtrack/issue/BL-3906 if you don't believe this, which I don't except I see it happening.)
 				// So ensure that our file path is an absolute filepath.
 				var baseFolder = FileLocator.DirectoryOfApplicationOrSolution;
-				if (!englishMissingLameModulePath.StartsWith(baseFolder))
+				if(!englishMissingLameModulePath.StartsWith(baseFolder))
 					englishMissingLameModulePath = Path.Combine(baseFolder, englishMissingLameModulePath);
 				var localizedMissingLameModulePath = BloomFileLocator.GetBestLocalizedFile(englishMissingLameModulePath);
-				_epubPreviewBrowser.Navigate(localizedMissingLameModulePath, false);
-				_epubPreviewBrowser.OnBrowserClick += (sender, e) =>
+				electronicPublicationBrowser.Navigate(localizedMissingLameModulePath, false);
+				electronicPublicationBrowser.OnBrowserClick += (sender, e) =>
 				{
-					var element = (GeckoHtmlElement)(e as DomEventArgs).Target.CastToGeckoElement();
-					if (element.GetAttribute("id") == "proceedWithoutAudio")
+					var element = (GeckoHtmlElement) (e as DomEventArgs).Target.CastToGeckoElement();
+					if(element.GetAttribute("id") == "proceedWithoutAudio")
 					{
 						_publishWithoutAudio = true;
-						SetupEpubControlContent();
+						setupElectronicPublicationControlMethod();
 					}
 				};
 			}
 			else
 			{
-				SetupEpubControlContent();
+				setupElectronicPublicationControlMethod();
 			}
-			Cursor = Cursors.Default;
 		}
 
 		private void SetupEpubControlContent()

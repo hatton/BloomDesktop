@@ -525,7 +525,7 @@ namespace Bloom.Publish
 		// PrepareToStageEpub must be called first
 		internal bool IsCompressedAudioMissing
 		{
-			get { return _epubMaker.IsCompressedAudioMissing; }
+			get { return AudioProcessor.IsCompressedAudioMissing(BookSelection.CurrentSelection.FolderPath, _currentlyLoadedBook.RawDom); }
 		}
 
 		internal string StagingDirectory { get { return _epubMaker.StagingDirectory; } }

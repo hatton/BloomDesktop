@@ -79,8 +79,8 @@ namespace Bloom.Publish
 		public string StagingDirectory { get; private set; }
 		private BookThumbNailer _thumbNailer;
 		private bool _publishWithoutAudio;
-		LameEncoder _mp3Encoder;
 		Browser _browser = new Browser();
+		private readonly AudioProcessor _audioProcessor;
 
 		/// <summary>
 		/// Set to true for unpaginated output. This is something of a misnomer...any better ideas?
@@ -95,17 +95,7 @@ namespace Bloom.Publish
 		{
 			_thumbNailer = thumbNailer;
 			_browser.Isolator = _isolator;
-		}
-
-		public bool IsCompressedAudioMissing
-		{
-			get
-			{
-				return
-					Book.RawDom.SafeSelectNodes("//span[@id]")
-						.Cast<XmlElement>()
-						.Any(span => IsCompressedAudioForIdMissing(span.Attributes["id"].Value));
-			}
+			_audioProcessor = new AudioProcessor(this);
 		}
 
 		/// <summary>
@@ -266,22 +256,6 @@ namespace Bloom.Publish
 			MakeSpine(opf, rootElt, manifestPath);
 		}
 
-		private string GetOrCreateCompressedAudioIfWavExists(string id)
-		{
-			var root = AudioFolderPath;
-			var extensions = new [] {"mp3", "mp4"}; // .ogg,, .wav, ...?
-
-			foreach (var ext in extensions)
-			{
-				var path = Path.Combine(root, Path.ChangeExtension(id, ext));
-				if (RobustFile.Exists(path))
-					return path;
-			}
-			var wavPath = Path.Combine(root, Path.ChangeExtension(id, "wav"));
-			if (!RobustFile.Exists(wavPath))
-				return null;
-			return MakeCompressedAudio(wavPath);
-		}
 
 		/// <summary>
 		/// Make a compressed audio file for the specified .wav file.
@@ -290,26 +264,6 @@ namespace Bloom.Publish
 		/// <param name="id"></param>
 		/// <returns></returns>
 		// internal and virtual for testing.
-		internal virtual string MakeCompressedAudio(string wavPath)
-		{
-			// We have a recording, but not compressed. Possibly the LAME package was installed after
-			// the recordings were made. Compress it now.
-			if (_mp3Encoder == null)
-			{
-				if (!LameEncoder.IsAvailable())
-				{
-					return null;
-				}
-				_mp3Encoder = new LameEncoder();
-			}
-			_mp3Encoder.Encode(wavPath, wavPath.Substring(0, wavPath.Length - 4), new NullProgress());
-			return Path.ChangeExtension(wavPath, "mp3");
-		}
-
-		private string AudioFolderPath
-		{
-			get { return Path.Combine(Storage.FolderPath, "audio"); }
-		}
 
 		public bool BookHasAudio
  		{
@@ -318,18 +272,10 @@ namespace Bloom.Publish
  				return
  					Book.RawDom.SafeSelectNodes("//span[@id]")
  						.Cast<XmlElement>()
- 						.Any(span => GetOrCreateCompressedAudioIfWavExists(span.Attributes["id"].Value) != null);
+ 						.Any(span => AudioProcessor.GetOrCreateCompressedAudioIfWavExists(StagingDirectory, span.Attributes["id"].Value) != null);
  			}
  		}
 
-		private bool IsCompressedAudioForIdMissing(string id)
-		{
-			if (GetOrCreateCompressedAudioIfWavExists(id) != null)
-				return false; // not missing, we got it.
-			// We consider ourselves to have a missing compressed audio if we have a wav recording
-			// but no corresponding compressed waveform.
-			return RobustFile.Exists(Path.Combine(AudioFolderPath, Path.ChangeExtension(id, "wav")));
-		}
 
 		/// <summary>
 		/// Create an audio overlay for the page if appropriate.
@@ -345,7 +291,7 @@ namespace Bloom.Publish
 		{
 			var spansWithIds = pageDom.RawDom.SafeSelectNodes(".//span[@id]").Cast<XmlElement>();
 			var spansWithAudio =
-				spansWithIds.Where(x =>GetOrCreateCompressedAudioIfWavExists(x.Attributes["id"].Value) != null);
+				spansWithIds.Where(x => AudioProcessor.GetOrCreateCompressedAudioIfWavExists(Storage.FolderPath, x.Attributes["id"].Value) != null);
 			if (!spansWithAudio.Any())
 				return;
 			var overlayName = GetOverlayName(pageDocName);
@@ -370,7 +316,7 @@ namespace Bloom.Publish
 			foreach (var span in spansWithAudio)
 			{
 				var spanId = span.Attributes["id"].Value;
-				var path = GetOrCreateCompressedAudioIfWavExists(spanId);
+				var path = AudioProcessor.GetOrCreateCompressedAudioIfWavExists(Storage.FolderPath,spanId);
 				var dataDurationAttr = span.Attributes["data-duration"];
 				if (dataDurationAttr != null)
 				{
@@ -1176,6 +1122,13 @@ namespace Bloom.Publish
 			var pageDom = dom.RawDom.ImportNode(page, true);
 			body.AppendChild(pageDom);
 			return dom;
+		}
+
+		internal virtual string MakeCompressedAudio(string wavPath)
+		{
+			var output = Path.ChangeExtension(wavPath, "mp3");
+			File.Copy(wavPath, output);
+			return output;
 		}
 
 		public void Dispose()
