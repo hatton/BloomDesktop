@@ -28,5 +28,7 @@ namespace Bloom.Publish
 		{
 			HelpLauncher.Show(this, "Tasks/Publish_tasks/Create_Epub.htm");
 		}
+
+
 	}
 }

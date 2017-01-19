@@ -15,17 +15,44 @@ namespace Bloom.Publish
 		private static LameEncoder _mp3Encoder;
 
 		//extracted so unit test can override
-		public static Func<string,string> _compressorMethod = MakeCompressedAudio;
+		public static Func<string, string> _compressorMethod = MakeCompressedAudio;
 
-		public AudioProcessor(EpubMaker epubMaker)
+		public static bool IsAnyCompressedAudioMissing(string bookFolderPath, XmlDocument dom)
 		{
+			return !GetTrueForAllAudioSpans(bookFolderPath, dom,
+				(wavpath, mp3path) => !RobustFile.Exists(wavpath) || RobustFile.Exists(mp3path));
 		}
 
-		public static bool IsCompressedAudioMissing(string bookFolderPath, XmlDocument dom)
+
+
+		/// <summary>
+		/// Compress all the existing wav files into mp3s, it they aren't already compressed
+		/// </summary>
+		/// <returns>true if everything is compressed</returns>
+		public static bool TryCompressingAudioAsNeeded(string bookFolderPath, XmlDocument dom)
 		{
-				return dom.SafeSelectNodes("//span[@id]")
-					.Cast<XmlElement>()
-					.Any(span => IsCompressedAudioForIdMissing(bookFolderPath, span.Attributes["id"].Value));
+			return GetTrueForAllAudioSpans(bookFolderPath, dom,
+				(wavpath, mp3path) =>
+				{
+					if (RobustFile.Exists(wavpath) && !RobustFile.Exists(mp3path))
+					{
+						return MakeCompressedAudio(wavpath) != null;
+					}
+					return true; // already have the mp3
+				});
+		}
+
+		private static bool GetTrueForAllAudioSpans(string bookFolderPath, XmlDocument dom, Func<string, string, bool> predicate)
+		{
+			var audioFolderPath = GetAudioFolderPath(bookFolderPath);
+			return dom.SafeSelectNodes("//span[@id]")
+				.Cast<XmlElement>()
+				.All(span =>
+				{
+					var wavpath = Path.Combine(audioFolderPath, Path.ChangeExtension(span.Attributes["id"].Value, "wav"));
+					var mp3path = Path.ChangeExtension(wavpath, "mp3");
+					return predicate(wavpath, mp3path);
+				});
 		}
 
 		private static string GetAudioFolderPath(string bookFolderPath)
@@ -44,9 +71,9 @@ namespace Bloom.Publish
 		{
 			// We have a recording, but not compressed. Possibly the LAME package was installed after
 			// the recordings were made. Compress it now.
-			if (_mp3Encoder == null)
+			if(_mp3Encoder == null)
 			{
-				if (!LameEncoder.IsAvailable())
+				if(!LameEncoder.IsAvailable())
 				{
 					return null;
 				}
@@ -59,27 +86,32 @@ namespace Bloom.Publish
 		public static string GetOrCreateCompressedAudioIfWavExists(string bookFolderPath, string recordingSegmentId)
 		{
 			var root = GetAudioFolderPath(bookFolderPath);
-			var extensions = new [] {"mp3", "mp4"}; // .ogg,, .wav, ...?
+			var extensions = new[] {"mp3", "mp4"}; // .ogg,, .wav, ...?
 
-			foreach (var ext in extensions)
+			foreach(var ext in extensions)
 			{
 				var path = Path.Combine(root, Path.ChangeExtension(recordingSegmentId, ext));
-				if (RobustFile.Exists(path))
+				if(RobustFile.Exists(path))
 					return path;
 			}
 			var wavPath = Path.Combine(root, Path.ChangeExtension(recordingSegmentId, "wav"));
-			if (!RobustFile.Exists(wavPath))
+			if(!RobustFile.Exists(wavPath))
 				return null;
 			return _compressorMethod(wavPath);
 		}
 
-		private static bool IsCompressedAudioForIdMissing(string bookFolderPath, string recordingSegmentId)
+		public static bool GetWavOrMp3Exists(string bookFolderPath, string recordingSegmentId)
 		{
-			if (GetOrCreateCompressedAudioIfWavExists(bookFolderPath, recordingSegmentId) != null)
-				return false; // not missing, we got it.
-			// We consider ourselves to have a missing compressed audio if we have a wav recording
-			// but no corresponding compressed waveform.
-			return RobustFile.Exists(Path.Combine(GetAudioFolderPath(bookFolderPath), Path.ChangeExtension(recordingSegmentId, "wav")));
+			var root = GetAudioFolderPath(bookFolderPath);
+			var extensions = new[] {"wav", "mp3"}; // .ogg,, .wav, ...?
+
+			foreach(var ext in extensions)
+			{
+				var path = Path.Combine(root, Path.ChangeExtension(recordingSegmentId, ext));
+				if(RobustFile.Exists(path))
+					return true;
+			}
+			return false;
 		}
 	}
 }
