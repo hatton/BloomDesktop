@@ -16,6 +16,7 @@ using Bloom.Api;
 using DesktopAnalytics;
 using SIL.IO;
 using PdfDroplet.LayoutMethods;
+using SIL.Progress;
 
 namespace Bloom.Publish
 {
@@ -109,6 +110,9 @@ namespace Bloom.Publish
 
 			try
 			{
+				// In case we have any new settings since the last time we were in the Edit tab (BL-3881)
+				_currentlyLoadedBook.BringBookUpToDate(new NullProgress());
+
 				using(var tempHtml = MakeFinalHtmlForPdfMaker())
 				{
 					if (doWorkEventArgs.Cancel)
@@ -123,8 +127,8 @@ namespace Bloom.Publish
 					// Check memory for the benefit of developers.  The user won't see anything.
 					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(true, "about to create PDF file", false);
 					_pdfMaker.MakePdf(tempHtml.Key, PdfFilePath, PageLayout.SizeAndOrientation.PageSizeName,
-						PageLayout.SizeAndOrientation.IsLandScape, LayoutPagesForRightToLeft,
-						layoutMethod, BookletPortion, worker, doWorkEventArgs, View);
+						PageLayout.SizeAndOrientation.IsLandScape, _currentlyLoadedBook.UserPrefs.ReducePdfMemoryUse,
+						LayoutPagesForRightToLeft, layoutMethod, BookletPortion, worker, doWorkEventArgs, View);
 					// Warn the user if we're starting to use too much memory.
 					SIL.Windows.Forms.Reporting.MemoryManagement.CheckMemory(false, "finished creating PDF file", true);
 				}
@@ -184,12 +188,12 @@ namespace Bloom.Publish
 			for (int i = 0; i < 100; i++)
 			{
 				path = Path.Combine(Path.GetTempPath(), string.Format("{0}-{1}.pdf", fileName, i));
-				if (!File.Exists(path))
+				if (!RobustFile.Exists(path))
 					break;
 
 				try
 				{
-					File.Delete(path);
+					RobustFile.Delete(path);
 					break;
 				}
 				catch (Exception)
@@ -232,11 +236,11 @@ namespace Bloom.Publish
 
 		public void Dispose()
 		{
-			if (File.Exists(PdfFilePath))
+			if (RobustFile.Exists(PdfFilePath))
 			{
 				try
 				{
-					File.Delete(PdfFilePath);
+					RobustFile.Delete(PdfFilePath);
 				}
 				catch (Exception)
 				{
@@ -266,22 +270,30 @@ namespace Bloom.Publish
 		}
 
 		public bool AllowUpload {
-			get { return BookSelection.CurrentSelection.BookInfo.AllowUploading; }
+			get { return !PageLayout.IsDeviceLayout
+					&& BookSelection.CurrentSelection.BookInfo.AllowUploading; }
 		}
 
-		public bool ShowBookletOption
+		public bool AllowPdf
+		{
+			get { return !PageLayout.IsDeviceLayout; }
+		}
+
+		public bool AllowPdfBooklet
 		{
 			get
 			{
-				return BookSelection.CurrentSelection.BookInfo.BookletMakingIsAppropriate &&
+				return AllowPdf && BookSelection.CurrentSelection.BookInfo.BookletMakingIsAppropriate &&
 				       BookSelection.CurrentSelection.GetLayout().SizeAndOrientation.PageSizeName != "Letter";
 			}
 		}
 
-		public bool ShowCoverOption
+		public bool AllowPdfCover
 		{
 			//currently the only cover option we have is a booklet one
-			get { return BookSelection.CurrentSelection.BookInfo.BookletMakingIsAppropriate; }
+			get { return AllowPdf &&
+					BookSelection.CurrentSelection.BookInfo.BookletMakingIsAppropriate;
+			}
 		}
 
 
@@ -341,7 +353,7 @@ namespace Bloom.Publish
 					if (DialogResult.OK == dlg.ShowDialog())
 					{
 						_lastDirectory = Path.GetDirectoryName(dlg.FileName);
-						File.Copy(PdfFilePath, dlg.FileName, true);
+						RobustFile.Copy(PdfFilePath, dlg.FileName, true);
 						Analytics.Track("Save PDF", new Dictionary<string, string>()
 							{
 								{"Portion",  Enum.GetName(typeof(BookletPortions), BookletPortion)},

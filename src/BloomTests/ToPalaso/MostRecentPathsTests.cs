@@ -1,8 +1,10 @@
 ﻿using System;
 using System.IO;
+using Bloom;
 using Bloom.CollectionChoosing;
 using Bloom.ToPalaso;
 using NUnit.Framework;
+using SIL.IO;
 
 namespace BloomTests.ToPalaso
 {
@@ -36,7 +38,7 @@ namespace BloomTests.ToPalaso
 
 			public void Dispose()
 			{
-				File.Delete(FileName);
+				RobustFile.Delete(FileName);
 
 				GC.SuppressFinalize(this);
 			}
@@ -62,10 +64,10 @@ namespace BloomTests.ToPalaso
 		}
 
 		[Test]
-		[NUnit.Framework.Category("UsesObsoleteExpectedExceptionAttribute"), ExpectedException(typeof (ArgumentNullException))]
+		[Category("UsesObsoleteExpectedExceptionAttribute")]
 		public void AddNewPath_NullPath_Throws()
 		{
-			_MostRecentPathsList.AddNewPath(null);
+			Assert.Throws<ArgumentNullException>(() =>_MostRecentPathsList.AddNewPath(null));
 		}
 
 		[Test]

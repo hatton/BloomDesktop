@@ -43,12 +43,12 @@ namespace Bloom.Edit
 			//BookStorage storage = new BookStorage(folderPath, null);
 			//return (null != FindConfigurationPage(dom));
 
-			return File.Exists(Path.Combine(folderPath, "configuration.htm"));
+			return RobustFile.Exists(Path.Combine(folderPath, "configuration.html"));
 		}
 
 		public DialogResult ShowConfigurationDialog(string folderPath)
 		{
-			using (var dlg = new ConfigurationDialog(Path.Combine(folderPath, "configuration.htm"), GetLibraryData(), _isolator))
+			using (var dlg = new ConfigurationDialog(Path.Combine(folderPath, "configuration.html"), GetLibraryData(), _isolator))
 			{
 				var result = dlg.ShowDialog(null);
 				if (result == DialogResult.OK)
@@ -106,10 +106,27 @@ namespace Bloom.Edit
 			//nice non-ascii paths kill this, so let's go to a temp file first
 			var temp = TempFile.CreateAndGetPathButDontMakeTheFile(); //we don't want to wrap this in using
 			b.SaveDocument(temp.Path);
-			File.Delete(bookPath);
-			File.Move(temp.Path, bookPath);
+			RobustFile.Delete(bookPath);
+			RobustFile.Move(temp.Path, bookPath);
 
 			var sanityCheckDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false);
+
+			// Because the Mozilla code loaded the document from a filename initially, and we later save to a
+			// different directory, Geckofx45's SaveDocument writes out the stylesheet links as absolute paths
+			// using the file:// protocol markup. When we try to open the new file, Mozilla then complains
+			// vociferously about security issues, and refuses to access the stylesheets as far as I can tell.
+			// Eventually, several of the stylesheets are cleaned up by being added in again, but a couple of
+			// them end up with invalid relative paths because they never get re-added.  So let's go through
+			// all the stylesheet links here and remove everything except the bare filenames.
+			// See https://silbloom.myjetbrains.com/youtrack/issue/BL-3573 for what happens without this fix.
+			foreach (System.Xml.XmlElement link in sanityCheckDom.SafeSelectNodes("//link[@rel='stylesheet']"))
+			{
+				var href = link.GetAttribute("href");
+				if (href.StartsWith("file://"))
+					link.SetAttribute("href", Path.GetFileName(href.Replace("file:///", "").Replace("file://", "")));
+			}
+			XmlHtmlConverter.SaveDOMAsHtml5(sanityCheckDom, bookPath);
+
 			//NB: this check only makes sense for the calendar, which is the only template we've create that
 			// uses this class, and there are no other templates on the drawing board that would use it.
 			// If/when we use this for something else, this
@@ -117,7 +134,7 @@ namespace Bloom.Edit
 			//when it is done with the previous navigation.
 			if (sanityCheckDom.SafeSelectNodes("//div[contains(@class,'bloom-page')]").Count < 24) //should be 24 pages
 			{
-				Logger.WriteMinorEvent(File.ReadAllText(bookPath)); //this will come to us if they report it
+				Logger.WriteMinorEvent(RobustFile.ReadAllText(bookPath)); //this will come to us if they report it
 				throw new ApplicationException("Malformed Calendar (code assumes only calendar uses the Configurator, and they have at least 24 pages)");
 			}
 
@@ -204,7 +221,7 @@ namespace Bloom.Edit
 					libraryData = MergeJsonData(DynamicJson.Parse(existingDataString).library.ToString(), libraryData.ToString());
 			}
 
-			File.WriteAllText(PathToLibraryJson, libraryData.ToString());
+			RobustFile.WriteAllText(PathToLibraryJson, libraryData.ToString());
 
 
 		}
@@ -279,10 +296,10 @@ namespace Bloom.Edit
 
 		public string GetLibraryData()
 		{
-			if (!File.Exists(PathToLibraryJson))
+			if (!RobustFile.Exists(PathToLibraryJson))
 				return "{}";//return "{\"dummy\": \"x\"}";//TODO
 
-			var s= File.ReadAllText(PathToLibraryJson);
+			var s= RobustFile.ReadAllText(PathToLibraryJson);
 			if(string.IsNullOrEmpty(s))
 				return string.Empty;
 

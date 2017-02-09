@@ -105,6 +105,14 @@ namespace Bloom.Publish
 			_previewBox.BringToFront();
 		}
 
+		public void SetStateOfNonUploadRadios(bool enable)
+		{
+			_epubRadio.Enabled = enable;
+			_bookletBodyRadio.Enabled = enable;
+			_bookletCoverRadio.Enabled = enable;
+			_simpleAllPagesRadio.Enabled = enable;
+		}
+
 		private void BackgroundColorsForLinux() {
 
 			var bmp = new Bitmap(_menusToolStrip.Width, _menusToolStrip.Height);
@@ -280,7 +288,9 @@ namespace Bloom.Publish
 		{
 			if (_model == null || _model.BookSelection.CurrentSelection==null)
 				return;
-			_epubRadio.Visible = true;
+			// Disable and hide ePUB for Linux in Bloom 3.7.  It's not working, and we don't have time to fix it.
+			// See https://silbloom.myjetbrains.com/youtrack/issue/BL-3412 and https://silbloom.myjetbrains.com/youtrack/issue/BL-3858.
+			_epubRadio.Visible = SIL.PlatformUtilities.Platform.IsWindows;
 
 			_layoutChoices.Text = _model.PageLayout.ToString();
 
@@ -295,10 +305,11 @@ namespace Bloom.Publish
 			   //this doesn't actually show when disabled		        _superToolTip.GetSuperStuff(_uploadRadio).SuperToolTipInfo.BodyText = "This creator of this book, or its template, has marked it as not being appropriate for upload to BloomLibrary.org";
 			}
 			_uploadRadio.Enabled = _model.AllowUpload;
-			_bookletBodyRadio.Enabled = _model.ShowBookletOption;
-			_bookletCoverRadio.Enabled = _model.ShowCoverOption;
+			_simpleAllPagesRadio.Enabled = _model.AllowPdf;
+			_bookletBodyRadio.Enabled = _model.AllowPdfBooklet;
+			_bookletCoverRadio.Enabled = _model.AllowPdfCover;
 			_openinBrowserMenuItem.Enabled = _openPDF.Enabled = _model.PdfGenerationSucceeded;
-			_epubRadio.Enabled = true; // Review: any situation where we shouldn't be able to do this?
+			_epubRadio.Enabled = SIL.PlatformUtilities.Platform.IsWindows; // Review: any other situation where we shouldn't be able to do this?
 
 			// No reason to update from model...we only change the model when the user changes the check box,
 			// or when uploading...and we do NOT want to update the check box when uploading temporarily changes the model.
@@ -328,6 +339,13 @@ namespace Bloom.Publish
 			}
 			_layoutChoices.Text = LocalizationManager.GetDynamicString("Bloom", "LayoutChoices." + layout, layout.ToString());
 
+			_layoutChoices.DropDownItems.Add(new ToolStripSeparator());
+			var textItem = LocalizationManager.GetDynamicString("Bloom", "lessMemoryPdfMode", "Use less memory (slower)");
+			var menuItem = (ToolStripMenuItem) _layoutChoices.DropDownItems.Add(textItem);
+			menuItem.Checked = _model.BookSelection.CurrentSelection.UserPrefs.ReducePdfMemoryUse;
+			menuItem.CheckOnClick = true;
+			menuItem.CheckedChanged += OnSinglePageModeChanged;
+
 			// "EditTab" because it is the same text.  No sense in having it listed twice.
 			_layoutChoices.ToolTipText = LocalizationManager.GetString("EditTab.PageSizeAndOrientation.Tooltip",
 				"Choose a page size and orientation");
@@ -341,6 +359,12 @@ namespace Bloom.Publish
 			ClearRadioButtons();
 			UpdateDisplay();
 			SetDisplayMode(PublishModel.DisplayModes.WaitForUserToChooseSomething);
+		}
+
+		private void OnSinglePageModeChanged(object sender, EventArgs e)
+		{
+			var item = (ToolStripMenuItem)sender;
+			_model.BookSelection.CurrentSelection.UserPrefs.ReducePdfMemoryUse = item.Checked;
 		}
 
 		public void SetDisplayMode(PublishModel.DisplayModes displayMode)
@@ -371,7 +395,7 @@ namespace Bloom.Publish
 					_workingIndicator.Visible = true;
 					break;
 				case PublishModel.DisplayModes.ShowPdf:
-					if (File.Exists(_model.PdfFilePath))
+					if (RobustFile.Exists(_model.PdfFilePath))
 					{
 						_pdfViewer.Visible = true;
 						_workingIndicator.Visible = false;
@@ -483,12 +507,21 @@ namespace Bloom.Publish
 			_model.PrepareToStageEpub();
 			if (!_publishWithoutAudio && !LameEncoder.IsAvailable() && _model.IsCompressedAudioMissing)
 			{
-				var missingLameModulePath = BloomFileLocator.GetFileDistributedWithApplication(false, "BloomBrowserUI", "ePUB", "MissingLameModule.htm");
-				_epubPreviewBrowser.Navigate(missingLameModulePath, false);
+				var fileLocator = _model.BookSelection.CurrentSelection.GetFileLocator();
+				var englishMissingLameModulePath = fileLocator.LocateFileWithThrow("ePUB" + Path.DirectorySeparatorChar + "MissingLameModule-en.html");
+				// I hesitate to change the definition of BloomFileLocator.BrowserRoot to return absolute paths.  But apparently we need to feed
+				// _epubPreviewBrowser an absolute path or it mysteriously tries to open the relative path in an actual browser window, not itself.
+				// (See http://issues.bloomlibrary.org/youtrack/issue/BL-3906 if you don't believe this, which I don't except I see it happening.)
+				// So ensure that our file path is an absolute filepath.
+				var baseFolder = FileLocator.DirectoryOfApplicationOrSolution;
+				if (!englishMissingLameModulePath.StartsWith(baseFolder))
+					englishMissingLameModulePath = Path.Combine(baseFolder, englishMissingLameModulePath);
+				var localizedMissingLameModulePath = BloomFileLocator.GetBestLocalizedFile(englishMissingLameModulePath);
+				_epubPreviewBrowser.Navigate(localizedMissingLameModulePath, false);
 				_epubPreviewBrowser.OnBrowserClick += (sender, e) =>
 				{
 					var element = (GeckoHtmlElement)(e as DomEventArgs).Target.CastToGeckoElement();
-					if (element.Attributes["id"].NodeValue == "proceedWithoutAudio")
+					if (element.GetAttribute("id") == "proceedWithoutAudio")
 					{
 						_publishWithoutAudio = true;
 						SetupEpubControlContent();
@@ -519,7 +552,8 @@ namespace Bloom.Publish
 			// approach at least works.
 			DirectoryUtilities.CopyDirectoryContents(root, tempFolder);
 
-			var previewHtmlTemplatePath = fileLocator.LocateFileWithThrow("ePUB/bloomEpubPreview.html");
+			var englishTemplatePath = fileLocator.LocateFileWithThrow("ePUB" + Path.DirectorySeparatorChar + "bloomEpubPreview-en.html");
+			var localizedTemplatePath = BloomFileLocator.GetBestLocalizedFile(englishTemplatePath);
 
 			var audioSituationClass = "noAudioAvailable";
 			if(_publishWithoutAudio)
@@ -527,12 +561,12 @@ namespace Bloom.Publish
 			else if(_model.BookHasAudio)
 				audioSituationClass = "isTalkingBook";
 
-			var htmlContents = File.ReadAllText(previewHtmlTemplatePath)
+			var htmlContents = RobustFile.ReadAllText(localizedTemplatePath)
 				.Replace("{EPUBFOLDER}", Path.GetFileName(_model.StagingDirectory))
 				.Replace("_AudioSituationClass_", audioSituationClass);
 
 			var previewHtmlInstancePath = Path.Combine(tempFolder, "bloomEpubPreview.htm");
-			File.WriteAllText(previewHtmlInstancePath, htmlContents);
+			RobustFile.WriteAllText(previewHtmlInstancePath, htmlContents);
 			_epubPreviewBrowser.Navigate(previewHtmlInstancePath.ToLocalhost(), false);
 		}
 
@@ -658,14 +692,14 @@ namespace Bloom.Publish
 			if (SIL.PlatformUtilities.Platform.IsLinux)
 			{
 				printSettingsSampleName = printSettingsSamplePrefix + "Linux-" + LocalizationManager.UILanguageId + ".png";
-				if (!File.Exists(printSettingsSampleName))
+				if (!RobustFile.Exists(printSettingsSampleName))
 					printSettingsSampleName = printSettingsSamplePrefix + "Linux-en.png";
 			}
-			if (printSettingsSampleName == null || !File.Exists(printSettingsSampleName))
+			if (printSettingsSampleName == null || !RobustFile.Exists(printSettingsSampleName))
 				printSettingsSampleName = printSettingsSamplePrefix + LocalizationManager.UILanguageId + ".png";
-			if (!File.Exists(printSettingsSampleName))
+			if (!RobustFile.Exists(printSettingsSampleName))
 				printSettingsSampleName = printSettingsSamplePrefix + "en" + ".png";
-			if (File.Exists(printSettingsSampleName))
+			if (RobustFile.Exists(printSettingsSampleName))
 			{
 				// We display the _previewBox to show sample print settings. We need to get rid of it when the
 				// print dialog goes away. For Windows, the only way I've found to know when that happens is

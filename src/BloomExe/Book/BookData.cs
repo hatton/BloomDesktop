@@ -287,10 +287,18 @@ namespace Bloom.Book
 			topicPageElement.InnerText = "";
 
 			NamedMutliLingualValue topicData;
-			//if we have no topic element in the data-div, just leave now, 
-			//leaving the field in the page with an empty text.
+
+			var parentOfTopicDisplayElement = ((XmlElement)(topicPageElement.ParentNode));
+			//this just lets us have css rules that vary if there is a topic (allows other text to be centered instead left-aligned)
+			//we'll change it later if we find there is a topic
+			parentOfTopicDisplayElement.SetAttribute("data-have-topic", "false");
+
+			//if we have no topic element in the data-div
+			//leave the field in the page with an empty text.
 			if (!data.TextVariables.TryGetValue("topic", out topicData))
+			{				
 				return;
+			}
 
 			//we use English as the "key" for topics.
 			var englishTopic = topicData.TextAlternatives.GetExactAlternative("en");
@@ -298,6 +306,8 @@ namespace Bloom.Book
 			//if we have no topic, just clear it out from the page
 			if (string.IsNullOrEmpty(englishTopic) || englishTopic == "NoTopic")
 				return;
+
+			parentOfTopicDisplayElement.SetAttribute("data-have-topic", "true");
 
 			var stringId = "Topics." + englishTopic;
 
@@ -397,8 +407,8 @@ namespace Bloom.Book
 			{
 				if (!string.IsNullOrEmpty(form))
 				{
-					Debug.WriteLine("creating in datadiv: {0}[{1}]={2}", key, writingSystemId, form);
-					Debug.WriteLine("nop: " + _dataDiv.OuterXml);
+					//Debug.WriteLine("creating in datadiv: {0}[{1}]={2}", key, writingSystemId, form);
+					//Debug.WriteLine("nop: " + _dataDiv.OuterXml);
 					AddDataDivBookVariable(key, writingSystemId, form);
 				}
 			}
@@ -599,7 +609,7 @@ namespace Bloom.Book
 		}
 
 		/// <summary>
-		/// walk through the sourceDom, collecting up values from elements that have data-book or data-collection attributes.
+		/// walk through the sourceDom, collecting up values from elements that have data-book or data-collection or data-book-attributes attributes.
 		/// </summary>
 		private void GatherDataItemsFromXElement(DataSet data,
 			XmlNode sourceElement, // can be the whole sourceDom or just a page
@@ -608,7 +618,7 @@ namespace Bloom.Book
 			string elementName = "*";
 			try
 			{
-				string query = String.Format(".//{0}[(@data-book or @data-library or @data-collection) and not(contains(@class,'bloom-writeOnly'))]", elementName);
+				string query = String.Format(".//{0}[(@data-book or @data-library or @data-collection or @data-book-attributes) and not(contains(@class,'bloom-writeOnly'))]", elementName);
 
 				XmlNodeList nodesOfInterest = sourceElement.SafeSelectNodes(query);
 
@@ -619,6 +629,12 @@ namespace Bloom.Book
 					string key = node.GetAttribute("data-book").Trim();
 					if (key == String.Empty)
 					{
+						key = node.GetAttribute("data-book-attributes").Trim();
+						if (key != String.Empty)
+						{
+							GatherAttributes(data, node, key);
+							continue;
+						}
 						key = node.GetAttribute("data-collection").Trim();
 						if (key == String.Empty)
 						{
@@ -711,6 +727,19 @@ namespace Bloom.Book
 			}
 		}
 
+		private void GatherAttributes(DataSet data, XmlElement node, string key)
+		{
+			if (data.Attributes.ContainsKey(key))
+				return;
+			List<KeyValuePair<string, string>> attributes = new List<KeyValuePair<string, string>>();
+			foreach (XmlAttribute attribute in node.Attributes)
+			{
+				if (attribute.Name != "data-book-attributes")
+					attributes.Add(new KeyValuePair<string, string>(attribute.Name, attribute.Value));
+			}
+			data.Attributes.Add(key, attributes);
+		}
+
 		/// <summary>
 		/// The user can control some layout options via checkboxes in the toolbox.
 		/// These are stored in an attribute, data-page-layout-options, on the page.
@@ -786,6 +815,12 @@ namespace Bloom.Book
 					var key = node.GetAttribute("data-book").Trim();
 					if (key == string.Empty)
 					{
+						key = node.GetAttribute("data-book-attributes").Trim();
+						if (key != string.Empty)
+						{
+							UpdateAttributes(data, node, key);
+							continue;
+						}
 						key = node.GetAttribute("data-collection").Trim();
 						if (key == string.Empty)
 						{
@@ -868,6 +903,15 @@ namespace Bloom.Book
 					"Error in UpdateDomFromDataSet(," + elementName + "). RawDom was:\r\n" +
 					targetDom.OuterXml, error);
 			}
+		}
+
+		private void UpdateAttributes(DataSet data, XmlElement node, string key)
+		{
+			List<KeyValuePair<string, string>> attributes;
+			if (!data.Attributes.TryGetValue(key, out attributes))
+				return;
+			foreach (var attribute in attributes)
+				node.SetAttribute(attribute.Key, attribute.Value);
 		}
 
 		/// <summary>

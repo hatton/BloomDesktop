@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
+using System.Reflection;
 using Bloom.Book;
 using Bloom.Collection;
 using L10NSharp;
@@ -149,7 +148,48 @@ namespace Bloom
 		}
 		public static string GetInstalledXMatterDirectory()
 		{
-			return BloomFileLocator.GetBrowserDirectory("xMatter");
+			return BloomFileLocator.GetBrowserDirectory("templates","xMatter");
+		}
+
+		public static string FactoryTemplateBookDirectory
+		{
+			get { return BloomFileLocator.GetBrowserDirectory("templates", "template books"); }
+		}
+
+		public static string SampleShellsDirectory
+		{
+			get { return GetBrowserDirectory("templates", "Sample Shells"); }
+		}
+
+		/// <summary>
+		/// contains both the template books and the sample shells
+		/// </summary>
+		public static string FactoryCollectionsDirectory {
+			get
+			{
+				return GetBrowserDirectory("templates");
+			}
+		}
+		
+
+		public static string GetFactoryBookTemplateDirectory(string bookName)
+		{
+			return Path.Combine(FactoryTemplateBookDirectory, bookName);
+		}
+
+
+		/// <summary>
+		/// Check whether this file was installed with Bloom (and likely to be read-only on Linux or for allUsers install).
+		/// </summary>
+		public static bool IsInstalledFileOrDirectory(string filepath)
+		{
+			var file = Assembly.GetExecutingAssembly().CodeBase.Replace("file://", string.Empty);
+			if (SIL.PlatformUtilities.Platform.IsWindows)
+				file = file.TrimStart('/');
+			var folder = Path.GetDirectoryName(file);
+			if (folder.EndsWith("/output/Debug"))
+				folder = folder.Replace("/Debug", string.Empty);	// files now copied to output/browser for access
+			return filepath.Contains(folder);
 		}
 
 		/// <summary>
@@ -159,7 +199,7 @@ namespace Bloom
 		public static string GetBestLocalizableFileDistributedWithApplication(bool existenceOfEnglishVersionIsOptional, params string[] partsOfEnglishFilePath)
 		{
 			var englishPath = FileLocator.GetFileDistributedWithApplication(existenceOfEnglishVersionIsOptional, partsOfEnglishFilePath);
-			if(!File.Exists(englishPath))
+			if(!RobustFile.Exists(englishPath))
 			{
 				return englishPath; // just return whatever the original GetFileDistributedWithApplication gave. "", null, whatever it is.
 			}
@@ -174,7 +214,27 @@ namespace Bloom
 		public static string GetBestLocalizedFile(string pathToEnglishFile)
 		{
 			var pathInDesiredLanguage = pathToEnglishFile.Replace("-en.", "-" + LocalizationManager.UILanguageId + ".");
-			return File.Exists(pathInDesiredLanguage) ? pathInDesiredLanguage : pathToEnglishFile;
+			return RobustFile.Exists(pathInDesiredLanguage) ? pathInDesiredLanguage : pathToEnglishFile;
+		}
+
+		/// <summary>
+		/// Gets a file in the specified branding folder
+		/// </summary>
+		/// <param name="brandingNameOrFolderPath"> Normally, the branding is just a name, which we look up in the official branding folder
+		//  but unit tests can instead provide a path to the folder.
+		/// </param>
+		/// <param name="fileName"></param>
+		/// <returns></returns>
+		public static string GetOptionalBrandingFile(string brandingNameOrFolderPath, string fileName)
+		{
+			if(Path.IsPathRooted(brandingNameOrFolderPath)) //if it looks like a path
+			{
+				var path = Path.Combine(brandingNameOrFolderPath, fileName);
+				if(RobustFile.Exists(path))
+					return path;
+				return null;
+			}
+			return BloomFileLocator.GetFileDistributedWithApplication(true, "branding", brandingNameOrFolderPath, fileName);
 		}
 	}
 }

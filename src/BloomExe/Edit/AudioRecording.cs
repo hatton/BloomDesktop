@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.Api;
 using L10NSharp;
+using SIL.IO;
 #if __MonoCS__
 #else
 using SIL.Media.Naudio;
@@ -36,7 +37,7 @@ namespace Bloom.Edit
 #if !__MonoCS__
 		private AudioRecorder _recorder;
 #endif
-		BloomWebSocketServer _peakLevelWebSocketServer;
+		BloomWebSocketServer _webSocketServer;
 		
 		/// <summary>
 		/// The file we want to record to
@@ -69,7 +70,7 @@ namespace Bloom.Edit
 		// call directly since it is static.
 		private static AudioRecording CurrentRecording { get; set; }
 
-		public AudioRecording(BookSelection bookSelection)
+		public AudioRecording(BookSelection bookSelection, BloomWebSocketServer bloomWebSocketServer)
 		{
 			_bookSelection = bookSelection;
 			_startRecordingTimer = new Timer();
@@ -77,6 +78,7 @@ namespace Bloom.Edit
 			_startRecordingTimer.Tick += OnStartRecordingTimer_Elapsed;
 			_backupPath = System.IO.Path.GetTempFileName();
 			CurrentRecording = this;
+			_webSocketServer = bloomWebSocketServer;
 		}
 
 		public void RegisterWithServer(EnhancedImageServer server)
@@ -90,7 +92,6 @@ namespace Bloom.Edit
 			server.RegisterEndpointHandler("audio/devices", HandleAudioDevices);
 
 			Debug.Assert(ServerBase.portForHttp > 0,"Need the server to be listening before this can be registered (BL-3337).");
-			_peakLevelWebSocketServer = new BloomWebSocketServer((ServerBase.portForHttp+1).ToString(CultureInfo.InvariantCulture));//review: we have no dispose (on us or our parent) so this is never disposed
 		}
 
 		// Does this page have any audio at all? Used to enable 'Listen to the whole page'.
@@ -99,7 +100,7 @@ namespace Bloom.Edit
 			var ids = request.RequiredParam("ids");
 			foreach (var id in ids.Split(','))
 			{
-				if (File.Exists(GetPathToSegment(id)))
+				if (RobustFile.Exists(GetPathToSegment(id)))
 				{
 					request.Succeeded();
 					return;
@@ -169,7 +170,7 @@ namespace Bloom.Edit
 			if(level != _previousLevel)
 			{
 				_previousLevel = level;
-				_peakLevelWebSocketServer.Send(level.ToString(CultureInfo.InvariantCulture));
+				_webSocketServer.Send("peakAudioLevel", level.ToString(CultureInfo.InvariantCulture));
 			}
 		}
 #endif
@@ -225,7 +226,7 @@ namespace Bloom.Edit
 			catch (Exception error)
 			{
 				Logger.WriteEvent(error.Message);
-				File.Copy(PathToTemporaryWav,PathToCurrentAudioSegment, true);
+				RobustFile.Copy(PathToTemporaryWav,PathToCurrentAudioSegment, true);
 			}
 
 			//We don't actually need the mp3 now, so let people play with recording even without LAME (previously it could crash BL-3159).
@@ -298,12 +299,12 @@ namespace Bloom.Edit
 				return;
 			}
 
-			if (File.Exists(PathToCurrentAudioSegment))
+			if (RobustFile.Exists(PathToCurrentAudioSegment))
 			{
 				//Try to deal with _backPath getting locked (BL-3160)
 				try
 				{
-					File.Delete(_backupPath);
+					RobustFile.Delete(_backupPath);
 				}
 				catch(IOException)
 				{
@@ -311,7 +312,7 @@ namespace Bloom.Edit
 				}
 				try
 				{
-					File.Copy(PathToCurrentAudioSegment, _backupPath, true);
+					RobustFile.Copy(PathToCurrentAudioSegment, _backupPath, true);
 				}
 				catch (Exception err)
 				{
@@ -322,7 +323,7 @@ namespace Bloom.Edit
 				}
 				try
 				{
-					File.Delete(PathToCurrentAudioSegment);
+					RobustFile.Delete(PathToCurrentAudioSegment);
 					//DesktopAnalytics.Analytics.Track("Re-recorded a clip", ContextForAnalytics);
 				}
 				catch (Exception err)
@@ -335,7 +336,7 @@ namespace Bloom.Edit
 			}
 			else
 			{
-				File.Delete(_backupPath);
+				RobustFile.Delete(_backupPath);
 				//DesktopAnalytics.Analytics.Track("Recording clip", ContextForAnalytics);
 			}
 			_startRecording = DateTime.Now;
@@ -399,7 +400,7 @@ namespace Bloom.Edit
 			// is the expected action.
 			try
 			{
-				File.Delete(PathToCurrentAudioSegment);
+				RobustFile.Delete(PathToCurrentAudioSegment);
 			}
 			catch (Exception error)
 			{
@@ -408,11 +409,11 @@ namespace Bloom.Edit
 			}
 
 			// If we had a prior recording, restore it...button press may have been a mistake.
-			if (File.Exists(_backupPath))
+			if (RobustFile.Exists(_backupPath))
 			{
 				try
 				{
-					File.Copy(_backupPath, PathToCurrentAudioSegment, true);
+					RobustFile.Copy(_backupPath, PathToCurrentAudioSegment, true);
 				}
 				catch (IOException e)
 				{
@@ -464,7 +465,7 @@ namespace Bloom.Edit
 		private void HandleCheckForSegment(ApiRequest request)
 		{
 			var path = GetPathToSegment(request.RequiredParam("id"));
-			request.ReplyWithText(File.Exists(path) ? "exists" : "not found");
+			request.ReplyWithText(RobustFile.Exists(path) ? "exists" : "not found");
 		}
 
 
@@ -475,7 +476,7 @@ namespace Bloom.Edit
 		private void HandleDeleteSegment(ApiRequest request)
 		{
 			var path = GetPathToSegment(request.RequiredParam("id"));
-			if(!File.Exists(path))
+			if(!RobustFile.Exists(path))
 			{
 				request.Succeeded();
 			}
@@ -483,7 +484,7 @@ namespace Bloom.Edit
 			{
 				try
 				{
-					File.Delete(path);
+					RobustFile.Delete(path);
 					request.Succeeded();
 				}
 				catch(IOException e)
@@ -575,11 +576,6 @@ namespace Bloom.Edit
 						_recorder = null;
 					}
 #endif
-					if (_peakLevelWebSocketServer != null)
-					{
-						_peakLevelWebSocketServer.Dispose();
-						_peakLevelWebSocketServer = null;
-					}
 				}
 
 				// shared (dispose and finalizable) cleanup logic

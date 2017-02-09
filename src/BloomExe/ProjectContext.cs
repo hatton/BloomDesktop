@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Web.UI.WebControls;
 using System.Windows.Forms;
 using Autofac;
 using Bloom.Book;
@@ -10,12 +12,13 @@ using Bloom.Collection;
 using Bloom.CollectionTab;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
-using Bloom.SendReceive;
+//using Bloom.SendReceive;
 using Bloom.WebLibraryIntegration;
 using Bloom.Workspace;
 using Bloom.Api;
 using Bloom.web;
-using Chorus;
+using Bloom.web.controllers;
+//using Chorus;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Reporting;
@@ -103,9 +106,14 @@ namespace Bloom
 							typeof (ControlKeyEvent),
 							typeof (EditingModel),
 							typeof (AudioRecording),
-							typeof(CurrentBookHandler),
+							typeof(BookSettingsApi),
 							typeof(ReadersApi),
-							typeof(KeybordingConfigApi)
+							typeof(PageTemplatesApi),
+							typeof(AddOrChangePageApi),
+							typeof(BloomWebSocketServer),
+							typeof(KeybordingConfigApi),
+							typeof(ImageApi),
+							typeof(BrandingApi)
 						}.Contains(t));
 
 					builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
@@ -117,13 +125,13 @@ namespace Bloom
 
 					try
 					{
-						//nb: we split out the ChorusSystem.Init() so that this won't ever fail, so we have something registered even if we aren't
+#if Chorus                      //nb: we split out the ChorusSystem.Init() so that this won't ever fail, so we have something registered even if we aren't
 						//going to be able to do HG for some reason.
 						var chorusSystem = new ChorusSystem(Path.GetDirectoryName(projectSettingsPath));
 						builder.Register<ChorusSystem>(c => chorusSystem).InstancePerLifetimeScope();
 						builder.Register<SendReceiver>(c => new SendReceiver(chorusSystem, () => ProjectWindow))
 							.InstancePerLifetimeScope();
-#if USING_CHORUS
+
 					chorusSystem.Init(string.Empty/*user name*/);
 #endif
 					}
@@ -156,7 +164,10 @@ namespace Bloom
 
 					builder.Register<LibraryModel>(
 						c =>
-							new LibraryModel(editableCollectionDirectory, c.Resolve<CollectionSettings>(), c.Resolve<SendReceiver>(),
+							new LibraryModel(editableCollectionDirectory, c.Resolve<CollectionSettings>(),
+							#if Chorus
+								c.Resolve<SendReceiver>(),
+							#endif
 								c.Resolve<BookSelection>(), c.Resolve<SourceCollectionsList>(), c.Resolve<BookCollection.Factory>(),
 								c.Resolve<EditBookCommand>(), c.Resolve<CreateFromSourceBookCommand>(), c.Resolve<BookServer>(),
 								c.Resolve<CurrentEditableCollectionSelection>(), c.Resolve<BookThumbNailer>())).InstancePerLifetimeScope();
@@ -190,8 +201,7 @@ namespace Bloom
 					builder.Register<SourceCollectionsList>(c =>
 					{
 						var l = new SourceCollectionsList(c.Resolve<Book.Book.Factory>(), c.Resolve<BookStorage.Factory>(),
-							c.Resolve<BookCollection.Factory>(), editableCollectionDirectory);
-						l.RepositoryFolders = new string[] {FactoryCollectionsDirectory, GetInstalledCollectionsDirectory()};
+							 editableCollectionDirectory, new string[] {BloomFileLocator.FactoryCollectionsDirectory, GetInstalledCollectionsDirectory()});
 						return l;
 					}).InstancePerLifetimeScope();
 
@@ -262,12 +272,18 @@ namespace Bloom
 			var server = _scope.Resolve<EnhancedImageServer>();
 			server.StartListening();
 			_scope.Resolve<AudioRecording>().RegisterWithServer(server);
+
+			_scope.Resolve<BloomWebSocketServer>().Init((ServerBase.portForHttp + 1).ToString(CultureInfo.InvariantCulture));
 			HelpLauncher.RegisterWithServer(server);
 			ExternalLinkController.RegisterWithServer(server);
 			ToolboxView.RegisterWithServer(server);
+			_scope.Resolve<PageTemplatesApi>().RegisterWithServer(server);
+			_scope.Resolve<AddOrChangePageApi>().RegisterWithServer(server);
 			_scope.Resolve<KeybordingConfigApi>().RegisterWithServer(server);
-			_scope.Resolve<CurrentBookHandler>().RegisterWithServer(server);
+			_scope.Resolve<BookSettingsApi>().RegisterWithServer(server);
+			_scope.Resolve<ImageApi>().RegisterWithServer(server);
 			_scope.Resolve<ReadersApi>().RegisterWithServer(server);
+			_scope.Resolve<BrandingApi>().RegisterWithServer(server);
 		}
 
 
@@ -288,7 +304,7 @@ namespace Bloom
 			yield return FileLocator.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot);
 
 			//hack to get the distfiles folder itself
-			yield return Path.GetDirectoryName(FileLocator.GetDirectoryDistributedWithApplication("factoryCollections"));
+			yield return Path.GetDirectoryName(FileLocator.GetDirectoryDistributedWithApplication("localization"));
 
 			yield return FileLocator.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot);
 			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"bookEdit/js"));
@@ -314,7 +330,7 @@ namespace Bloom
 			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"lib/ckeditor/skins/icy_orange"));
 			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"bookEdit/toolbox/talkingBook"));
 
-			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot, "xMatter"));
+			yield return BloomFileLocator.GetInstalledXMatterDirectory();
 			yield return FileLocator.GetDirectoryDistributedWithApplication(Path.Combine(BloomFileLocator.BrowserRoot,"ePUB"));
 		}
 
@@ -325,7 +341,7 @@ namespace Bloom
 		/// <returns></returns>
 		public static IEnumerable<string> GetAfterXMatterFileLocations()
 		{
-			var templatesDir = Path.Combine(FactoryCollectionsDirectory, "Templates");
+			var templatesDir = BloomFileLocator.FactoryTemplateBookDirectory;
 
 			yield return templatesDir;
 
@@ -334,7 +350,7 @@ namespace Bloom
 				yield return templateDir;
 			}
 
-			yield return FactoryCollectionsDirectory;
+			yield return BloomFileLocator.FactoryCollectionsDirectory;
 		}
 
 		/// <summary>
@@ -342,10 +358,9 @@ namespace Bloom
 		/// </summary>
 		public static IEnumerable<string> GetFoundFileLocations()
 		{
-			var samplesDir = Path.Combine(FactoryCollectionsDirectory, "Sample Shells");
-			if (Directory.Exists(samplesDir))
+			if (Directory.Exists(BloomFileLocator.SampleShellsDirectory))
 			{
-				foreach (var dir in Directory.GetDirectories(samplesDir))
+				foreach (var dir in Directory.GetDirectories(BloomFileLocator.SampleShellsDirectory))
 				{
 					yield return dir;
 				}
@@ -403,13 +418,6 @@ namespace Bloom
 			}
 		}
 
-		/// <summary>
-		/// Directory that contains both Templates and Sample Shells factory installed with Bloom
-		/// </summary>
-		public static string FactoryCollectionsDirectory
-		{
-			get { return FileLocator.GetDirectoryDistributedWithApplication("factoryCollections"); }
-		}
 
 		public static string GetInstalledCollectionsDirectory()
 		{
@@ -455,10 +463,12 @@ namespace Bloom
 			}
 		}
 
+#if CHORUS
 		public SendReceiver SendReceiver
 		{
 			get { return _scope.Resolve<SendReceiver>(); }
 		}
+#endif
 
 		internal BloomFileLocator OptimizedFileLocator
 		{

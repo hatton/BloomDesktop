@@ -586,7 +586,7 @@ namespace BloomTests.Publish
 		public void FindFontsUsedInCss_FindsSimpleFontFamily()
 		{
 			var results = new HashSet<string>();
-			HtmlDom.FindFontsUsedInCss("body {font-family:Arial}", results);
+			HtmlDom.FindFontsUsedInCss("body {font-family:Arial}", results, true);
 			Assert.That(results, Has.Count.EqualTo(1));
 			Assert.That(results.Contains("Arial"));
 		}
@@ -595,22 +595,35 @@ namespace BloomTests.Publish
 		public void FindFontsUsedInCss_FindsQuotedFontFamily()
 		{
 			var results = new HashSet<string>();
-			HtmlDom.FindFontsUsedInCss("body {font-family:'Times New Roman'}", results);
-			HtmlDom.FindFontsUsedInCss("body {font-family:\"Andika New Basic\"}", results);
+			HtmlDom.FindFontsUsedInCss("body {font-family:'Times New Roman'}", results, true);
+			HtmlDom.FindFontsUsedInCss("body {font-family:\"Andika New Basic\"}", results, true);
 			Assert.That(results, Has.Count.EqualTo(2));
 			Assert.That(results.Contains("Times New Roman"));
 			Assert.That(results.Contains("Andika New Basic"));
 		}
 
 		[Test]
-		public void FindFontsUsedInCss_FindsMultipleFontFamilies()
+		public void FindFontsUsedInCss_IncludeFallbackFontsTrue_FindsMultipleFontFamilies()
 		{
 			var results = new HashSet<string>();
-			HtmlDom.FindFontsUsedInCss("body {font-family: 'Times New Roman', Arial,\"Andika New Basic\";}", results);
+			HtmlDom.FindFontsUsedInCss("body {font-family: 'Times New Roman', Arial,\"Andika New Basic\";}", results, true);
 			Assert.That(results, Has.Count.EqualTo(3));
 			Assert.That(results.Contains("Times New Roman"));
 			Assert.That(results.Contains("Andika New Basic"));
 			Assert.That(results.Contains("Arial"));
+		}
+
+		[Test]
+		public void FindFontsUsedInCss_IncludeFallbackFontsFalse_FindsFirstFontInEachList()
+		{
+			var results = new HashSet<string>();
+			HtmlDom.FindFontsUsedInCss("body {font-family: 'Times New Roman', Arial,\"Andika New Basic\";} " +
+			                           "div {font-family: Font1, \"Font2\";} " +
+			                           "p {font-family: \"Font3\";}", results, false);
+			Assert.That(results, Has.Count.EqualTo(3));
+			Assert.That(results.Contains("Times New Roman"));
+			Assert.That(results.Contains("Font1"));
+			Assert.That(results.Contains("Font3"));
 		}
 
 		[TestCase("A5Portrait", 297.0 / 2.0)]
@@ -772,15 +785,21 @@ namespace BloomTests.Publish
 			GetZipEntry(_epub, "content/audio_2fi0d8e9910-dfa3-4376-9373-a869e109b763.mp3");
 		}
 
+		// Sometimes the tests were failing on TeamCity because the file was in use by another process
+		// (I'm assuming that was another test since a few use the same path).
+		private static readonly object s_thisLock = new object();
 		protected void MakeFakeAudio(string path)
 		{
-			Directory.CreateDirectory(Path.GetDirectoryName(path));
-			// Bloom is going to try to figure its duration, so put a real audio file there.
-			// Some of the paths are for mp4s, but it doesn't hurt to use an mp3.
-			var src = SIL.IO.FileLocator.GetFileDistributedWithApplication("src/BloomTests/Publish/sample_audio.mp3");
-			File.Copy(src, path);
-			var wavSrc = Path.ChangeExtension(src, ".wav");
-			File.Copy(wavSrc, Path.ChangeExtension(path, "wav"), true);
+			lock (s_thisLock)
+			{
+				Directory.CreateDirectory(Path.GetDirectoryName(path));
+				// Bloom is going to try to figure its duration, so put a real audio file there.
+				// Some of the paths are for mp4s, but it doesn't hurt to use an mp3.
+				var src = SIL.IO.FileLocator.GetFileDistributedWithApplication("src/BloomTests/Publish/sample_audio.mp3");
+				File.Copy(src, path);
+				var wavSrc = Path.ChangeExtension(src, ".wav");
+				File.Copy(wavSrc, Path.ChangeExtension(path, "wav"), true);
+			}
 		}
 
 		private string GetZipContent(ZipFile zip, string path)

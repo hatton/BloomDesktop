@@ -6,16 +6,16 @@ doctype html
 //- NB: Could this have been the thin gray border of a focused entry box?
 //- As a consequence, the overflow test will be "var overflow = scrollHeight > clientHeight + 2;
 mixin testTarget
-	.myTest(attributes)
+	.myTest&attributes(attributes)
 		block
 
 mixin standardTestField
-	+testTarget.bloom-editable.bloom-content1(lang='z', contenteditable='true', attributes)
+	+testTarget.bloom-editable.bloom-content1(lang='z', contenteditable='true')&attributes(attributes)
 		block
 
 mixin standardTranslationGroup
 	.bloom-translationGroup
-		.bloom-editable.bloom-content1(lang='z', contenteditable='true', attributes)
+		.bloom-editable.bloom-content1(lang='z', contenteditable='true')&attributes(attributes)
 			block
 
 head
@@ -24,7 +24,10 @@ body
 	+standardTestField(name="Default font bloom-editable with no styles doesn't overflow") Test text
 
 	// Test#1
-	-var styles="font-family:'Andika New Basic', Andika;font-size:large;height:21px;";
+	// This test originally used Andika New Basic font and height:21px. Andika is much higher at a given size than
+	// Arial. This may well have been the point of this case. However, build agents were failing because Andika NB
+	// was not installed so the test failed. This may be a less useful test case but at least it's consistent.
+	-var styles="font-family:Arial;font-size:large;height:15px;";
 	+standardTestField(name="Andika bloom-editable with large text and small height should overflow", style=styles).expectToOverflow Test text
 
 	// Test#2

@@ -86,9 +86,10 @@ namespace Bloom.Book
 
 			if (metadata == null)
 			{
+				// The fileName might be URL encoded.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3901.
+				var path = UrlPathString.GetFullyDecodedPath(folderPath, ref fileName);
 				progress.WriteStatus("Reading metadata from " + fileName);
-				var path = folderPath.CombineForPath(fileName);
-				if (!File.Exists(path)) // they have bigger problems, which aren't appropriate to deal with here.
+				if (!RobustFile.Exists(path)) // they have bigger problems, which aren't appropriate to deal with here.
 				{
 					imgElement.RemoveAttribute("data-copyright");
 					imgElement.RemoveAttribute("data-creator");
@@ -97,7 +98,7 @@ namespace Bloom.Book
 					//Debug.Fail(" (Debug only) Image " + path + " is missing");
 					return;
 				}
-				metadata = Metadata.FromFile(path);
+				metadata = RobustIO.MetadataFromFile(path);
 			}
 
 			progress.WriteStatus("Writing metadata to HTML for " + fileName);

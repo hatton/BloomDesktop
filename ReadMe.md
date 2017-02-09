@@ -22,7 +22,7 @@ Each time code is checked in, an automatic build begins on our [TeamCity build s
 
 ## Building Web Source Code ##
 
-You'll need [nodjs](https://nodejs.org/en/) installed. On windows, the degree of [nesting inside of node_modules](https://github.com/Microsoft/nodejstools/issues/69) becomes a problem, but this is helped by NPM versions >= 3. To get a newish NPM, you should install a newish [nodjs](https://nodejs.org/en/), e.g. 5.4 or greater.
+You'll need [nodejs](https://nodejs.org/en/) installed. On windows, the degree of [nesting inside of node_modules](https://github.com/Microsoft/nodejstools/issues/69) becomes a problem, but this is helped by NPM versions >= 3. To get a newish NPM, you should install a newish [nodejs](https://nodejs.org/en/), e.g. 5.4 or greater.
 
 This will build and test the Typescript, javascript, less, and jade:
 
@@ -34,6 +34,16 @@ This will build and test the Typescript, javascript, less, and jade:
 Here npm is really just running some gulp scripts, defined in gulpfile.js. Note that when you're using Visual Studio, the "Task Runner Explorer" can be used to start those gulp tasks, and VS should run the "default" gulp task each time it does a build. To make it run this each time you do a "run", though, make sure you've turned off this option:
 
     Tools:Options:Projects and Solutions:Build and Run:Only build startup projects and dependencies on Run
+    
+We use webpack for building the Typescript, running Javascript through Babel, and packing everything six top-level (apps (ugghhh)). When coding in Typescript/Javascript, then go to the src/BloomBrowserUI folder and run 
+
+``webpack -w``
+
+Which will quickly update things each time you save a file.  Similarly, you can use
+
+``gulp watch``
+
+to keep less and jade (pug) up to date if you're working in those kinds of files.
 
 ## Building C# Source Code ##
 
@@ -76,16 +86,7 @@ Our **[PdfDroplet ](http://pdfdroplet.palaso.org)**engine drives the booklet-mak
 
 Our **[Chorus](https://github.com/sillsdev/chorus)** library provides the Send/Receive functionality.
 
-**GeckoFX**: Much of Bloom happens in its embedded Firefox browser. This has two parts: the XulRunner engine, and the [GeckoFX .net wrapper](https://bitbucket.org/geckofx). As of Bloom version 3, we are using xulrunner 29.
-
-**XulRunner**: If you need some other version, they come from here: [http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases](http://ftp.mozilla.org/pub/mozilla.org/xulrunner/releases). You want a "runtime", not an "sdk". Note, in addition to the generic "lib/xulrunner", the code will also work if it finds "lib/xulrunner8" (or 9, or 10, or whatever the current version is).
-
-More information on XulRunner and GeckoFX: Firefox is a browser which uses XulRunner which uses Gecko rendering engine. GeckoFX is the name of the .net dll which lets you use XulRunner in your WinForms applications, with .net or mono. This is a bit confusing, because GeckoFX is the wrapper but you won't find something called "gecko" coming out of Mozilla and shipping with Bloom. Instead, "XulRunner" comes from Mozilla and ships with Bloom, which accesses it using the GeckoFX dll. Got it?
-
-Now, Mozilla puts out a new version of XulRunner every 6 weeks at the time of this writing, and Hindle's GeckoFX keeps up with that, which is great, but also adds a level of complexity when you're trying to get Bloom going. Bloom needs to have 3 things in sync:
-1) XulRunner
-2) GeckoFX intended for that version of XulRunner
-3) Bloom source code which is expecting that same version of GeckoFX.
+**GeckoFX**: Much of Bloom happens in its embedded Firefox browser. This has two parts: the XulRunner engine, and the [GeckoFX .net wrapper](https://bitbucket.org/geckofx). As of Bloom version 3.8, this comes in via a nuget package.
 
 Bloom uses various web services that require identification. We can't really keep those a secret, but we can at least not make them google'able by not checking them into github. To get the file that contains user and test-level authorization codes, just get the connections.dll file out of a shipping version of a Bloom, and place it in your Bloom/DistFiles directory.
 
@@ -163,7 +164,7 @@ At various points you will be asked for your password.
 
 		bash -c 'PATH=/opt/monodevelop/bin:$PATH; \
 			export MONO_ENVIRON="$HOME/palaso/bloom-desktop/environ"; \
-			export MONO_GAC_PREFIX=/opt/monodevelop:/opt/mono-sil:/usr:/usr/local; \
+			export MONO_GAC_PREFIX=/opt/monodevelop:/opt/mono4-sil:/usr:/usr/local; \
 			monodevelop-launcher.sh'
 
 	Correct the path in MONO_ENVIRON to point to the Bloom source code directory.
@@ -173,20 +174,20 @@ At various points you will be asked for your password.
 		cd $HOME/palaso/bloom-desktop/build
 		./install-deps # (Note the initial dot)
 
-	This will also install a custom mono version in `/opt/mono-sil`. However, to successfully
+	This will also install a custom mono version in `/opt/mono4-sil`. However, to successfully
 	use it with MonoDevelop, you'll need to do some additional steps.
 
-	Copy this script to /opt/mono-sil/bin:
+	Copy this script to /opt/mono4-sil/bin:
 
 		wget https://raw.githubusercontent.com/sillsdev/mono-calgary/develop/mono-sil
-		sudo mv mono-sil /opt/mono-sil/bin
-		sudo chmod +x /opt/mono-sil/bin/mono-sil
+		sudo mv mono4-sil /opt/mono4-sil/bin
+		sudo chmod +x /opt/mono4-sil/bin/mono-sil
 
-	Delete /opt/mono-sil/bin/mono and create two symlinks instead:
+	Delete /opt/mono4-sil/bin/mono and create two symlinks instead:
 
-		sudo rm /opt/mono-sil/bin/mono
-		sudo ln -s /opt/mono-sil/bin/mono-sgen /opt/mono-sil/bin/mono-real
-		sudo ln -s /opt/mono-sil/bin/mono-sil /opt/mono-sil/bin/mono
+		sudo rm /opt/mono4-sil/bin/mono
+		sudo ln -s /opt/mono4-sil/bin/mono-sgen /opt/mono4-sil/bin/mono-real
+		sudo ln -s /opt/mono4-sil/bin/mono-sil /opt/mono4-sil/bin/mono
 
 8. Get binary dependencies:
 
@@ -203,14 +204,14 @@ At various points you will be asked for your password.
 	`https://www.nuget.org/api/v2/`, and `http://build.palaso.org/guestAuth/app/nuget/v1/FeedService.svc/`
 	(not sure the second is necessary).
 
-	Add the /opt/mono-sil/ as additional runtime in MonoDevelop (`Edit -> Preferences`, `Projects/.NET Runtimes`). Currently, this is 3.0.4.1 (Oct. 2014).
+	Add the /opt/mono4-sil/ as additional runtime in MonoDevelop (`Edit -> Preferences`, `Projects/.NET Runtimes`). Currently, this is 3.0.4.1 (Oct. 2014).
 
-	When you want to run Bloom you'll have to select the /opt/mono-sil/ as current runtime (Project/Active Runtime).
+	When you want to run Bloom you'll have to select the /opt/mono4-sil/ as current runtime (Project/Active Runtime).
 
 	At this point you should be able to build the whole BloomLinux solution (right-click in
 	Solution pane, choose Build).
 
-10. You'll have to remember to redo the symlink step (end of #7) every time you install a new mono-sil package. You'll notice quickly if you forget because you get an error saying that it can't find XULRUNNER - that's an indication that it didn't source the environ file, either because the wrong runtime is selected or /opt/mono-sil/bin/mono points to mono-sgen instead of the wrapper script mono-sil.
+10. You'll have to remember to redo the symlink step (end of #7) every time you install a new mono4-sil package. You'll notice quickly if you forget because you get an error saying that it can't find XULRUNNER - that's an indication that it didn't source the environ file, either because the wrong runtime is selected or /opt/mono4-sil/bin/mono points to mono-sgen instead of the wrapper script mono4-sil.
 
 Hopefully we can streamline this process eventually.
 

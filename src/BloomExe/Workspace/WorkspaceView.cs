@@ -5,9 +5,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Globalization;
-using System.Reflection;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bloom.Collection;
 using Bloom.CollectionTab;
@@ -16,10 +14,7 @@ using Bloom.MiscUI;
 using Bloom.Properties;
 using Bloom.Publish;
 using Bloom.Registration;
-using Bloom.ToPalaso;
 using Bloom.web;
-using Chorus;
-using Chorus.UI.Sync;
 using L10NSharp;
 using Messir.Windows.Forms;
 using SIL.IO;
@@ -38,7 +33,11 @@ namespace Bloom.Workspace
 		private readonly LocalizationChangedEvent _localizationChangedEvent;
 		private readonly FeedbackDialog.Factory _feedbackDialogFactory;
 		private readonly ProblemReporterDialog.Factory _problemReportDialogFactory;
-		private readonly ChorusSystem _chorusSystem;
+#if CHORUS
+			private readonly ChorusSystem _chorusSystem;
+#else
+		private readonly object _chorusSystem;
+#endif
 		private bool _viewInitialized;
 		private int _originalToolStripPanelWidth;
 		private int _originalToolSpecificPanelHorizPos;
@@ -74,7 +73,7 @@ namespace Bloom.Workspace
 							LocalizationChangedEvent localizationChangedEvent,
 							 FeedbackDialog.Factory feedbackDialogFactory,
 							ProblemReporterDialog.Factory problemReportDialogFactory,
-							ChorusSystem chorusSystem,
+							//ChorusSystem chorusSystem,
 							LocalizationManager localizationManager
 
 			)
@@ -86,7 +85,7 @@ namespace Bloom.Workspace
 			_localizationChangedEvent = localizationChangedEvent;
 			_feedbackDialogFactory = feedbackDialogFactory;
 			_problemReportDialogFactory = problemReportDialogFactory;
-			_chorusSystem = chorusSystem;
+			//_chorusSystem = chorusSystem;
 			_localizationManager = localizationManager;
 			_model.UpdateDisplay += new System.EventHandler(OnUpdateDisplay);
 			InitializeComponent();
@@ -266,6 +265,7 @@ namespace Bloom.Workspace
 
 		private void OnSendReceive(object obj)
 		{
+#if CHORUS
 			using (SyncDialog dlg = (SyncDialog) _chorusSystem.WinForms.CreateSynchronizationDialog())
 			{
 				dlg.ShowDialog();
@@ -274,6 +274,7 @@ namespace Bloom.Workspace
 					Invoke(ReopenCurrentProject);
 				}
 			}
+#endif
 		}
 
 		void OnSettingsProtectionChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -606,7 +607,7 @@ namespace Bloom.Workspace
 				return;
 			var shell = (Shell) ancestor;
 			var pathToNewExe = Path.Combine(newInstallDir, Path.ChangeExtension(Application.ProductName, ".exe"));
-			if (!File.Exists(pathToNewExe))
+			if (!RobustFile.Exists(pathToNewExe))
 				return; // aargh!
 			shell.QuitForVersionUpdate = true;
 			Process.Start(pathToNewExe);
@@ -636,10 +637,28 @@ namespace Bloom.Workspace
 
 		private void _reportAProblemMenuItem_Click(object sender, EventArgs e)
 		{
+			// Screen shots were showing the menu still open on Linux, so delay a bit by starting the
+			// dialog on the next idle loop.  Also allow one repaint event to be handled immediately.
+			// (This method has to return for the menu to fully hide itself on Linux.)
+			// See https://silbloom.myjetbrains.com/youtrack/issue/BL-3792.
+			Application.DoEvents();
+			Application.Idle += StartProblemReport;
+		}
+
+		private void StartProblemReport(object sender, EventArgs e)
+		{
+			Application.Idle -= StartProblemReport;
 			using (var dlg = _problemReportDialogFactory(this))
 			{
+				dlg.SetDefaultIncludeBookSetting(true);
 				dlg.ShowDialog();
 			}
+		}
+
+		public void SetStateOfNonPublishTabs(bool enable)
+		{
+			_collectionTab.Enabled = enable;
+			_editTab.Enabled = enable;
 		}
 
 		private void _trainingVideosMenuItem_Click(object sender, EventArgs e)
@@ -653,7 +672,7 @@ namespace Bloom.Workspace
 			}
 		}
 
-		#region Responsive Toolbar
+#region Responsive Toolbar
 
 		enum Shrinkage { FullSize, Stage1, Stage2, Stage3 }
 		private Shrinkage _currentShrinkage = Shrinkage.FullSize;
@@ -885,7 +904,7 @@ namespace Bloom.Workspace
 		}
 
 
-		#endregion
+#endregion
 
 	}
 

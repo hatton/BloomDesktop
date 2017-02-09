@@ -38,7 +38,7 @@ import axios = require("axios");
 export function fireCSharpEditEvent(eventName, eventData) {
 
     var event = new MessageEvent(eventName, {/*'view' : window,*/ 'bubbles' : true, 'cancelable' : true, 'data' : eventData});
-    document.dispatchEvent(event);
+    top.document.dispatchEvent(event);
 }
 
 export function GetDifferenceBetweenHeightAndParentHeight(jqueryNode) {
@@ -589,15 +589,19 @@ function SetupElements(container) {
 function AddXMatterLabelAfterPageLabel(container) {
     // All this rigamarole so we can localize...
     var pageLabel = <HTMLDivElement>document.getElementsByClassName("pageLabel")[0];
-    var xMatterLabel = window.getComputedStyle(pageLabel,':before').content;
+    if (!pageLabel)
+        return;
+    var xMatterLabel = window.getComputedStyle(pageLabel, ':before').content;
     xMatterLabel = xMatterLabel.replace(new RegExp("\"", 'g'), ""); //No idea why the quotes are still in there at this point.
+    if (xMatterLabel == "" || xMatterLabel == "none")
+        return;
     theOneLocalizationManager.asyncGetText("TemplateBooks.PageLabel." + xMatterLabel, xMatterLabel)
         .done(function (xMatterLabelTranslation) {
             theOneLocalizationManager.asyncGetText("TemplateBooks.PageLabel.FrontBackMatter", "Front/Back Matter")
                 .done(function (frontBackTranslation) {
                     $(pageLabel).attr('data-after-content', xMatterLabelTranslation + " " + frontBackTranslation);
                 })
-            });
+        });
 }
 
 // Only put setup code here which is guaranteed to only be run once per page load.
@@ -744,7 +748,6 @@ export var pageSelectionChanging = function () {
     var marginBox = $('.marginBox');
     marginBox.removeClass('origami-layout-mode');
     marginBox.find('.bloom-translationGroup .textBox-identifier').remove();
-    fireCSharpEditEvent('finishSavingPage', '');
 };
 
 // This is invoked from C# when we are about to leave a page (often right after the previous

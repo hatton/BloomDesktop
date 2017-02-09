@@ -31,8 +31,8 @@ namespace BloomTests.Book
 			ErrorReport.IsOkToInteractWithUser = false;
 			_fileLocator = new FileLocator(new string[]
 											{
-												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections"),
-												FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections", "Templates", "Basic Book"),
+												//FileLocator.GetDirectoryDistributedWithApplication( "factoryCollections"),
+												BloomFileLocator.GetFactoryBookTemplateDirectory("Basic Book"),
 												BloomFileLocator.GetInstalledXMatterDirectory()
 											});
 			_fixtureFolder = new TemporaryFolder("BloomBookStorageTest");
@@ -201,7 +201,7 @@ namespace BloomTests.Book
 
 		private BookStorage GetInitialStorageWithCustomHtml(string html)
 		{
-			File.WriteAllText(_bookPath, html);
+			RobustFile.WriteAllText(_bookPath, html);
 			var projectFolder = new TemporaryFolder("BookStorageTests_ProjectCollection");
 			var collectionSettings = new CollectionSettings(Path.Combine(projectFolder.Path, "test.bloomCollection"));
 			var storage = new BookStorage(_folder.Path, _fileLocator, new BookRenamedEvent(), collectionSettings);
@@ -314,6 +314,19 @@ namespace BloomTests.Book
 
 			Assert.IsTrue(Directory.Exists(path));
 			Assert.IsTrue(File.Exists(Path.Combine(path, newName + ".htm")));
+		}
+
+		[Test]
+		public void PathToExistingHtml_WorksWithFullHtmlName()
+		{
+			var filenameOnly = "BigBook";
+			var fullFilename = "BigBook.html";
+			var storage = GetInitialStorageWithDifferentFileName(filenameOnly);
+			var oldFullPath = Path.Combine(storage.FolderPath, filenameOnly + ".htm");
+			var newFullPath = Path.Combine(storage.FolderPath, fullFilename);
+			File.Move(oldFullPath, newFullPath); // rename to .html
+			var path = storage.PathToExistingHtml;
+			Assert.AreEqual(fullFilename, Path.GetFileName(path), "If this fails, 'path' will be empty string.");
 		}
 
 		/// <summary>

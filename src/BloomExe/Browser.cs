@@ -19,6 +19,7 @@ using Gecko.DOM;
 using Gecko.Events;
 using SIL.IO;
 using SIL.Reporting;
+using SIL.Windows.Forms.Miscellaneous;
 using Bloom.Workspace;
 using L10NSharp;
 
@@ -62,35 +63,16 @@ namespace Bloom
 		{
 			if (Xpcom.IsInitialized)
 				return;
-
 			string xulRunnerPath = Environment.GetEnvironmentVariable("XULRUNNER");
-			if (!Directory.Exists(xulRunnerPath))
+			if (String.IsNullOrEmpty(xulRunnerPath) || !Directory.Exists(xulRunnerPath))
 			{
-				xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution, "xulrunner");
-				if (!Directory.Exists(xulRunnerPath))
-				{
-					//if this is a programmer, go look in the lib directory
-					xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,
-						Path.Combine("lib", "xulrunner"));
-
-					//on my build machine, I really like to have the dir labelled with the version.
-					//but it's a hassle to update all the other parts (installer, build machine) with this number,
-					//so we only use it if we don't find the unnumbered alternative.
-					if (!Directory.Exists(xulRunnerPath))
-					{
-						xulRunnerPath = Path.Combine(FileLocator.DirectoryOfApplicationOrSolution,
-							Path.Combine("lib", "xulrunner" + XulRunnerVersion));
-					}
-
-					if (!Directory.Exists(xulRunnerPath))
-					{
-						throw new ConfigurationException(
-							"Can't find the directory where xulrunner (version {0}) is installed",
-							XulRunnerVersion);
-					}
-				}
+				var asm = Assembly.GetExecutingAssembly();
+				var file = asm.CodeBase.Replace("file://", String.Empty);
+				if (SIL.PlatformUtilities.Platform.IsWindows)
+					file = file.TrimStart('/');
+				var folder = Path.GetDirectoryName(file);
+				xulRunnerPath = Path.Combine(folder, "Firefox");
 			}
-
 			Xpcom.Initialize(xulRunnerPath);
 
 			var errorsToHide = new List<string>
@@ -174,20 +156,6 @@ namespace Bloom
 			// This suppresses the normal zoom-whole-window behavior that Gecko normally does when using the mouse while
 			// while holding crtl. Code in bloomEditing.js provides a more controlled zoom of just the body.
 			GeckoPreferences.User["mousewheel.with_control.action"] = 0;
-
-			Application.ApplicationExit += OnApplicationExit;
-		}
-
-		private static void OnApplicationExit(object sender, EventArgs e)
-		{
-			// We come here iff we initialized Xpcom. In that case we want to call shutdown,
-			// otherwise the app might not exit properly.
-			if (XulRunnerShutdown != null)
-				XulRunnerShutdown(null, EventArgs.Empty);
-
-			if (Xpcom.IsInitialized)
-				Xpcom.Shutdown();
-			Application.ApplicationExit -= OnApplicationExit;
 		}
 
 		public Browser()
@@ -257,13 +225,18 @@ namespace Bloom
 
 			try
 			{
-				_cutCommand.Enabled = _browser != null && _browser.CanCutSelection;
-				_copyCommand.Enabled = _browser != null && _browser.CanCopySelection;
+				// BL-3658 GeckoFx-45 has a bug in the CanXSelection Properties, they always return 'true'
+				// Tom Hindle suggested a workaround that seems to work.
+				var isTextSelection = IsThereACurrentTextSelection();
+				_cutCommand.Enabled = _browser != null && isTextSelection;
+				_copyCommand.Enabled = _browser != null && isTextSelection;
+				//_cutCommand.Enabled = _browser != null && _browser.CanCutSelection;
+				//_copyCommand.Enabled = _browser != null && _browser.CanCopySelection;
 				_pasteCommand.Enabled = _browser != null && _browser.CanPaste;
 				if (_pasteCommand.Enabled)
 				{
 					//prevent pasting images (BL-93)
-					_pasteCommand.Enabled = BloomClipboard.ContainsText();
+					_pasteCommand.Enabled = PortableClipboard.ContainsText();
 				}
 				_undoCommand.Enabled = CanUndo;
 
@@ -276,6 +249,21 @@ namespace Bloom
 				//I saw this happen when Bloom was in the background, with just normal stuff on the clipboard.
 				//so it's probably just not ok to check if you're not front-most.
 			}
+		}
+
+		/// <summary>
+		/// Workaround suggested by Tom Hindle, since GeckoFx-45's CanXSelection properties aren't working.
+		/// </summary>
+		/// <returns></returns>
+		private bool IsThereACurrentTextSelection()
+		{
+			using (var win = new GeckoWindow(_browser.WebBrowserFocus.GetFocusedWindowAttribute()))
+			{
+				var sel = win.Selection;
+				if (sel.IsCollapsed || sel.FocusNode is GeckoImageElement)
+					return false;
+			}
+			return true;
 		}
 
 		enum JavaScriptUndoState
@@ -408,6 +396,8 @@ namespace Bloom
 			// until we get past that, it's just annoying
 			GeckoPreferences.User["layout.spellcheckDefault"] = 0;
 
+			_browser.FrameEventsPropagateToMainWindow = true; // we want clicks in iframes to propagate all the way up to C#
+
 			RaiseGeckoReady();
 	   }
 
@@ -419,9 +409,9 @@ namespace Bloom
 			var line = (int) e.Line;
 			var dir = FileLocator.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot);
 			var mapPath = Path.Combine(dir, file + ".map");
-			if(File.Exists(mapPath))
+			if(RobustFile.Exists(mapPath))
 			{
-				var consumer = new SourceMapDotNet.SourceMapConsumer(File.ReadAllText(mapPath));
+				var consumer = new SourceMapDotNet.SourceMapConsumer(RobustFile.ReadAllText(mapPath));
 				foreach(var match in consumer.OriginalPositionsFor(line))
 				{
 					file = match.File;
@@ -481,7 +471,7 @@ namespace Bloom
 			// if we want this we have to get the ts code into the FrameExports system.
 			//if (Control.ModifierKeys == Keys.Control)
 			//{
-			//	var text = BloomClipboard.GetText(TextDataFormat.UnicodeText);
+			//	var text = PortableClipboard.GetText(TextDataFormat.UnicodeText);
 			//	text = System.Web.HttpUtility.JavaScriptStringEncode(text);
 			//	RunJavaScript("BloomField.CalledByCSharp_SpecialPaste('" + text + "')");
 			//}
@@ -596,7 +586,7 @@ namespace Bloom
 			{
 				builder.AppendLine(client.DownloadString(_url));
 			}
-			BloomClipboard.SetText(builder.ToString());
+			PortableClipboard.SetText(builder.ToString());
 
 			// NOTE: it seems strange to call BeginInvoke to display the MessageBox. However, this
 			// is necessary on Linux: this method gets called from the context menu which on Linux
@@ -651,7 +641,7 @@ namespace Bloom
 		{
 			Debug.Assert(!InvokeRequired);
 			string path = Path.GetTempFileName().Replace(".tmp",".html");
-			File.Copy(_url, path,true); //we make a copy because once Bloom leaves this page, it will delete it, which can be an annoying thing to have happen your editor
+			RobustFile.Copy(_url, path,true); //we make a copy because once Bloom leaves this page, it will delete it, which can be an annoying thing to have happen your editor
 			Process.Start(GetPathToStylizer(), path);
 		}
 
@@ -771,7 +761,7 @@ namespace Bloom
 			}
 
 			var tf = TempFile.WithExtension("htm"); // For some reason Gecko won't recognize a utf-8 file as html unless it has the right extension
-			File.WriteAllText(tf.Path,html, Encoding.UTF8);
+			RobustFile.WriteAllText(tf.Path,html, Encoding.UTF8);
 			SetNewDependent(tf);
 			_url = tf.Path;
 			UpdateDisplay();
@@ -835,7 +825,8 @@ namespace Bloom
 					var frameElement = _browser.Window.Document.GetElementById("page") as GeckoIFrameElement;
 					if (frameElement == null)
 						return;
-					contentDocument = frameElement.ContentDocument;
+					// contentDocument = frameElement.ContentDocument; unreliable in Gecko45
+					contentDocument = (GeckoDocument) frameElement.ContentWindow.Document; // TomH says this will always succeed
 				}
 				if (contentDocument == null)
 					return; // can this happen?
@@ -997,7 +988,7 @@ namespace Bloom
 		public void AddScriptSource(string filename)
 		{
 			Debug.Assert(!InvokeRequired);
-			if (!File.Exists(Path.Combine(Path.GetDirectoryName(_url), filename)))
+			if (!RobustFile.Exists(Path.Combine(Path.GetDirectoryName(_url), filename)))
 				throw new FileNotFoundException(filename);
 
 			GeckoDocument doc = WebBrowser.Document;
@@ -1025,7 +1016,7 @@ namespace Bloom
 			// Review JohnT: does this require integration with the NavigationIsolator?
 			if (_browser.Window != null) // BL-2313 two Alt-F4s in a row while changing a folder name can do this
 			{
-				using (var context = new AutoJSContext(_browser.Window.JSContext))
+				using (var context = new AutoJSContext(_browser.Window))
 				{
 					string result;
 					context.EvaluateScript(script, (nsISupports)_browser.Document.DomObject, out result);

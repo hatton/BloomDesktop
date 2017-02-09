@@ -610,7 +610,7 @@ namespace Bloom.Book
 					// See https://silbloom.myjetbrains.com/youtrack/issue/BL-3782.
 					if (templateKey == _cachedTemplateKey && _cachedTemplateBook != null)
 						return _cachedTemplateBook;
-					book = _templateFinder.FindTemplateBook(templateKey);
+					book = _templateFinder.FindAndCreateTemplateBookByFileName(templateKey);
 					_cachedTemplateBook = book;
 					_cachedTemplateKey = templateKey;
 					if(book==null)
@@ -646,7 +646,7 @@ namespace Bloom.Book
 			}
 		}
 
-		public HtmlDom OurHtmlDom
+		public virtual HtmlDom OurHtmlDom
 		{
 			get { return _storage.Dom;}
 		}
@@ -704,8 +704,8 @@ namespace Bloom.Book
 		{
 			_pagesCache = null;
 			string oldMetaData = "";
-			if (File.Exists(BookInfo.MetaDataPath))
-				oldMetaData = File.ReadAllText(BookInfo.MetaDataPath); // Have to read this before other migration overwrites it.
+			if (RobustFile.Exists(BookInfo.MetaDataPath))
+				oldMetaData = RobustFile.ReadAllText(BookInfo.MetaDataPath); // Have to read this before other migration overwrites it.
 			BringBookUpToDate(OurHtmlDom, progress);
 			if (Type == BookType.Publication)
 			{
@@ -738,7 +738,7 @@ namespace Bloom.Book
 		class GuidAndPath
 		{
 			public string Guid; // replacement guid
-			public string Path; // where to find file, relative to distfiles/factoryCollections/Templates
+			public string Path; // where to find file, relative to root templates directory
 		}
 
 		private static Dictionary<string, GuidAndPath> _pageMigrations;
@@ -746,7 +746,7 @@ namespace Bloom.Book
 		/// <summary>
 		/// Get (after initializing, if necessary) the dictionary mapping page IDs we know how to migrate
 		/// onto the ID and file location of the page we want to update it to.
-		/// Paths are relative to factoryCollections/Templates
+		/// Paths are relative to root templates directory
 		/// </summary>
 		private static Dictionary<string, GuidAndPath> PageMigrations
 		{
@@ -756,29 +756,29 @@ namespace Bloom.Book
 				{
 					_pageMigrations = new Dictionary<string, GuidAndPath>();
 					// Basic Book
-					_pageMigrations["5dcd48df-e9ab-4a07-afd4-6a24d0398382"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398382", Path = "Basic Book/Basic Book.htm" }; // Basic Text and Picture
-					_pageMigrations["5dcd48df-e9ab-4a07-afd4-6a24d0398383"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398383", Path = "Basic Book/Basic Book.htm" }; // Picture in Middle
-					_pageMigrations["5dcd48df-e9ab-4a07-afd4-6a24d0398384"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398384", Path = "Basic Book/Basic Book.htm" }; // Picture on Bottom
-					_pageMigrations["5dcd48df-e9ab-4a07-afd4-6a24d0398385"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398385", Path = "Basic Book/Basic Book.htm" }; // Just a Picture
-					_pageMigrations["d31c38d8-c1cb-4eb9-951b-d2840f6a8bdb"] = new GuidAndPath() { Guid = "a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb", Path = "Basic Book/Basic Book.htm" }; // Just Text
-					_pageMigrations["FD115DFF-0415-4444-8E76-3D2A18DBBD27"] = new GuidAndPath() { Guid = "aD115DFF-0415-4444-8E76-3D2A18DBBD27", Path = "Basic Book/Basic Book.htm" }; // Picture & Word
+					_pageMigrations["5dcd48df-e9ab-4a07-afd4-6a24d0398382"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398382", Path = "Basic Book/Basic Book.html" }; // Basic Text and Picture
+					_pageMigrations["5dcd48df-e9ab-4a07-afd4-6a24d0398383"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398383", Path = "Basic Book/Basic Book.html" }; // Picture in Middle
+					_pageMigrations["5dcd48df-e9ab-4a07-afd4-6a24d0398384"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398384", Path = "Basic Book/Basic Book.html" }; // Picture on Bottom
+					_pageMigrations["5dcd48df-e9ab-4a07-afd4-6a24d0398385"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398385", Path = "Basic Book/Basic Book.html" }; // Just a Picture
+					_pageMigrations["d31c38d8-c1cb-4eb9-951b-d2840f6a8bdb"] = new GuidAndPath() { Guid = "a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb", Path = "Basic Book/Basic Book.html" }; // Just Text
+					_pageMigrations["FD115DFF-0415-4444-8E76-3D2A18DBBD27"] = new GuidAndPath() { Guid = "aD115DFF-0415-4444-8E76-3D2A18DBBD27", Path = "Basic Book/Basic Book.html" }; // Picture & Word
 					// Big book [see commit 7bfefd0dbc9faf8930c4926b0156e44d3447e11b]
-					_pageMigrations["AF708725-E961-44AA-9149-ADF66084A04F"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398385", Path = "Big Book/BigBook.htm" }; // Just a Picture
-					_pageMigrations["D9A55EB6-43A8-4C6A-8891-2C1CDD95772C"] = new GuidAndPath() { Guid = "a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb", Path = "Big Book/BigBook.htm" }; // Just Text
+					_pageMigrations["AF708725-E961-44AA-9149-ADF66084A04F"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398385", Path = "Big Book/BigBook.html" }; // Just a Picture
+					_pageMigrations["D9A55EB6-43A8-4C6A-8891-2C1CDD95772C"] = new GuidAndPath() { Guid = "a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb", Path = "Big Book/BigBook.html" }; // Just Text
 					// Decodable reader [see commit 7bfefd0dbc9faf8930c4926b0156e44d3447e11b]
-					_pageMigrations["f95c0314-ce47-4b47-a638-06325ad1a963"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398382", Path = "Decodable Reader/Decodable Reader.htm" }; // Basic Text and Picture
-					_pageMigrations["c0847f89-b58a-488a-bbee-760ce4a13567"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398383", Path = "Decodable Reader/Decodable Reader.htm" }; // Picture in Middle
-					_pageMigrations["f99b252a-26b1-40c8-b543-dbe0b05f08a5"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398384", Path = "Decodable Reader/Decodable Reader.htm" }; // Picture on Bottom
-					_pageMigrations["c506f278-cb9f-4053-9e29-f7a9bdf64445"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398385", Path = "Decodable Reader/Decodable Reader.htm" }; // Just a Picture
-					_pageMigrations["e4ff6195-b0b6-4909-8025-4424ee9188ea"] = new GuidAndPath() { Guid = "a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb", Path = "Decodable Reader/Decodable Reader.htm" }; // Just Text
-					_pageMigrations["bd85f898-0a45-45b3-8e34-faaac8945a0c"] = new GuidAndPath() { Guid = "aD115DFF-0415-4444-8E76-3D2A18DBBD27", Path = "Decodable Reader/Decodable Reader.htm" }; // Picture & Word
+					_pageMigrations["f95c0314-ce47-4b47-a638-06325ad1a963"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398382", Path = "Decodable Reader/Decodable Reader.html" }; // Basic Text and Picture
+					_pageMigrations["c0847f89-b58a-488a-bbee-760ce4a13567"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398383", Path = "Decodable Reader/Decodable Reader.html" }; // Picture in Middle
+					_pageMigrations["f99b252a-26b1-40c8-b543-dbe0b05f08a5"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398384", Path = "Decodable Reader/Decodable Reader.html" }; // Picture on Bottom
+					_pageMigrations["c506f278-cb9f-4053-9e29-f7a9bdf64445"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398385", Path = "Decodable Reader/Decodable Reader.html" }; // Just a Picture
+					_pageMigrations["e4ff6195-b0b6-4909-8025-4424ee9188ea"] = new GuidAndPath() { Guid = "a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb", Path = "Decodable Reader/Decodable Reader.html" }; // Just Text
+					_pageMigrations["bd85f898-0a45-45b3-8e34-faaac8945a0c"] = new GuidAndPath() { Guid = "aD115DFF-0415-4444-8E76-3D2A18DBBD27", Path = "Decodable Reader/Decodable Reader.html" }; // Picture & Word
 					// Leveled reader [see commit 7bfefd0dbc9faf8930c4926b0156e44d3447e11b]
-					_pageMigrations["e9f2142b-f135-4bcd-9123-5a2623f5302f"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398382", Path = "Leveled Reader/Leveled Reader.htm" }; // Basic Text and Picture
-					_pageMigrations["c5aae471-f801-4c5d-87b7-1614d56b0c53"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398383", Path = "Leveled Reader/Leveled Reader.htm" }; // Picture in Middle
-					_pageMigrations["a1f437fe-c002-4548-af02-fe84d048b8fc"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398384", Path = "Leveled Reader/Leveled Reader.htm" }; // Picture on Bottom
-					_pageMigrations["d7599aa7-f35c-4029-8aa2-9afda870bcfa"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398385", Path = "Leveled Reader/Leveled Reader.htm" }; // Just a Picture
-					_pageMigrations["d93a28c6-9ff8-4f61-a820-49093e3e275b"] = new GuidAndPath() { Guid = "a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb", Path = "Leveled Reader/Leveled Reader.htm" }; // Just Text
-					_pageMigrations["a903467a-dad2-4767-8be9-54336cae7731"] = new GuidAndPath() { Guid = "aD115DFF-0415-4444-8E76-3D2A18DBBD27", Path = "Leveled Reader/Leveled Reader.htm" }; // Picture & Word
+					_pageMigrations["e9f2142b-f135-4bcd-9123-5a2623f5302f"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398382", Path = "Leveled Reader/Leveled Reader.html" }; // Basic Text and Picture
+					_pageMigrations["c5aae471-f801-4c5d-87b7-1614d56b0c53"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398383", Path = "Leveled Reader/Leveled Reader.html" }; // Picture in Middle
+					_pageMigrations["a1f437fe-c002-4548-af02-fe84d048b8fc"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398384", Path = "Leveled Reader/Leveled Reader.html" }; // Picture on Bottom
+					_pageMigrations["d7599aa7-f35c-4029-8aa2-9afda870bcfa"] = new GuidAndPath() { Guid = "adcd48df-e9ab-4a07-afd4-6a24d0398385", Path = "Leveled Reader/Leveled Reader.html" }; // Just a Picture
+					_pageMigrations["d93a28c6-9ff8-4f61-a820-49093e3e275b"] = new GuidAndPath() { Guid = "a31c38d8-c1cb-4eb9-951b-d2840f6a8bdb", Path = "Leveled Reader/Leveled Reader.html" }; // Just Text
+					_pageMigrations["a903467a-dad2-4767-8be9-54336cae7731"] = new GuidAndPath() { Guid = "aD115DFF-0415-4444-8E76-3D2A18DBBD27", Path = "Leveled Reader/Leveled Reader.html" }; // Picture & Word
 				}
 				return _pageMigrations;
 			}
@@ -803,8 +803,7 @@ namespace Bloom.Book
 			if (!PageMigrations.TryGetValue(originalTemplateGuid, out updateTo))
 				return; // Not one we want to migrate. Possibly already done, or one we don't want to convert, or created in the field...
 			var layoutOfThisBook = GetLayout();
-			var rootFolder = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections/Templates");
-			var bookPath = Path.Combine(rootFolder, updateTo.Path);
+			var bookPath = BloomFileLocator.GetFactoryBookTemplateDirectory(updateTo.Path);
 			var templateDoc = XmlHtmlConverter.GetXmlDomFromHtmlFile(bookPath, false);
 			var newPage = (XmlElement)templateDoc.SafeSelectNodes("//div[@id='" + updateTo.Guid + "']")[0];
 			var classesToDrop = new[] { "imageWholePage","imageOnTop","imageInMiddle","imageOnBottom","textWholePage","pictureAndWordPage" };
@@ -849,10 +848,10 @@ namespace Bloom.Book
 
 					// I think we should only mess with tags if we are updating the book for real.
 					var oldTagsPath = Path.Combine(_storage.FolderPath, "tags.txt");
-					if (File.Exists(oldTagsPath))
+					if (RobustFile.Exists(oldTagsPath))
 					{
 						ConvertTagsToMetaData(oldTagsPath, BookInfo);
-						File.Delete(oldTagsPath);
+						RobustFile.Delete(oldTagsPath);
 					}
 				}
 				else //used for making a preview dom
@@ -867,7 +866,7 @@ namespace Bloom.Book
 				bookDOM.RemoveMetaElement("bookLineage", () => BookInfo.BookLineage, val => BookInfo.BookLineage = val);
 				// BookInfo will always have an ID, the constructor makes one even if there is no json file.
 				// To allow migration, pretend it has no ID if there is not yet a meta.json.
-				bookDOM.RemoveMetaElement("bloomBookId", () => (File.Exists(BookInfo.MetaDataPath) ? BookInfo.Id : null),
+				bookDOM.RemoveMetaElement("bloomBookId", () => (RobustFile.Exists(BookInfo.MetaDataPath) ? BookInfo.Id : null),
 					val => BookInfo.Id = val);
 
 				// Title should be replicated in json
@@ -911,10 +910,10 @@ namespace Bloom.Book
 
 						// I think we should only mess with tags if we are updating the book for real.
 						var oldTagsPath = Path.Combine(_storage.FolderPath, "tags.txt");
-						if (File.Exists(oldTagsPath))
+						if (RobustFile.Exists(oldTagsPath))
 						{
 							ConvertTagsToMetaData(oldTagsPath, BookInfo);
-							File.Delete(oldTagsPath);
+							RobustFile.Delete(oldTagsPath);
 						}
 					}
 					else //used for making a preview dom
@@ -929,7 +928,7 @@ namespace Bloom.Book
 					bookDOM.RemoveMetaElement("bookLineage", () => BookInfo.BookLineage, val => BookInfo.BookLineage = val);
 					// BookInfo will always have an ID, the constructor makes one even if there is no json file.
 					// To allow migration, pretend it has no ID if there is not yet a meta.json.
-					bookDOM.RemoveMetaElement("bloomBookId", () => (File.Exists(BookInfo.MetaDataPath) ? BookInfo.Id : null),
+					bookDOM.RemoveMetaElement("bloomBookId", () => (RobustFile.Exists(BookInfo.MetaDataPath) ? BookInfo.Id : null),
 						val => BookInfo.Id = val);
 
 					// Title should be replicated in json
@@ -954,6 +953,7 @@ namespace Bloom.Book
 		{
 			//by default, this comes from the collection, but the book can select one, including "null" to select the factory-supplied empty xmatter
 			var nameOfXMatterPack = OurHtmlDom.GetMetaValue("xMatter", _collectionSettings.XMatterPackName);
+			nameOfXMatterPack = Storage.HandleRetiredXMatterPacks(OurHtmlDom, nameOfXMatterPack);
 			var helper = new XMatterHelper(bookDOM, nameOfXMatterPack, _storage.GetFileLocator());
 			//note, we determine this before removing xmatter to fix the situation where there is *only* xmatter, no content, so if
 			//we wait until we've removed the xmatter, we no how no way of knowing what size/orientation they had before the update.
@@ -993,7 +993,7 @@ namespace Bloom.Book
 
 		internal static void ConvertTagsToMetaData(string oldTagsPath, BookInfo bookMetaData)
 		{
-			var oldTags = File.ReadAllText(oldTagsPath);
+			var oldTags = RobustFile.ReadAllText(oldTagsPath);
 			bookMetaData.IsFolio = oldTags.Contains("folio");
 			bookMetaData.IsExperimental = oldTags.Contains("experimental");
 		}
@@ -1034,9 +1034,9 @@ namespace Bloom.Book
 		{
 			var originalLayout = Layout.FromDom(bookDom, Layout.A5Portrait);
 
-			var templatePath = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates", "Basic Book");
+			var templatePath = BloomFileLocator.GetFactoryBookTemplateDirectory( "Basic Book");
 
-			var templateDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(templatePath.CombineForPath("Basic Book.htm"), false);
+			var templateDom = XmlHtmlConverter.GetXmlDomFromHtmlFile(templatePath.CombineForPath("Basic Book.html"), false);
 
 			progress.WriteStatus("Updating pages that were based on Basic Book...");
 			foreach (XmlElement templatePageDiv in templateDom.SafeSelectNodes("//body/div"))
@@ -1451,7 +1451,7 @@ namespace Bloom.Book
 			{
 				var options = new MarkdownOptions() {LinkEmails = true, AutoHyperlink=true};
 				var m = new Markdown(options);
-				var contents = m.Transform(File.ReadAllText(AboutBookMarkdownPath));
+				var contents = m.Transform(RobustFile.ReadAllText(AboutBookMarkdownPath));
 				contents = contents.Replace("remove", "");//used to hide email addresses in the md from scanners (probably unneccessary.... do they scan .md files?
 
 				var pathToCss = _storage.GetFileLocator().LocateFileWithThrow("BookReadme.css");
@@ -1461,7 +1461,7 @@ namespace Bloom.Book
 			} //todo add other ui languages
 		}
 
-		public bool HasAboutBookInformationToShow { get { return _storage!=null && File.Exists(AboutBookMarkdownPath); } }
+		public bool HasAboutBookInformationToShow { get { return _storage!=null && RobustFile.Exists(AboutBookMarkdownPath); } }
 		public string AboutBookMarkdownPath  {
 			get
 			{
@@ -1614,6 +1614,9 @@ namespace Bloom.Book
 
 			ClearPagesCache();
 
+			if(templatePage.Book !=null) // will be null in some unit tests that are unconcerned with stylesheets
+				HtmlDom.AddStylesheetFromAnotherBook(templatePage.Book.OurHtmlDom, OurHtmlDom);
+
 			XmlDocument dom = OurHtmlDom.RawDom;
 			var templatePageDiv = templatePage.GetDivNodeForThisPage();
 			var newPageDiv = dom.ImportNode(templatePageDiv, true) as XmlElement;
@@ -1629,25 +1632,39 @@ namespace Bloom.Book
 			BuildPageCache();
 			var newPage = GetPages().First(p=>p.GetDivNodeForThisPage() == newPageDiv);
 			Guard.AgainstNull(newPage,"could not find the page we just added");
-			_pageSelection.SelectPage(newPage);
+			
 			//_pageSelection.SelectPage(CreatePageDecriptor(newPageDiv, "should not show", _collectionSettings.Language1Iso639Code));
 
 			// If copied page references images, copy them.
 			foreach (var pathFromBook in BookStorage.GetImagePathsRelativeToBook(newPageDiv))
 			{
 				var path = Path.Combine(FolderPath, pathFromBook);
-				if (!File.Exists(path))
+				if (!RobustFile.Exists(path))
 				{
 					var fileName = Path.GetFileName(path);
 					var sourcePath = Path.Combine(templatePage.Book.FolderPath, fileName);
+					if (RobustFile.Exists(sourcePath))
+						RobustFile.Copy(sourcePath, path);
+				}
+			}
+
+			//similarly, if the page has stylesheet files we don't have, copy them
+			foreach(string sheetName in templatePage.Book.OurHtmlDom.GetTemplateStyleSheets())
+			{
+				var destinationPath = Path.Combine(FolderPath, sheetName);
+				if (!File.Exists(destinationPath))
+				{
+					var sourcePath = Path.Combine(templatePage.Book.FolderPath, sheetName);
 					if (File.Exists(sourcePath))
-						File.Copy(sourcePath, path);
+						File.Copy(sourcePath, destinationPath);
 				}
 			}
 
 			Save();
 			if (_pageListChangedEvent != null)
 				_pageListChangedEvent.Raise(null);
+
+			_pageSelection.SelectPage(newPage);
 
 			InvokeContentsChanged(null);
 		}
@@ -1973,17 +1990,8 @@ namespace Bloom.Book
 				childBook.UpdateEditableAreasOfElement(childBook.OurHtmlDom);
 				
 				//add links to the template css needed by the children.
-				//NB: at this point this code can't hand the "userModifiedStyles" from children, it'll ignore them (they would conflict with each other)
-				//NB: at this point custom styles (e.g. larger/smaller font rules) from children will be lost.
-				var userModifiedStyleSheets = new List<string>();
-				foreach (string sheetName in childBook.OurHtmlDom.GetTemplateStyleSheets())
-				{
-					if (!userModifiedStyleSheets.Contains(sheetName)) //nb: if two books have stylesheets with the same name, we'll only be grabbing the 1st one.
-					{
-						userModifiedStyleSheets.Add(sheetName);
-						printingDom.AddStyleSheetIfMissing(sheetName);
-					}
-				}
+
+				HtmlDom.AddStylesheetFromAnotherBook(childBook.OurHtmlDom, printingDom);
 				printingDom.SortStyleSheetLinks();
 
 				foreach (XmlElement pageDiv in childBook.OurHtmlDom.RawDom.SafeSelectNodes("/html/body//div[contains(@class, 'bloom-page') and not(contains(@class,'bloom-frontMatter')) and not(contains(@class,'bloom-backMatter'))]"))
@@ -2049,12 +2057,16 @@ namespace Bloom.Book
 		/// </summary>
 		private void WriteLanguageDisplayStyleSheet( )
 		{
-			var template = File.ReadAllText(_storage.GetFileLocator().LocateFileWithThrow("languageDisplayTemplate.css"));
+			var template = RobustFile.ReadAllText(_storage.GetFileLocator().LocateFileWithThrow("languageDisplayTemplate.css"));
 			var path = _storage.FolderPath.CombineForPath("languageDisplay.css");
 
-			using (var temp = TempFile.WithExtension(".css"))
+			// Use a temporary file pathname in the current book's folder.  This is needed to ensure proper permissions are granted
+			// to the resulting file later after FileUtils.ReplaceFileWithUserInteractionIfNeeded is called.  That method may call
+			// File.Replace which replaces both the file content and the file metadata (permissions).  The result of that if we use
+			// the user's temp directory is described in http://issues.bloomlibrary.org/youtrack/issue/BL-3954.
+			using (var temp = TempFile.InFolderOf(path))	// We don't need a .css extension for the temporary file.
 			{
-				File.WriteAllText(temp.Path,
+				RobustFile.WriteAllText(temp.Path,
 					template.Replace("VERNACULAR", _collectionSettings.Language1Iso639Code)
 						.Replace("NATIONAL", _collectionSettings.Language2Iso639Code));
 
@@ -2166,7 +2178,8 @@ namespace Bloom.Book
 		public Metadata GetLicenseMetadata()
 		{
 			//BookCopyrightAndLicense.LogMetdata(OurHtmlDom);
-			var result = BookCopyrightAndLicense.GetMetadata(OurHtmlDom);
+			var result = BookCopyrightAndLicense.GetMetadata(OurHtmlDom, _collectionSettings.BrandingProjectName);
+			
 			//Logger.WriteEvent("After");
 			//BookCopyrightAndLicense.LogMetdata(OurHtmlDom);
 			return result;
@@ -2192,9 +2205,15 @@ namespace Bloom.Book
 		{
 			Guard.Against(Type != BookType.Publication, "Tried to save a non-editable book.");
 			_bookData.UpdateVariablesAndDataDivThroughDOM(BookInfo);//will update the title if needed
-			_storage.UpdateBookFileAndFolderName(_collectionSettings); //which will update the file name if needed
+			if(!LockDownTheFileAndFolderName)
+			{
+				_storage.UpdateBookFileAndFolderName(_collectionSettings); //which will update the file name if needed
+			}
 			_storage.Save();
 		}
+
+		//used by the command-line "hydrate" command
+		public bool LockDownTheFileAndFolderName { get; set; }
 
 		//TODO: remove this in favor of meta data (the later currently doesn't appear to have access to lineage, I need to ask JT about that)
 		public string GetBookLineage()

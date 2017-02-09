@@ -5,6 +5,7 @@ using System.Dynamic;
 using System.IO;
 using Bloom.Book;
 using SIL.Code;
+using SIL.IO;
 using SIL.Reporting;
 
 namespace Bloom.Api
@@ -50,7 +51,7 @@ namespace Bloom.Api
 					//an "edit settings", or a "book settings", or a combination of them.
 					settings = DynamicJson.Parse(request.RequiredPostJson());
 					_bookSelection.CurrentSelection.TemporarilyUnlocked = settings["unlockShellBook"];
-					_pageRefreshEvent.Raise(null);
+					_pageRefreshEvent.Raise(PageRefreshEvent.SaveBehavior.SaveBeforeRefresh);
 					request.Succeeded();
 					break;
 				default:
@@ -67,17 +68,19 @@ namespace Bloom.Api
 			{
 				var fileName = request.RequiredFileNameOrPath("image");
 				Guard.AgainstNull(_bookSelection.CurrentSelection, "CurrentBook");
-				var path = Path.Combine(_bookSelection.CurrentSelection.FolderPath, fileName.NotEncoded);
+				var plainfilename = fileName.NotEncoded;
+				// The fileName might be URL encoded.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3901.
+				var path = UrlPathString.GetFullyDecodedPath(_bookSelection.CurrentSelection.FolderPath, ref plainfilename);
 				RequireThat.File(path).Exists();
 				var fileInfo = new FileInfo(path);
 				dynamic result = new ExpandoObject();
-				result.name = fileName.NotEncoded;
+				result.name = plainfilename;
 				result.bytes = fileInfo.Length;
 
 				// Using a stream this way, according to one source,
 				// http://stackoverflow.com/questions/552467/how-do-i-reliably-get-an-image-dimensions-in-net-without-loading-the-image,
 				// supposedly avoids loading the image into memory when we only want its dimensions
-				using(var stream = File.OpenRead(path))
+				using(var stream = RobustFile.OpenRead(path))
 				using(var img = Image.FromStream(stream, false, false))
 				{
 					result.width = img.Width;

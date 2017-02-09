@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using Bloom.Book;
+using SIL.IO;
 using SIL.Reporting;
 using SIL.Windows.Forms.FileSystem;
-using File = System.IO.File;
 
 namespace Bloom.Collection
 {
@@ -56,9 +55,9 @@ namespace Bloom.Collection
 		private void MakeCollectionCSSIfMissing()
 		{
 			string path = Path.Combine(_path, "customCollectionStyles.css");
-			if(File.Exists(path))
+			if(RobustFile.Exists(path))
 				return;
-			File.Copy(BloomFileLocator.GetBrowserFile("bookLayout", "collection styles override template.css"), path);
+			RobustFile.Copy(BloomFileLocator.GetBrowserFile("bookLayout", "collection styles override template.css"), path);
 		}
 
 		public CollectionType Type { get; private set; }
@@ -90,7 +89,12 @@ namespace Bloom.Collection
 
 		public virtual string Name
 		{
-			get { return Path.GetFileName(_path); }
+			get
+			{
+				var dirName = Path.GetFileName(_path);
+				//the UI and existing Localizations want to see "templates", but on disk, "templates" is ambiguous, so the name there is "template books".
+				return dirName == "template books" ? "Templates" : dirName;
+			}
 		}
 
 		public string PathToDirectory
@@ -123,7 +127,7 @@ namespace Bloom.Collection
 					continue;
 				if (Path.GetFileName(folder.FullName).ToLowerInvariant().Contains("xmatter"))
 					continue;
-				if(File.Exists(Path.Combine(folder.FullName, ".bloom-ignore")))
+				if(RobustFile.Exists(Path.Combine(folder.FullName, ".bloom-ignore")))
 					continue;
 				AddBookInfo(folder.FullName);
 			}
@@ -164,7 +168,7 @@ namespace Bloom.Collection
 			try
 			{
 				//this is handy when windows explorer won't let go of the thumbs.db file, but we want to delete the folder
-				if (Directory.GetFiles(folderPath, "*.htm").Length == 0)
+				if (Directory.GetFiles(folderPath, "*.htm").Length == 0 && Directory.GetFiles(folderPath, "*.html").Length == 0)
 					return;
 				var bookInfo = new BookInfo(folderPath, Type == CollectionType.TheOneEditableCollection);
 
@@ -180,7 +184,7 @@ namespace Bloom.Collection
 				Logger.WriteError("Reading "+ jsonPath, e);
 				try
 				{
-					Logger.WriteEvent(jsonPath +" Contents: " +System.Environment.NewLine+ File.ReadAllText(jsonPath));
+					Logger.WriteEvent(jsonPath +" Contents: " +System.Environment.NewLine+ RobustFile.ReadAllText(jsonPath));
 				}
 				catch(Exception readError)
 				{
@@ -205,7 +209,7 @@ namespace Bloom.Collection
 		/// <summary>
 		/// This includes everything in "factoryCollections" (i.e. Templates folder AND Sample Shells:Vaccinations folder)
 		/// </summary>
-		public bool IsFactoryInstalled { get { return PathToDirectory.Contains(ProjectContext.FactoryCollectionsDirectory); } }
+		public bool IsFactoryInstalled { get { return BloomFileLocator.IsInstalledFileOrDirectory(PathToDirectory); } }
 
 		private FileSystemWatcher _watcher;
 		/// <summary>

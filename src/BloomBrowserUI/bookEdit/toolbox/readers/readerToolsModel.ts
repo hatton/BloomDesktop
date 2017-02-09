@@ -1018,11 +1018,15 @@ export class ReaderToolsModel {
     return (<any>axios).all(this.texts.map(fileName => {
       return axios.get<string>('/bloom/api/readers/io/sampleFileContents', { params: { fileName: fileName } })
         .then(result => {
-          //axios get here is giving us an object even though the c# sends a text/plain.
-          //and that would normally be great, but unfortunately the downstream code was written to take a raw
-          //string (which happpens to be JSON). So for now, we just make it a string.
-          var resultAsString = JSON.stringify(result.data);
-          this.setSampleFileContents(resultAsString);
+          // this same code runs both for simple word list text files, and for synphony .json files
+          // downstream here, code actually changes the json string back into an object, sigh. But
+          // we're looking for a non-risky patch here as 3.7 is about to go out the door.
+          // We had two bugs related to getting this wrong: BL-3969, BL-3970
+          if (typeof result.data === "string" || <any>result.data instanceof String) {
+            this.setSampleFileContents(result.data); // simple wordlist file
+          } else {
+            this.setSampleFileContents(JSON.stringify(result.data)); //synphony json
+          }
         });
     }));
   }
@@ -1112,6 +1116,8 @@ export class ReaderToolsModel {
   }
 
   getToolboxWindow(): Window {
+      // ReaderToolsModel is only loaded into the toolbox, so the toolbox window is simply the current window.
+      //return window;
       return (<HTMLIFrameElement>document.getElementById('toolbox')).contentWindow;
   }
 
@@ -1185,13 +1191,16 @@ export class ReaderToolsModel {
     // remember how many we are loading so we know when we're finished
     this.allowedWordFilesRemaining = stages.length;
 
-    stages.forEach(function(stage, index) {
+    stages.forEach((stage, index) => {
       if (stage.allowedWordsFile) {
-          //axios.get<string>('/bloom/api/readers/allowedWordsList?fileName=' + encodeURIComponent(stage.allowedWordsFile))
-          axios.get<string>('/bloom/api/readers/io/allowedWordsList', { params: { 'fileName': stage.allowedWordsFile } })
-              .then(result => this.setAllowedWordsListList(result.data, index));
+        //axios.get<string>('/bloom/api/readers/allowedWordsList?fileName=' + encodeURIComponent(stage.allowedWordsFile))
+        axios.get<string>('/bloom/api/readers/io/allowedWordsList', { params: { 'fileName': stage.allowedWordsFile } })
+          .then(result => this.setAllowedWordsListList(result.data, index));
       }
-    });
+      // During Linux testing of BL-3498, the this (_this in the TS converted to JS), in the axios.get callback was
+      // undefined without this bind().  This .bind() is also the fix for BL-3496.
+      // But apparently when we switched to TS v2.0, it's no longer needed
+    }/*.bind(this)*/);
   }
 
   setAllowedWordsListList(fileContents: string, stageIndex: number): void {

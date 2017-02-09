@@ -1,20 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
+﻿using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Xml;
 using Bloom;
-using Bloom.Book;
 using Bloom.Edit;
 using Bloom.ImageProcessing;
-using Gecko;
 using NUnit.Framework;
 using SIL.TestUtilities;
 using SIL.Windows.Forms.ImageToolbox;
-using RestSharp.Contrib;
 
 namespace BloomTests
 {
@@ -75,14 +68,14 @@ namespace BloomTests
 			var x = new Bitmap(kSampleImageDimension, kSampleImageDimension);
 			x.Save(path,ImageFormat.Png);
 			x.Dispose();
-			return  PalasoImage.FromFile(path);
+			return  PalasoImage.FromFileRobustly(path);
 		}
 
 		private PalasoImage MakeSampleTifImage(string path)
 		{
 			var x = new Bitmap(kSampleImageDimension, kSampleImageDimension);
 			x.Save(path, ImageFormat.Tiff);
-			return PalasoImage.FromFile(path);
+			return PalasoImage.FromFileRobustly(path);
 		}
 
 		private PalasoImage MakeSampleJpegImage(string path)
@@ -90,7 +83,7 @@ namespace BloomTests
 			var x = new Bitmap(kSampleImageDimension, kSampleImageDimension);
 			x.Save(path, ImageFormat.Jpeg);
 			//nb: even if we reload the image from the file, the rawformat will be memory bitmap, not jpg as we'd wish
-			return PalasoImage.FromFile(path);
+			return PalasoImage.FromFileRobustly(path);
 		}
 
 		/// <summary>

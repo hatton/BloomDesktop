@@ -182,42 +182,67 @@ namespace Bloom.WebLibraryIntegration
 			}
 		}
 
-		private ProgressDialog _progressDialog;
+		private IProgressDialog _progressDialog;
 		private string _downloadRequest;
 
-		internal void HandleBloomBookOrder(string argument)
+		internal void HandleBloomBookOrder(string order)
 		{
-			_downloadRequest = argument;
-			using (_progressDialog = new ProgressDialog())
+			_downloadRequest = order;
+			using (var progressDialog = new ProgressDialog())
 			{
-				_progressDialog.CanCancel = false; // one day we may allow this...
-				_progressDialog.Overview = LocalizationManager.GetString("Download.DownloadingDialogTitle", "Downloading book");
-				_progressDialog.ProgressRangeMaximum = 14; // a somewhat minimal file count. We will fine-tune it when we know.
-				if (IsUrlOrder(argument))
+				_progressDialog = new ProgressDialogWrapper(progressDialog);
+				progressDialog.CanCancel = false; // one day we may allow this...
+				progressDialog.Overview = LocalizationManager.GetString("Download.DownloadingDialogTitle", "Downloading book");
+				progressDialog.ProgressRangeMaximum = 14; // a somewhat minimal file count. We will fine-tune it when we know.
+				if (IsUrlOrder(order))
 				{
-					var link = new BloomLinkArgs(argument);
-					_progressDialog.StatusText = link.Title;
+					var link = new BloomLinkArgs(order);
+					progressDialog.StatusText = link.Title;
 				}
 				else
 				{
-					_progressDialog.StatusText = Path.GetFileNameWithoutExtension(argument);
+					progressDialog.StatusText = Path.GetFileNameWithoutExtension(order);
 				}
 
 				// We must do the download in a background thread, even though the whole process is doing nothing else,
 				// so we can invoke stuff on the main thread to (e.g.) update the progress bar.
 				BackgroundWorker worker = new BackgroundWorker();
 				worker.DoWork += OnDoDownload;
-				_progressDialog.BackgroundWorker = worker;
+				progressDialog.BackgroundWorker = worker;
 				//dlg.CancelRequested += new EventHandler(OnCancelRequested);
-				_progressDialog.ShowDialog(); // hidden automatically when task completes
-				if (_progressDialog.ProgressStateResult != null &&
-					_progressDialog.ProgressStateResult.ExceptionThatWasEncountered != null)
+				progressDialog.ShowDialog(); // hidden automatically when task completes
+				if (progressDialog.ProgressStateResult != null &&
+					progressDialog.ProgressStateResult.ExceptionThatWasEncountered != null)
 				{
-						SIL.Reporting.ErrorReport.ReportFatalException(
-							_progressDialog.ProgressStateResult.ExceptionThatWasEncountered);
-					}
+					SIL.Reporting.ErrorReport.ReportFatalException(
+						progressDialog.ProgressStateResult.ExceptionThatWasEncountered);
 				}
 			}
+		}
+
+		/// <summary>
+		/// url is typically something like https://s3.amazonaws.com/BloomLibraryBooks/somebody@example.com/0a2745dd-ca98-47ea-8ba4-2cabc67022e
+		/// It is harmless if there are more elements in it (e.g. address to a particular file in the folder)
+		/// Note: if you copy the url from part of the link to a file in the folder from AWS,
+		/// you typically need to change %40 to @ in the uploader's email.
+		/// </summary>
+		/// <param name="url"></param>
+		/// <param name="destRoot"></param>
+		internal string HandleDownloadWithoutProgress(string url, string destRoot)
+		{
+			_progressDialog = new ConsoleProgress();
+			if (!url.StartsWith(BloomS3UrlPrefix))
+			{
+				Console.WriteLine("Url unexpectedly does not start with https://s3.amazonaws.com/");
+				return "";
+			}
+			var bookOrder = url.Substring(BloomS3UrlPrefix.Length);
+			var index = bookOrder.IndexOf('/');
+			var bucket = bookOrder.Substring(0, index);
+			var folder = bookOrder.Substring(index + 1);
+
+			return DownloadBook(bucket, folder, destRoot);
+		}
 
 		/// <summary>
 		/// this runs in a worker thread
@@ -232,7 +257,7 @@ namespace Bloom.WebLibraryIntegration
 			}
 				// If we are passed a bloom book order, download the corresponding book and open it.
 			else if (_downloadRequest.ToLowerInvariant().EndsWith(BookTransfer.BookOrderExtension.ToLowerInvariant()) &&
-					 File.Exists(_downloadRequest))
+					 RobustFile.Exists(_downloadRequest))
 			{
 				HandleBookOrder(_downloadRequest);
 			}
@@ -270,6 +295,7 @@ namespace Bloom.WebLibraryIntegration
 		}
 
 		public const string BookOrderExtension = ".BloomBookOrder";
+		internal const string BloomS3UrlPrefix = "https://s3.amazonaws.com/";
 
 		private string _uploadedBy;
 		private string _accountWhenUploadedByLastSet;
@@ -360,7 +386,7 @@ namespace Bloom.WebLibraryIntegration
 				// and we want the file name to indicate which book, so use the name of the book folder.
 				var metadataPath = BookMetaData.MetaDataPath(bookFolder);
 				var orderPath = Path.Combine(bookFolder, Path.GetFileName(bookFolder) + BookOrderExtension);
-				File.Copy(metadataPath, orderPath, true);
+				RobustFile.Copy(metadataPath, orderPath, true);
 				parseId = "";
 				try
 				{
@@ -444,7 +470,7 @@ namespace Bloom.WebLibraryIntegration
 
 		private static string MetaDataText(string bookFolder)
 		{
-			return File.ReadAllText(bookFolder.CombineForPath(BookInfo.MetaDataFileName));
+			return RobustFile.ReadAllText(bookFolder.CombineForPath(BookInfo.MetaDataFileName));
 		}
 
 		private string S3BookId(BookMetaData metadata)
@@ -495,7 +521,7 @@ namespace Bloom.WebLibraryIntegration
 
 		public void HandleBookOrder(string bookOrderPath, string projectPath)
 		{
-			var metadata = BookMetaData.FromString(File.ReadAllText(bookOrderPath));
+			var metadata = BookMetaData.FromString(RobustFile.ReadAllText(bookOrderPath));
 			var s3BookId = metadata.DownloadSource;
 			var bucket = BloomS3Client.ProductionBucketName; //TODO
 			_s3Client.DownloadBook(bucket, s3BookId, Path.GetDirectoryName(projectPath));
@@ -503,7 +529,7 @@ namespace Bloom.WebLibraryIntegration
 
 		public bool IsBookOnServer(string bookPath)
 		{
-			var metadata = BookMetaData.FromString(File.ReadAllText(bookPath.CombineForPath(BookInfo.MetaDataFileName)));
+			var metadata = BookMetaData.FromString(RobustFile.ReadAllText(bookPath.CombineForPath(BookInfo.MetaDataFileName)));
 			return _parseClient.GetSingleBookRecord(metadata.Id) != null;
 		}
 
@@ -657,6 +683,7 @@ namespace Bloom.WebLibraryIntegration
 		internal string FullUpload(Book.Book book, LogBox progressBox, PublishView publishView, string[] languages, out string parseId, Form invokeTarget = null)
 		{
 			var bookFolder = book.FolderPath;
+			parseId = ""; // in case of early return
 			// Set this in the metadata so it gets uploaded. Do this in the background task as it can take some time.
 			// These bits of data can't easily be set while saving the book because we save one page at a time
 			// and they apply to the book as a whole.
@@ -667,7 +694,11 @@ namespace Bloom.WebLibraryIntegration
 			//the largest thumbnail I found on Amazon was 300px high. Prathambooks.org about the same.
 			_thumbnailer.MakeThumbnailOfCover(book, 70, invokeTarget); // this is a sacrificial one to prime the pump, to fix BL-2673
 			_thumbnailer.MakeThumbnailOfCover(book, 70, invokeTarget);
+			if (progressBox.CancelRequested)
+				return "";
 			_thumbnailer.MakeThumbnailOfCover(book, 256, invokeTarget);
+			if (progressBox.CancelRequested)
+				return "";
 			var uploadPdfPath = UploadPdfPath(bookFolder);
 			// If there is not already a locked preview in the book folder
 			// (which we take to mean the user has created a customized one that he prefers),
@@ -676,11 +707,13 @@ namespace Bloom.WebLibraryIntegration
 			{
 				progressBox.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.MakingPdf", "Making PDF Preview..."));
 				publishView.MakePublishPreview();
-				if (File.Exists(publishView.PdfPreviewPath))
+				if (RobustFile.Exists(publishView.PdfPreviewPath))
 				{
-					File.Copy(publishView.PdfPreviewPath, uploadPdfPath, true);
+					RobustFile.Copy(publishView.PdfPreviewPath, uploadPdfPath, true);
 				}
 			}
+			if (progressBox.CancelRequested)
+				return "";
 			return UploadBook(bookFolder, progressBox, out parseId, Path.GetFileName(uploadPdfPath));
 		}
 

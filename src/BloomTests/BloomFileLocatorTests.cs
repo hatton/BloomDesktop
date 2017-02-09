@@ -6,6 +6,7 @@ using Bloom.Collection;
 using L10NSharp;
 using NUnit.Framework;
 using SIL.Extensions;
+using SIL.IO;
 using SIL.TestUtilities;
 
 namespace BloomTests
@@ -31,8 +32,8 @@ namespace BloomTests
 			_xMatterParentFolder = new TemporaryFolder("UserCollection");
 			_xMatterFolder = new TemporaryFolder(_xMatterParentFolder, "User-XMatter");
 			locations.Add(_xMatterParentFolder.Path);
-			File.WriteAllText(Path.Combine(_xMatterFolder.Path, "SomeRandomXYZABCStyles.css"), "Some arbitrary test data");
-			File.WriteAllText(Path.Combine(_xMatterFolder.Path, "Decodable Reader.css"), "Fake DR test data");
+			RobustFile.WriteAllText(Path.Combine(_xMatterFolder.Path, "SomeRandomXYZABCStyles.css"), "Some arbitrary test data");
+			RobustFile.WriteAllText(Path.Combine(_xMatterFolder.Path, "Decodable Reader.css"), "Fake DR test data");
 			//locations.Add(XMatterAppDataFolder);
 			//locations.Add(XMatterCommonDataFolder);
 			_xMatterFinder = new XMatterPackFinder(locations);
@@ -42,6 +43,9 @@ namespace BloomTests
 			userInstalledSearchPaths.Add(_otherFilesForTestingFolder.Path);
 			_fileLocator = new BloomFileLocator(new CollectionSettings(), _xMatterFinder, ProjectContext.GetFactoryFileLocations(), userInstalledSearchPaths,
 				ProjectContext.GetAfterXMatterFileLocations());
+
+			//Without this, tests can interact with one another, leaving the language set as something unexpected.
+			LocalizationManager.SetUILanguage("en", false);
 		}
 
 		[TearDown]
@@ -97,7 +101,7 @@ namespace BloomTests
 		public void BloomBrowserUIIsPrefferedOverFactorXMatter()
 		{
 			var path = _fileLocator.LocateFile("editMode.css");
-			Assert.That(Path.GetDirectoryName(path), Is.StringContaining(BloomFileLocator.BrowserRoot));
+			Assert.That(Path.GetDirectoryName(path).Replace("\\", "/"), Is.StringContaining(BloomFileLocator.BrowserRoot.Replace("\\", "/")));
 		}
 
 		/// <summary>
@@ -129,7 +133,7 @@ namespace BloomTests
 		public void GetBestLocalizedFile_EnglishIsCurrentLang_GetEnglishOne()
 		{
 			var englishPath = BloomFileLocator.DirectoryOfTheApplicationExecutable.CombineForPath(
-				"../browser/xMatter/Traditional-XMatter/description-en.txt");
+				"../browser/templates/xMatter/Traditional-XMatter/description-en.txt");
 			var bestLocalizedFile = BloomFileLocator.GetBestLocalizedFile(englishPath);
 			Assert.AreEqual(englishPath, bestLocalizedFile);
 		}
@@ -139,7 +143,7 @@ namespace BloomTests
 		{
 			LocalizationManager.SetUILanguage("gd", false);
 			var englishPath = BloomFileLocator.DirectoryOfTheApplicationExecutable.CombineForPath(
-				"../browser/xMatter/Traditional-XMatter/description-en.txt");
+				"../browser/templates/xMatter/Traditional-XMatter/description-en.txt");
 			var bestLocalizedFile = BloomFileLocator.GetBestLocalizedFile(englishPath);
 			Assert.AreEqual(englishPath, bestLocalizedFile);
 		}
@@ -149,7 +153,7 @@ namespace BloomTests
 		{
 			LocalizationManager.SetUILanguage("fr", false);
 			var englishPath = BloomFileLocator.DirectoryOfTheApplicationExecutable.CombineForPath(
-				"../browser/xMatter/Traditional-XMatter/description-en.txt");
+				"../browser/templates/xMatter/Traditional-XMatter/description-en.txt");
 			var bestLocalizedFile = BloomFileLocator.GetBestLocalizedFile(englishPath);
 			Assert.IsTrue(bestLocalizedFile.Contains("-fr"));
 		}

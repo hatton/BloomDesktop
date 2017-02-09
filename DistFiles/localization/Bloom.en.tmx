@@ -127,6 +127,18 @@
         <seg>More...</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.Toolbox.Settings.IsTemplateBook">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This is a template book.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Toolbox.Settings.IsTemplateBookIntroductionText">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>When you click "Add Page", you can choose from pages contained in template books. To make this a template book, tick this checkbox.</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.Toolbox.Settings.Unlock">
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
@@ -366,6 +378,136 @@
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>About These Settings</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.PageNumberingStyleLabel">
+      <tuv xml:lang="en">
+        <seg>Page Numbering Style</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Decimal">
+      <tuv xml:lang="en">
+        <seg>Decimal</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Arabic-Indic">
+      <tuv xml:lang="en">
+        <seg>Arabic-Indic</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Armenian">
+      <tuv xml:lang="en">
+        <seg>Armenian</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Upper-Armenian">
+      <tuv xml:lang="en">
+        <seg>Upper-Armenian</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lower-Armenian">
+      <tuv xml:lang="en">
+        <seg>Lower-Armenian</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Bengali">
+      <tuv xml:lang="en">
+        <seg>Bengali</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cambodian">
+      <tuv xml:lang="en">
+        <seg>Cambodian</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Khmer">
+      <tuv xml:lang="en">
+        <seg>Khmer</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Cjk-Decimal">
+      <tuv xml:lang="en">
+        <seg>Cjk-Decimal</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Devanagari">
+      <tuv xml:lang="en">
+        <seg>Devanagari</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Georgian">
+      <tuv xml:lang="en">
+        <seg>Georgian</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gujarati">
+      <tuv xml:lang="en">
+        <seg>Gujarati</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Gurmukhi">
+      <tuv xml:lang="en">
+        <seg>Gurmukhi</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Hebrew">
+      <tuv xml:lang="en">
+        <seg>Hebrew</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Kannada">
+      <tuv xml:lang="en">
+        <seg>Kannada</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Lao">
+      <tuv xml:lang="en">
+        <seg>Lao</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Malayalam">
+      <tuv xml:lang="en">
+        <seg>Malayalam</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Mongolian">
+      <tuv xml:lang="en">
+        <seg>Mongolian</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Myanmar">
+      <tuv xml:lang="en">
+        <seg>Myanmar</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Oriya">
+      <tuv xml:lang="en">
+        <seg>Oriya</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Persian">
+      <tuv xml:lang="en">
+        <seg>Persian</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tamil">
+      <tuv xml:lang="en">
+        <seg>Tamil</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Telugu">
+      <tuv xml:lang="en">
+        <seg>Telugu</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Thai">
+      <tuv xml:lang="en">
+        <seg>Thai</seg>
+      </tuv>
+    </tu>
+    <tu tuid="CollectionSettingsDialog.BookMakingTab.PageNumberingStyle.Tibetan">
+      <tuv xml:lang="en">
+        <seg>Tibetan</seg>
       </tuv>
     </tu>
     <tu tuid="CollectionSettingsDialog.ChangeLink">
@@ -860,6 +1002,12 @@
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
         <seg>&amp;Delete</seg>
+      </tuv>
+    </tu>
+	<tu tuid="EditTab.SavingNotification">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Saving...</seg>
       </tuv>
     </tu>
     <tu tuid="Common.Help">
@@ -1488,6 +1636,18 @@
         <seg>Copy Image</seg>
       </tuv>
     </tu>
+    <tu tuid="EditTab.Image.CopyImageFailed">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Bloom had problems using your computer's clipboard. Some other program may be interfering.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Image.TryRestart">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Try closing other programs and restart your computer if necessary.</seg>
+      </tuv>
+    </tu>
     <tu tuid="EditTab.ImageChangeWarning">
       <prop type="x-nolongerused">true</prop>
       <tuv xml:lang="en">
@@ -1626,7 +1786,7 @@
       </tuv>
     </tu>
     <tu tuid="TemplateBooks.PageLabel.1 Problem">
-      <note>This label indicates a page with one arithemetic problem on it.</note>
+      <note>This label indicates a page with one arithmetic problem on it.</note>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>1 Problem</seg>
@@ -1699,7 +1859,7 @@
       </tuv>
     </tu>
     <tu tuid="TemplateBooks.PageLabel.2 Problems">
-      <note>This label indicates a page with two arithemetic problems on it.</note>
+      <note>This label indicates a page with two arithmetic problems on it.</note>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>2 Problems</seg>
@@ -1724,7 +1884,7 @@
       </tuv>
     </tu>
     <tu tuid="TemplateBooks.PageLabel.3 Problems">
-      <note>This label indicates a page with three arithemetic problems on it.</note>
+      <note>This label indicates a page with three arithmetic problems on it.</note>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>3 Problems</seg>
@@ -1737,7 +1897,7 @@
       </tuv>
     </tu>
     <tu tuid="TemplateBooks.PageLabel.4 Problems">
-      <note>This label indicates a page with four arithemetic problems on it.</note>
+      <note>This label indicates a page with four arithmetic problems on it.</note>
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>4 Problems</seg>
@@ -1843,6 +2003,12 @@
       <prop type="x-dynamic">true</prop>
       <tuv xml:lang="en">
         <seg>Factory</seg>
+      </tuv>
+    </tu>
+	<tu tuid="TemplateBooks.PageLabel.Super Paper Saver">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Super Paper Saver</seg>
       </tuv>
     </tu>
     <tu tuid="TemplateBooks.PageLabel.Paper Saver">
@@ -2109,6 +2275,18 @@
       <note>Show in the layout chooser dropdown of the edit tab, if there was only a single layout choice</note>
       <tuv xml:lang="en">
         <seg>There are no other layout options for this template.</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.Overflow">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>This box has more text than will fit</seg>
+      </tuv>
+    </tu>
+    <tu tuid="EditTab.OverflowContainer">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>A container on this page is overflowing</seg>
       </tuv>
     </tu>
     <tu tuid="EditTab.TitleOfCopyIPToWholeBooksDialog">

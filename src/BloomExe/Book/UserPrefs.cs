@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using Newtonsoft.Json;
 using System.IO;
+using SIL.IO;
 using SIL.Reporting;
 
 
@@ -12,6 +13,7 @@ namespace Bloom.Book
 		private bool _loading = true;
 		private string _filePath;
 		private int _mostRecentPage;
+		private bool _reducePdfMemory;
 
 		private UserPrefs() {}
 
@@ -21,11 +23,11 @@ namespace Bloom.Book
 				return null;
 
 			UserPrefs userPrefs = null;
-			if(File.Exists(fileName))
+			if(RobustFile.Exists(fileName))
 			{
 				try
 				{
-					userPrefs = JsonConvert.DeserializeObject<UserPrefs>(File.ReadAllText(fileName));
+					userPrefs = JsonConvert.DeserializeObject<UserPrefs>(RobustFile.ReadAllText(fileName));
 					if (userPrefs == null)
 						throw new ApplicationException("JsonConvert.DeserializeObject() returned null");
 				}
@@ -67,6 +69,17 @@ namespace Bloom.Book
 			}
 		}
 
+		[JsonProperty("reducePdfMemory")]
+		public bool ReducePdfMemoryUse
+		{
+			get { return _reducePdfMemory; }
+			set
+			{
+				_reducePdfMemory = value;
+				Save();
+			}
+		}
+
 		private void Save()
 		{
 			// We're checking this because the deserialization routine calls the property setters which triggers a save. We don't
@@ -81,8 +94,8 @@ namespace Bloom.Book
 			{
 				if(!string.IsNullOrWhiteSpace(prefs))
 				{
-					var temp = new SIL.IO.TempFileForSafeWriting(_filePath);
-					File.WriteAllText(temp.TempFilePath, prefs);
+					var temp = new TempFileForSafeWriting(_filePath);
+					RobustFile.WriteAllText(temp.TempFilePath, prefs);
 					temp.WriteWasSuccessful();
 				}
 			}

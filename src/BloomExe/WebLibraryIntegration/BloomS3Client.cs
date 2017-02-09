@@ -10,12 +10,10 @@ using Amazon.S3.Model;
 using Amazon.S3.Transfer;
 using BloomTemp;
 using L10NSharp;
-using SIL.Code;
+using RestSharp.Extensions.MonoHttp;
 using SIL.IO;
 using SIL.Progress;
 using SIL.Reporting;
-using SIL.Windows.Forms.Progress;
-using RestSharp.Contrib;
 
 namespace Bloom.WebLibraryIntegration
 {
@@ -63,6 +61,33 @@ namespace Bloom.WebLibraryIntegration
 				_previousBucketName = bucketName;
 			}
 			return _amazonS3; // we keep this so that we can dispose of it later.
+		}
+
+		/// <summary>
+		/// Gets or sets the request timeout.
+		/// </summary>
+		public TimeSpan? Timeout
+		{
+			get { return _s3Config.Timeout; }
+			set { _s3Config.Timeout = value; }
+		}
+
+		/// <summary>
+		/// Gets or sets the timeout for socket read or write operations.
+		/// </summary>
+		public TimeSpan? ReadWriteTimeout
+		{
+			get { return _s3Config.ReadWriteTimeout; }
+			set { _s3Config.ReadWriteTimeout = value; }
+		}
+
+		/// <summary>
+		/// Gets or sets the maximum number of times to retry when errors occur.
+		/// </summary>
+		public int MaxErrorRetry
+		{
+			get { return _s3Config.MaxErrorRetry; }
+			set { _s3Config.MaxErrorRetry = value; }
 		}
 
 		/// <summary>
@@ -200,10 +225,10 @@ namespace Bloom.WebLibraryIntegration
 			// Don't upload audio (todo: test).
 			string audioDir = Path.Combine(destDirName, "audio");
 			if (Directory.Exists(audioDir))
-				Directory.Delete(audioDir, true);
+				SIL.IO.RobustIO.DeleteDirectory(audioDir, true);
 			var unwantedPdfs = Directory.EnumerateFiles(destDirName, "*.pdf").Where(x => Path.GetFileName(x) != pdfToInclude);
 			foreach (var file in unwantedPdfs)
-				File.Delete(file);
+				RobustFile.Delete(file);
 			UploadDirectory(prefix, wrapperPath, progress);
 
 			DeleteFileSystemInfo(new DirectoryInfo(wrapperPath));
@@ -289,6 +314,8 @@ namespace Bloom.WebLibraryIntegration
 
 					progress.WriteStatus(LocalizationManager.GetString("PublishTab.Upload.UploadingStatus", "Uploading {0}"),
 						fileName);
+					if (progress.CancelRequested)
+						return;
 
 					try
 					{
@@ -311,6 +338,8 @@ namespace Bloom.WebLibraryIntegration
 				foreach(string subdir in Directory.GetDirectories(directoryPath))
 				{
 					UploadDirectory(prefix, subdir, progress);
+					if (progress.CancelRequested)
+						return;
 				}
 			}
 		}
@@ -365,14 +394,14 @@ namespace Bloom.WebLibraryIntegration
 		// Return true if both files exist, are readable, and have the same content.
 		static bool SameFileContent(string path1, string path2)
 		{
-			if (!File.Exists(path1))
+			if (!RobustFile.Exists(path1))
 				return false;
-			if (!File.Exists(path2))
+			if (!RobustFile.Exists(path2))
 				return false;
 			try
 			{
-				var first = File.ReadAllBytes(path1);
-				var second = File.ReadAllBytes(path2);
+				var first = RobustFile.ReadAllBytes(path1);
+				var second = RobustFile.ReadAllBytes(path2);
 				if (first.Length != second.Length)
 					return false;
 				for (int i = 0; i < first.Length; i++)
@@ -422,7 +451,7 @@ namespace Bloom.WebLibraryIntegration
 		/// </summary>
 		/// <param name="storageKeyOfBookFolder"></param>
 		public string DownloadBook(string bucketName, string storageKeyOfBookFolder, string pathToDestinationParentDirectory,
-			ProgressDialog downloadProgress = null)
+			IProgressDialog downloadProgress = null)
 		{
 			//review: should we instead save to a newly created folder so that we don't have to worry about the
 			//other folder existing already? Todo: add a test for that first.
@@ -483,7 +512,7 @@ namespace Bloom.WebLibraryIntegration
 					{
 						try
 						{
-							Directory.Delete(destinationPath, true);
+							SIL.IO.RobustIO.DeleteDirectory(destinationPath, true);
 							didDelete = true;
 						}
 						catch(IOException)
@@ -500,7 +529,7 @@ namespace Bloom.WebLibraryIntegration
 					{
 						try
 						{
-							Directory.Move(tempDirectory, destinationPath);
+							SIL.IO.RobustIO.MoveDirectory(tempDirectory, destinationPath);
 							done = true;
 						}
 						catch(IOException)

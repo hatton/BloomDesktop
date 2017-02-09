@@ -1,5 +1,5 @@
-@import "../../../DistFiles/less/common-mixins.less";
-@import "CommonBasePageEPUB.less";
+@import "../templates/common-mixins.less";
+@import "basePage-sharedRules.less";
 
 .Browser-Reset() {
 	/*+init {*/
@@ -149,15 +149,14 @@ div#bloomDataDiv
 	display: none;
 	height: 100%;
 }
-/*Outside of frontmatter, we assume that if bloom gives it a content tag, then it should be visible*/
-.bloom-page:not(.bloom-frontMatter) .bloom-content1, .bloom-page:not(.bloom-frontMatter) .bloom-content2, .bloom-page:not(.bloom-frontMatter) .bloom-content3
-{
-	display: inherit;
+
+/*Outside of xmatter, we assume that if bloom gives it a content tag, then it should be visible*/
+.bloom-page:not(.bloom-frontMatter):not(.bloom-backMatter) {
+  .bloom-content1, .bloom-content2, .bloom-content3 {
+    display:block;//block is just "normal" for paragraphs.
+  }
 }
-.bloom-page:not(.bloom-frontMatter) .bloom-content2
-{
-	display: inherit;
-}
+
 /*Notes on wkhtmltopdf and page sizes: Set the border color of Div.Page in preview.css so you can see what the pdf is doing
 these should be 14.8, but wkhtmltopdf shinks it
 The folowing are the values which work with a 1px border.  With 0px border, I could not get the pages to come out
@@ -170,6 +169,18 @@ preview.css.
 Changes here generally require similar changes in EpubMaker.FixPictureSizes().
 */
 .bloom-page {
+	&.Device16x9Portrait{
+		min-width: @Device16x9Portrait-Width;
+		max-width: @Device16x9Portrait-Width;
+		min-height: @Device16x9Portrait-Height;
+		max-height: @Device16x9Portrait-Height;
+	}
+	&.Device16x9Landscape{
+		min-width: @Device16x9Landscape-Width;
+		max-width: @Device16x9Landscape-Width;
+		min-height: @Device16x9Landscape-Height;
+		max-height: @Device16x9Landscape-Height;
+	}
 	&.A5Portrait {
 		min-width: @A5Portrait-Width;
 		max-width: @A5Portrait-Width;
@@ -288,6 +299,28 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes().
 	top: @MarginTop;
 }
 
+.Device16x9Landscape{
+	//TODO: This is only for videos
+	background-color: black;
+	img{ background-color: white; } // so that transparent images show
+}
+
+.Device16x9Landscape, .Device16x9Portrait{
+	.origami-toggle{display:none}
+	.pageLabel{display:none}
+
+	.marginBox {
+        .split-pane.horizontal-percent > .split-pane-component.position-top{
+            margin-bottom: 0;
+        }
+
+        .bloom-imageContainer{
+            //the basePage.css has a "- 3px" that leaves the bottom of the screen unused
+            height: calc(100%) !important;
+        }
+    }
+}
+
 .marginBox {
 	.SetMarginBox(@PageWidth, @PageHeight) {
 		height: @PageHeight - (@MarginTop + @MarginBottom);
@@ -296,7 +329,34 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes().
 			max-width: @PageWidth - ( @MarginOuter + @MarginInner );
 		}
 	}
-	
+	.SetMarginBoxDevice(@PageWidth, @PageHeight) {
+		height: @PageHeight ;
+		width: @PageWidth;
+		IMG {
+			max-width: @PageWidth ;
+		}
+		top:0;
+		left:0 !important;
+	}
+
+	.Device16x9Portrait & {
+		.SetMarginBoxDevice(@Device16x9Portrait-Width, @Device16x9Portrait-Height);
+
+		//that makes the margin box actually have no margin. Which looks good for the image, but
+		//looks bad for the text. So here we re-introduce a margin... a bit of a hack
+		.bloom-editable{
+			margin-left: 10px;
+			width: ~"calc(100% - 20px)"; // 10px for the left, 10px for the right
+		}
+	}
+
+	.Device16x9Landscape & {
+		.SetMarginBoxDevice(@Device16x9Landscape-Width, @Device16x9Landscape-Height);
+
+		//make the top half take up the whole screen
+		.position-top{bottom: 0 !important;}
+		.position-bottom{display:none;}
+	}
 	.A4Portrait & {
 		.SetMarginBox(@A4Portrait-Width, @A4Portrait-Height);
 	}
@@ -346,7 +406,7 @@ Changes here generally require similar changes in EpubMaker.FixPictureSizes().
 	}
 }
 
-//Currently, in edit mode there is only one page in the html, so every 
+//Currently, in edit mode there is only one page in the html, so every
 //page looks like page 1 from the view of the css, so showing every page
 //as if it were odd is just confusing for the user.
 //Therefore we only turn on left-vs.right distinctions when when making PDF.
@@ -409,6 +469,10 @@ label.bubble, label.placeholder
 {
 	vertical-align: super;
 	font-size: 80%;
+}
+/* This is the html default, but our Browser.reset.* unfortunately overrides it. */
+sup {
+    font-size: smaller;
 }
 h1
 {

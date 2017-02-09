@@ -12,8 +12,10 @@ using NUnit.Framework;
 using SIL.Extensions;
 using SIL.IO;
 using SIL.Progress;
+using SIL.Code;
 using SIL.TestUtilities;
 using SIL.Windows.Forms.ImageToolbox;
+using RobustIO = Bloom.RobustIO;
 
 namespace BloomTests.Book
 {
@@ -56,13 +58,13 @@ namespace BloomTests.Book
 			_storage.SetupGet(x => x.FolderPath).Returns(_tempFolder.Path);// review: the real thing does more than just clone
 			_metadata = new BookInfo(_tempFolder.Path, true);
 			_storage.SetupGet(x => x.MetaData).Returns(_metadata);
+			_storage.Setup(x => x.HandleRetiredXMatterPacks(It.IsAny<HtmlDom>(), It.IsAny<string>()))
+				.Returns((HtmlDom dom, string y) => { return y == "BigBook" ? "Factory" : y; });
 
 			_templateFinder = new Moq.Mock<ITemplateFinder>();
 			_fileLocator = new Moq.Mock<IFileLocator>();
 			string root = FileLocator.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot);
 			string xMatter = BloomFileLocator.GetInstalledXMatterDirectory();
-			string factoryCollections = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections");
-			string templates = FileLocator.GetDirectoryDistributedWithApplication("factoryCollections", "Templates");
 			_fileLocator.Setup(x => x.LocateFileWithThrow("languageDisplayTemplate.css")).Returns(root.CombineForPath("bookLayout", "languageDisplayTemplate.css"));
 			_fileLocator.Setup(x => x.LocateFileWithThrow("languageDisplay.css")).Returns(root.CombineForPath(_tempFolder.Path, "languageDisplay.css"));
 			_fileLocator.Setup(x => x.LocateFileWithThrow("previewMode.css")).Returns("../notareallocation/previewMode.css");
@@ -135,20 +137,20 @@ namespace BloomTests.Book
 		protected void MakeSamplePngImageWithMetadata(string path)
 		{
 			var x = new Bitmap(10, 10);
-			x.Save(path, ImageFormat.Png);
+			SIL.IO.RobustIO.SaveImage(x, path, ImageFormat.Png);
 			x.Dispose();
-			using (var img = PalasoImage.FromFile(path))
+			using (var img = PalasoImage.FromFileRobustly(path))
 			{
 				img.Metadata.Creator = "joe";
 				img.Metadata.CopyrightNotice = "Copyright 1999 by me";
-				img.SaveUpdatedMetadataIfItMakesSense();
+				RetryUtility.Retry(() => img.SaveUpdatedMetadataIfItMakesSense());
 			}
 		}
 
 		private XmlDocument GetThreePageDom()
 		{
 			var dom = new XmlDocument();
-			dom.LoadXml(@"<html ><head></head><body>
+			dom.LoadXml(@"<html><head></head><body>
 				<div class='bloom-page' id='guid1'>
 					<p>
 						<textarea lang='en' id='1'  data-book='bookTitle'>tree</textarea>

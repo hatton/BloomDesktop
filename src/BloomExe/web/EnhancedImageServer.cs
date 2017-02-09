@@ -67,7 +67,7 @@ namespace Bloom.Api
 		/// <param name="handleOnUiThread">For safety, this defaults to true, but that can kill performance if you don't need it (BL-3452) </param>
 		public void RegisterEndpointHandler(string pattern, EndpointHandler handler, bool handleOnUiThread = true)
 		{
-			_endpointRegistrations[pattern.Trim(new char[] {'/'})] = new EndpointRegistration()
+			_endpointRegistrations[pattern.ToLowerInvariant().Trim(new char[] {'/'})] = new EndpointRegistration()
 			{
 				Handler = handler,
 				HandleOnUIThread = handleOnUiThread
@@ -121,7 +121,7 @@ namespace Bloom.Api
 		/// <returns></returns>
 		public static SimulatedPageFile MakeSimulatedPageFileInBookFolder(HtmlDom dom, bool escapeUrlAsNeededForSrcAttribute = false, bool setAsCurrentPageForDebugging = false)
 		{
-			var simulatedPageFileName = Path.ChangeExtension(Guid.NewGuid().ToString(), ".htm");
+			var simulatedPageFileName = Path.ChangeExtension(Guid.NewGuid().ToString(), ".html");
 			var pathToSimulatedPageFile = simulatedPageFileName; // a default, if there is no special folder
 			if (dom.BaseForRelativePaths != null)
 			{
@@ -180,7 +180,7 @@ namespace Bloom.Api
 			if (key.StartsWith("file://"))
 			{
 				var uri = new Uri(key);
-				File.Delete(uri.LocalPath);
+				RobustFile.Delete(uri.LocalPath);
 				return;
 			}
 			lock (_urlToSimulatedPageContent)
@@ -196,6 +196,12 @@ namespace Bloom.Api
 		protected override bool ProcessRequest(IRequestInfo info)
 		{
 			var localPath = GetLocalPathWithoutQuery(info);
+
+			//enhance: something feeds back these branding logos with a weird URL, that shouldn't be.
+			if(localPath.IndexOf("api/branding") > 20) // this 20 is just arbitrary... the point is, if it doesn't start with api/branding, it is bogus
+			{
+				return false;
+			}
 
 			if (localPath.ToLower().StartsWith("api/"))
 			{
@@ -259,7 +265,7 @@ namespace Bloom.Api
 			else if (localPath.StartsWith("localhost/", StringComparison.InvariantCulture))
 			{
 				var temp = LocalHostPathToFilePath(localPath);
-				if (File.Exists(temp))
+				if (RobustFile.Exists(temp))
 					localPath = temp;
 			}
 			// this is used only by the readium viewer
@@ -280,7 +286,7 @@ namespace Bloom.Api
 		/// </summary>
 		/// <param name="localPath"></param>
 		/// <returns></returns>
-		private static string LocalHostPathToFilePath(string localPath)
+		public static string LocalHostPathToFilePath(string localPath)
 		{
 #if __MonoCS__
 			// The JSON format may use a string like this to reference a local path.
@@ -299,12 +305,6 @@ namespace Bloom.Api
 #endif
 		}
 
-		private static string AdjustPossibleLocalHostPathToFilePath(string path)
-		{
-			if (!path.StartsWith("localhost/", StringComparison.InvariantCulture))
-				return path;
-			return LocalHostPathToFilePath(path);
-		}
 
 		private static void ProcessError(IRequestInfo info)
 		{
@@ -418,7 +418,7 @@ namespace Bloom.Api
 			// When JavaScript inserts our path into the html it replaces the three magic html characters with these substitutes.
 			// We need to convert back in order to match our key. Then, reverse the change we made to deal with quotation marks.
 			string tempPath = UnescapeUrlQuotes(modPath.Replace("&lt;", "<").Replace("&gt;", ">").Replace("&amp;", "&"));
-			if (File.Exists(tempPath))
+			if (RobustFile.Exists(tempPath))
 				modPath = tempPath;
 			try
 			{
@@ -434,9 +434,7 @@ namespace Bloom.Api
 				// but it has nothing to do with the actual file location.
 				if (localPath.StartsWith("OriginalImages/"))
 					possibleFullImagePath = localPath.Substring(15);
-				if (info.GetQueryParameters()["generateThumbnaiIfNecessary"] == "true")
-					return FindOrGenerateImage(info, localPath);
-				if(File.Exists(possibleFullImagePath) && Path.IsPathRooted(possibleFullImagePath))
+				if(RobustFile.Exists(possibleFullImagePath) && Path.IsPathRooted(possibleFullImagePath))
 				{
 					path = possibleFullImagePath;
 				}
@@ -458,7 +456,7 @@ namespace Bloom.Api
 			// but at the moment FF, looking for source maps to go with css, is
 			// looking for those maps where we said the css was, which is in the actual
 			// book folders. So instead redirect to our browser file folder.
-			if (string.IsNullOrEmpty(path) || !File.Exists(path))
+			if (string.IsNullOrEmpty(path) || !RobustFile.Exists(path))
 			{
 				var startOfBookLayout = localPath.IndexOf("bookLayout");
 				if (startOfBookLayout > 0)
@@ -468,39 +466,72 @@ namespace Bloom.Api
 					path = BloomFileLocator.GetBrowserFile(localPath.Substring(startOfBookEdit));
 			}
 
-			if (!File.Exists(path) && localPath.StartsWith("pageChooser/") && IsImageTypeThatCanBeReturned(localPath))
+			if (!RobustFile.Exists(path) && localPath.StartsWith("pageChooser/") && IsImageTypeThatCanBeReturned(localPath))
 			{
 				// if we're in the page chooser dialog and looking for a thumbnail representing an image in a
 				// template page, look for that thumbnail in the book that is the template source,
 				// rather than in the folder that stores the page choose dialog HTML and code.
 				var templatePath = Path.Combine(_bookSelection.CurrentSelection.FindTemplateBook().FolderPath,
 					localPath.Substring("pageChooser/".Length));
-				if (File.Exists(templatePath))
+				if (RobustFile.Exists(templatePath))
 				{
 					info.ReplyWithImage(templatePath);
 					return true;
 				}
 			}
-			if (!File.Exists(path) && IsImageTypeThatCanBeReturned(localPath))
+			// Use '%25' to detect that the % in a Url encoded character (for example space encoded as %20) was encoded as %25.
+			// In this example we would have %2520 in info.RawUrl and %20 in localPath instead of a space.  Note that if an
+			// image has a % in the filename, like 'The other 50%', and it isn't doubly encoded, then this shouldn't be a
+			// problem because we're triggering here only if the file isn't found.
+			if (!RobustFile.Exists(localPath) && info.RawUrl.Contains("%25"))
+			{
+				// possibly doubly encoded?  decode one more time and try.  See https://silbloom.myjetbrains.com/youtrack/issue/BL-3835.
+				// Some existing books have somehow acquired Url encoded coverImage data like the following:
+				// <div data-book="coverImage" lang="*">
+				//     The%20Moon%20and%20The%20Cap_Cover.png
+				// </div>
+				// This leads to data being stored doubly encoded in the program's run-time data.  The coverImage data is supposed to be
+				// Html/Xml encoded (using &), not Url encoded (using %).
+				path = System.Web.HttpUtility.UrlDecode(localPath);
+			}
+			if (!RobustFile.Exists(path) && IsImageTypeThatCanBeReturned(localPath))
 			{
 				// last resort...maybe we are in the process of renaming a book (BL-3345) and something mysteriously is still using
 				// the old path. For example, I can't figure out what hangs on to the old path when an image is changed after
 				// altering the main book title.
 				var currentFolderPath = Path.Combine(_bookSelection.CurrentSelection.FolderPath, Path.GetFileName(localPath));
-				if (File.Exists(currentFolderPath))
+				if (RobustFile.Exists(currentFolderPath))
 				{
 					info.ReplyWithImage(currentFolderPath);
 					return true;
 				}
 			}
 			
+			if (!RobustFile.Exists(path))
+			{
+				// On developer machines, we can lose part of path earlier.  Try one more thing.
+				path = info.LocalPathWithoutQuery.Substring(7); // skip leading "/bloom/");
+			}
 			if (!File.Exists(path))
 			{
-				if(path == null)
-				{
-					path = "(was null)";
-				}
-				var stuffToIgnore = new[] {
+				ReportMissingFile(localPath,path);
+				return false;
+			}
+			info.ContentType = GetContentType(Path.GetExtension(modPath));
+			info.ReplyWithFileContent(path);
+			return true;
+		}
+
+
+
+		// overridden in tests
+		internal virtual void ReportMissingFile(string localPath, string path)
+		{
+			if (path == null)
+			{
+				path = "(was null)";
+			}
+			var stuffToIgnore = new[] {
 					//browser/debugger stuff
 					"favicon.ico", ".map",
 					// Audio files may well be missing because we look for them as soon
@@ -511,33 +542,33 @@ namespace Bloom.Api
 					EpubMaker.kEPUBExportFolder.ToLowerInvariant()
 				};
 
-				if(stuffToIgnore.Any(s => (localPath.ToLowerInvariant().Contains(s))))
-					return false;
+			if (stuffToIgnore.Any(s => (localPath.ToLowerInvariant().Contains(s))))
+				return;
 
-				// we have any number of incidences where something asks for a page after we've navigated from it. E.g. BL-3715, BL-3769.
-				// I suspect our disposal algorithm is just flawed: the page is removed from the _url cache as soon as we navigated away, 
-				// which is too soon. But that will take more research and we're trying to finish 3.7. 
-				// So for now, let's just not to bother the user about an error that is only going to effect thumbnailing.
-				if (IsSimulatedFileUrl(localPath)) 
-				{
-					//even beta users should not be confronted with this
-					NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.Beta, "Page expired", "Server no longer has this page in the memory: " + localPath);
-				}
-				else
-				{
-					NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, "Cannot Find File", "Server could not find the file " + path + ". LocalPath was " + localPath + System.Environment.NewLine );
-				}
-				return false;
+			// we have any number of incidences where something asks for a page after we've navigated from it. E.g. BL-3715, BL-3769.
+			// I suspect our disposal algorithm is just flawed: the page is removed from the _url cache as soon as we navigated away, 
+			// which is too soon. But that will take more research and we're trying to finish 3.7. 
+			// So for now, let's just not to bother the user about an error that is only going to effect thumbnailing.
+			if (IsSimulatedFileUrl(localPath)) 
+			{
+				//even beta users should not be confronted with this
+				NonFatalProblem.Report(ModalIf.Alpha, PassiveIf.Beta, "Page expired", "Server no longer has this page in the memory: " + localPath);
 			}
-			info.ContentType = GetContentType(Path.GetExtension(modPath));
-			info.ReplyWithFileContent(path);
-			return true;
+			else if (IsImageTypeThatCanBeReturned(localPath))
+			{
+				// Complain quietly about missing image files.  See http://issues.bloomlibrary.org/youtrack/issue/BL-3938.
+				NonFatalProblem.Report(ModalIf.None, PassiveIf.All, "Cannot Find Image File", "Server could not find the image file " + path + ". LocalPath was " + localPath + System.Environment.NewLine );
+			}
+			else
+			{
+				NonFatalProblem.Report(ModalIf.Beta, PassiveIf.All, "Cannot Find File", "Server could not find the file " + path + ". LocalPath was " + localPath + System.Environment.NewLine );
+			}
 		}
 
 		protected bool IsSimulatedFileUrl(string localPath)
 		{
 			var extension = Path.GetExtension(localPath);
-			if(extension != null && !extension.StartsWith("htm"))
+			if(extension != null && !extension.StartsWith(".htm"))
 				return false;
 
 			// a good improvement might be to make these urls more obviously cache requests. But for now, let's just see if they are filename guids
@@ -557,92 +588,6 @@ namespace Bloom.Api
 			return base.IsRecursiveRequestContext(context) || context.Request.QueryString["generateThumbnaiIfNecessary"] == "true";
 		}
 
-		/// <summary>
-		/// Enhancing the code to not generate a new Book object every time we call Book.FindTemplateBook (BL-3782)
-		/// exposed a threading bug in the Mono library.  The same book can now being navigated at the same time
-		/// on multiple threads.  This appears to work okay on Windows/.Net, but throws exceptions on Linux/Mono.
-		/// (The error message in Mono even admitted it might reflect a bug in their XML library code.)
-		/// Locking three different lines of code below fixes this problem.  The locking doesn't seem to hurt
-		/// performance significantly, so I haven't tried to make it system specific.
-		/// </summary>
-		private static object templateLock = new object();
-
-		/// <summary>
-		/// Currently used in the Add Page dialog, a path with ?generateThumbnaiIfNecessary=true indicates a thumbnail for
-		/// a template page. Usually we expect that a file at the same path but with extension .svg will
-		/// be found and returned. Failing this we try for one ending in .png. If this still fails we
-		/// start a process to generate an image from the template page content.
-		/// </summary>
-		/// <param name="path"></param>
-		/// <returns>Should always return true, unless we really can't come up with an image at all.</returns>
-		private bool FindOrGenerateImage(IRequestInfo info, string path)
-		{
-			var localPath = AdjustPossibleLocalHostPathToFilePath(path);
-			var svgpath = Path.ChangeExtension(localPath, "svg");
-			if (File.Exists(svgpath))
-			{
-				ReplyWithFileContentAndType(info, svgpath);
-				return true;
-			}
-			var pngpath = Path.ChangeExtension(localPath, "png");
-			if (File.Exists(pngpath))
-			{
-				ReplyWithFileContentAndType(info, pngpath);
-				return true;
-			}
-			// We don't have an image; try to make one.
-			// This is the one remaining place where the EIS is aware that there is such a thing as a current book.
-			// Unfortunately it is part of a complex bit of logic that mostly doesn't have to do with current book,
-			// so it doesn't feel right to move it to CurrentBookHandler, especially as it's not possible to
-			// identify the queries which need the knowledge in the usual way (by a leading URL fragment).
-			if (_bookSelection.CurrentSelection == null)
-				return false; // paranoia
-			var template = _bookSelection.CurrentSelection.FindTemplateBook();
-			if (template == null)
-				return false; // paranoia
-			var caption = Path.GetFileNameWithoutExtension(path).Trim();
-			var isLandscape = caption.EndsWith("-landscape"); // matches string in page-chooser.ts
-			if (isLandscape)
-				caption = caption.Substring(0, caption.Length - "-landscape".Length);
-			// The Replace of & with + corresponds to a replacement made in page-chooser.ts method loadPagesFromCollection.
-			IPage templatePage = null;
-			lock (templateLock) { templatePage = template.GetPages().FirstOrDefault(page => page.Caption != null && page.Caption.Replace("&", "+") == caption); }
-			if (templatePage == null)
-				lock (templateLock) { templatePage = template.GetPages().FirstOrDefault(); }	// may get something useful?? or throw??
-
-			Image thumbnail = null;
-			lock (templateLock) { thumbnail = _thumbNailer.GetThumbnailForPage(template, templatePage, isLandscape); }
-
-			// lock to avoid BL-3781 where we got a "Object is currently in use elsewhere" while doing the Clone() below.
-			// Note: it would appear that the clone isn't even needed, since it was added in the past to overcome this
-			// same contention problem (but, in hindsite, only partially, see?). But for some reason if we just lock the image
-			// until it is saved, we get all grey rectangles. So for now, we just quickly do the clone and unlock.
-			var resultPath = "";
-			Bitmap clone;
-			lock(thumbnail)
-			{
-				clone = new Bitmap((Image) thumbnail.Clone());
-			}
-			using(clone)
-			{
-					try
-					{
-						Directory.CreateDirectory(Path.GetDirectoryName(pngpath));
-						clone.Save(pngpath);
-						resultPath = pngpath;
-					}
-					catch(Exception)
-					{
-						using(var file = new TempFile())
-						{
-							clone.Save(file.Path);
-							resultPath = file.Path;
-						}
-					}
-			}
-			ReplyWithFileContentAndType(info, resultPath);
-			return true; // We came up with some reply
-		}
 
 		private static void ReplyWithFileContentAndType(IRequestInfo info, string path)
 		{
@@ -656,7 +601,7 @@ namespace Bloom.Api
 			// but it has nothing to do with css files and defeats the following 'if'
 			localPath = localPath.Replace("OriginalImages/", "");
 			// is this request the full path to a real file?
-			if (File.Exists(localPath) && Path.IsPathRooted(localPath))
+			if (RobustFile.Exists(localPath) && Path.IsPathRooted(localPath))
 			{
 				// Typically this will be files in the book or collection directory, since the browser
 				// is supplying the path.
@@ -682,13 +627,13 @@ namespace Bloom.Api
 			var path = _fileLocator.LocateFile(fileName);
 
 			// if still not found, and localPath is an actual file path, use it
-			if (string.IsNullOrEmpty(path) && File.Exists(localPath)) path = localPath;
+			if (string.IsNullOrEmpty(path) && RobustFile.Exists(localPath)) path = localPath;
 
 			if (string.IsNullOrEmpty(path))
 			{
 				// it's just possible we need to add BloomBrowserUI to the path (in the case of the AddPage dialog)
 				var lastTry = FileLocator.GetFileDistributedWithApplication(true, BloomFileLocator.BrowserRoot, localPath);
-				if(File.Exists(lastTry)) path = lastTry;
+				if(RobustFile.Exists(lastTry)) path = lastTry;
 			}
 
 			// return false if the file was not found

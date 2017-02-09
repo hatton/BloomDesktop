@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Windows.Forms;
 using Bloom.Publish;
 using NUnit.Framework;
 using SIL.IO;
-using Bloom;
 
 //we have this "SetupFixture" which calls Browser.SetUpXulRunner(). I think Eberhard added it, but there is no comment saying what
 //its purpose is. //In any case on our new TeamCity Build agent, that causes these unit tests to fail (and only these).
@@ -32,12 +25,12 @@ namespace BloomTestsThatAvoidTheSetupFixture
 		public void MakePdf_BookStyleIsNone_OutputsPdf()
 		{
 			var maker = new PdfMaker();
-			using (var input = TempFile.WithExtension("htm"))
+			using (var input = TempFile.WithExtension("html"))
 			using (var output = new TempFile())
 			{
 				File.WriteAllText(input.Path, "<html><body>Hello</body></html>");
 				File.Delete(output.Path);
-				RunMakePdf(maker, input.Path, output.Path, "a5", false, false,
+				RunMakePdf(maker, input.Path, output.Path, "a5", false, false, false,
 					PublishModel.BookletLayoutMethod.SideFold, PublishModel.BookletPortions.AllPagesNoBooklet);
 				//we don't actually have a way of knowing it did a booklet
 				Assert.IsTrue(File.Exists(output.Path), "Failed to convert trivial HTML file to PDF (AllPagesNoBooklet)");
@@ -52,12 +45,12 @@ namespace BloomTestsThatAvoidTheSetupFixture
 		public void MakePdf_BookStyleIsBooklet_OutputsPdf()
 		{
 			var maker = new PdfMaker();
-			using (var input = TempFile.WithExtension("htm"))
+			using (var input = TempFile.WithExtension("html"))
 			using (var output = new TempFile())
 			{
 				File.WriteAllText(input.Path, "<html><body>Hello</body></html>");
 				File.Delete(output.Path);
-				RunMakePdf(maker, input.Path, output.Path, "A5", false, false,
+				RunMakePdf(maker, input.Path, output.Path, "A5", false, false, false,
 					PublishModel.BookletLayoutMethod.SideFold, PublishModel.BookletPortions.BookletPages);
 				//we don't actually have a way of knowing it did a booklet
 				Assert.IsTrue(File.Exists(output.Path), "Failed to convert trivial HTML file to PDF (BookletPages)");
@@ -75,12 +68,12 @@ namespace BloomTestsThatAvoidTheSetupFixture
 		public void MakePdf_BookNameIsChinese_OutputsPdf()
 		{
 			var maker = new PdfMaker();
-			using (var input = TempFile.WithFilename("北京.htm"))
+			using (var input = TempFile.WithFilename("北京.html"))
 			using (var output = TempFile.WithFilename("北京.pdf"))
 			{
-				File.WriteAllText(input.Path, "<html><body>北京</body></html>");
-				File.Delete(output.Path);
-				RunMakePdf(maker, input.Path, output.Path, "A5", false, false,
+				RobustFile.WriteAllText(input.Path, "<html><body>北京</body></html>");
+				RobustFile.Delete(output.Path);
+				RunMakePdf(maker, input.Path, output.Path, "A5", false, false, false,
 					PublishModel.BookletLayoutMethod.SideFold, PublishModel.BookletPortions.BookletPages);
 				//we don't actually have a way of knowing it did a booklet
 				Assert.IsTrue(File.Exists(output.Path), "Failed to convert trivial HTML file to PDF (Chinese filenames and content)");
@@ -95,12 +88,12 @@ namespace BloomTestsThatAvoidTheSetupFixture
 		public void MakePdf_BookNameIsNonAscii_OutputsPdf()
 		{
 			var maker = new PdfMaker();
-			using (var input = TempFile.WithFilename("എന്റെ ബുക്ക്.htm"))
+			using (var input = TempFile.WithFilename("എന്റെ ബുക്ക്.html"))
 			using (var output = TempFile.WithFilename("എന്റെ ബുക്ക്.pdf"))
 			{
 				File.WriteAllText(input.Path, "<META HTTP-EQUIV=\"content-type\" CONTENT=\"text/html; charset=utf-8\"><html><body>എന്റെ ബുക്ക്</body></html>");
 				File.Delete(output.Path);
-				RunMakePdf(maker, input.Path, output.Path, "A5", false, false,
+				RunMakePdf(maker, input.Path, output.Path, "A5", false, false, false,
 					PublishModel.BookletLayoutMethod.SideFold, PublishModel.BookletPortions.BookletPages);
 				//we don't actually have a way of knowing it did a booklet
 				Assert.IsTrue(File.Exists(output.Path), "Failed to convert trivial HTML file to PDF (Indic script filenames and content)");
@@ -124,14 +117,14 @@ namespace BloomTestsThatAvoidTheSetupFixture
 		/// almost certainly an obscure bug in Mono.  Running the method directly as we do here sidesteps that
 		/// problem.  (See https://jira.sil.org/browse/BL-831.)
 		/// </remarks>
-		void RunMakePdf(PdfMaker maker, string input, string output, string paperSize, bool landscape, bool rightToLeft,
+		void RunMakePdf(PdfMaker maker, string input, string output, string paperSize, bool landscape, bool saveMemoryMode, bool rightToLeft,
 			PublishModel.BookletLayoutMethod layout, PublishModel.BookletPortions portion)
 		{
 			// Passing in a DoWorkEventArgs object prevents a possible exception being thrown.  Which may not
 			// really matter much in the test situation since NUnit would catch the exception.  But I'd rather
 			// have a nice test failure message than an unexpected exception caught message.
 			var eventArgs = new DoWorkEventArgs(null);
-			maker.MakePdf(input, output, paperSize, landscape, rightToLeft, layout, portion, null, eventArgs, null);
+			maker.MakePdf(input, output, paperSize, landscape, saveMemoryMode, rightToLeft, layout, portion, null, eventArgs, null);
 		}
 	}
 }

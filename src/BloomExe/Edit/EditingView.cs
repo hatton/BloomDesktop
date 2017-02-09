@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Bloom.Book;
 using Bloom.CollectionTab;
@@ -11,17 +12,17 @@ using Bloom.ImageProcessing;
 using Bloom.Properties;
 using Bloom.Api;
 using L10NSharp;
-using SIL.Extensions;
 using SIL.Progress;
 using SIL.Reporting;
-using SIL.Windows.Forms;
 using SIL.Windows.Forms.ClearShare;
 using SIL.Windows.Forms.ImageGallery;
 using SIL.Windows.Forms.ImageToolbox;
+using SIL.Windows.Forms.Miscellaneous;
 using Gecko;
 using TempFile = SIL.IO.TempFile;
 using Bloom.Workspace;
 using Gecko.DOM;
+using SIL.IO;
 using SIL.Windows.Forms.Widgets;
 
 namespace Bloom.Edit
@@ -95,7 +96,8 @@ namespace Bloom.Edit
 		{
 			if(_visible && (Keys) keyData == (Keys.Control | Keys.N))
 			{
-				_model.HandleAddNewPageKeystroke(null);
+				// This is for now a TODO
+				//_model.HandleAddNewPageKeystroke(null);
 			}
 		}
 
@@ -363,9 +365,30 @@ namespace Bloom.Edit
 				// never happens.
 				_browser1.WebBrowser.DocumentCompleted += WebBrowser_ReadyStateChanged;
 				_browser1.WebBrowser.ReadyStateChange += WebBrowser_ReadyStateChanged;
+#if __MonoCS__
+				// On Linux/Mono, the user can click between pages too fast in Edit mode, resulting
+				// in a warning dialog popping up.  I've never seen this happen on Windows, but it's
+				// happening fairly often on Linux when I just try to move around a book.  The fix
+				// here is to set a flag that page selection is still processing and block any
+				// further page selecting until the current page has finished loading.
+				_model.PageSelectionStarted();
+				_browser1.WebBrowser.DocumentCompleted += WebBrowser_DocumentCompleted;
+#endif
 			}
 			UpdateDisplay();
 		}
+
+#if __MonoCS__
+		/// <summary>
+		/// Flag the PageSelection object that the current (former?) page selection has completed,
+		/// so it's safe to select another page now.
+		/// </summary>
+		void WebBrowser_DocumentCompleted(object sender, EventArgs e)
+		{
+			_model.PageSelectionFinished();
+			_browser1.WebBrowser.DocumentCompleted -= WebBrowser_DocumentCompleted;
+		}
+#endif
 
 		void WebBrowser_ReadyStateChanged(object sender, EventArgs e)
 		{
@@ -492,7 +515,7 @@ namespace Bloom.Edit
 			PalasoImage imageInfo = null;
 			try
 			{
-				imageInfo = PalasoImage.FromFile(path);
+				imageInfo = PalasoImage.FromFileRobustly(path);
 			}
 			catch(TagLib.CorruptFileException e)
 			{
@@ -587,7 +610,7 @@ namespace Bloom.Edit
 			{
 				// Replace current image with placeHolder.png
 				var path = Path.Combine(bookFolderPath, "placeHolder.png");
-				using(var palasoImage = PalasoImage.FromFile(path))
+				using(var palasoImage = PalasoImage.FromFileRobustly(path))
 				{
 					_model.ChangePicture(GetImageNode(ge), palasoImage, new NullProgress());
 				}
@@ -661,15 +684,15 @@ namespace Bloom.Edit
 							Path.GetFileNameWithoutExtension(clipboardImage.FileName) + ".png");
 						Logger.WriteMinorEvent("[Paste Image] Saving {0} ({1}) as {2} and converting to PNG", clipboardImage.FileName,
 							clipboardImage.OriginalFilePath, pathToPngVersion);
-						if(File.Exists(pathToPngVersion))
+						if(RobustFile.Exists(pathToPngVersion))
 						{
-							File.Delete(pathToPngVersion);
+							RobustFile.Delete(pathToPngVersion);
 						}
 						using(var temp = TempFile.TrackExisting(pathToPngVersion))
 						{
-							clipboardImage.Image.Save(pathToPngVersion, ImageFormat.Png);
+							SIL.IO.RobustIO.SaveImage(clipboardImage.Image, pathToPngVersion, ImageFormat.Png);
 
-							using(var palasoImage = PalasoImage.FromFile(temp.Path))
+							using(var palasoImage = PalasoImage.FromFileRobustly(temp.Path))
 							{
 								_model.ChangePicture(imageElement, palasoImage, new NullProgress());
 							}
@@ -691,7 +714,7 @@ namespace Bloom.Edit
 
 		private static PalasoImage GetImageFromClipboard()
 		{
-			return BloomClipboard.GetImageFromClipboard();
+			return PortableClipboard.GetImageFromClipboard();
 		}
 
 		private static bool CopyImageToClipboard(DomEventArgs ge, string bookFolderPath)
@@ -706,13 +729,32 @@ namespace Bloom.Edit
 				var path = Path.Combine(bookFolderPath, url.NotEncoded);
 				try
 				{
-					using(var image = PalasoImage.FromFile(path))
+					using(var image = PalasoImage.FromFileRobustly(path))
 					{
-						BloomClipboard.CopyImageToClipboard(image);
+						PortableClipboard.CopyImageToClipboard(image);
 					}
 					return true;
 				}
-				catch(Exception e)
+				catch (NotImplementedException)
+				{
+					var msg = LocalizationManager.GetDynamicString("Bloom", "ImageToClipboard",
+						"Copying an image to the clipboard is not yet implemented in Bloom for Linux.",
+						"message for messagebox warning to user");
+					var header = LocalizationManager.GetDynamicString("Bloom", "NotImplemented",
+						"Not Yet Implemented", "header for messagebox warning to user");
+					MessageBox.Show(msg, header);
+				}
+				catch (ExternalException e)
+				{
+					Logger.WriteEvent("CopyImageToClipboard -> ExternalException: " + e.Message);
+					var msg = LocalizationManager.GetDynamicString("Bloom", "EditTab.Image.CopyImageFailed",
+						"Bloom had problems using your computer's clipboard. Some other program may be interfering.") +
+						Environment.NewLine + Environment.NewLine +
+						LocalizationManager.GetDynamicString("Bloom", "EditTab.Image.TryRestart",
+						"Try closing other programs and restart your computer if necessary.");
+					MessageBox.Show(msg);
+				}
+				catch (Exception e)
 				{
 					Debug.Fail(e.Message);
 					Logger.WriteEvent("CopyImageToClipboard:" + e.Message);
@@ -790,11 +832,11 @@ namespace Bloom.Edit
 			var existingImagePath = Path.Combine(_model.CurrentBook.FolderPath, currentPath);
 
 			//don't send the placeholder to the imagetoolbox... we get a better user experience if we admit we don't have an image yet.
-			if(!currentPath.ToLowerInvariant().Contains("placeholder") && File.Exists(existingImagePath))
+			if(!currentPath.ToLowerInvariant().Contains("placeholder") && RobustFile.Exists(existingImagePath))
 			{
 				try
 				{
-					imageInfo = PalasoImage.FromFile(existingImagePath);
+					imageInfo = PalasoImage.FromFileRobustly(existingImagePath);
 				}
 				catch(Exception e)
 				{
@@ -905,7 +947,7 @@ namespace Bloom.Edit
 		/// </summary>
 		public void CleanHtmlAndCopyToPageDom()
 		{
-			RunJavaScript("FrameExports.getToolboxFrameExports().removeToolboxMarkup();");
+			RunJavaScript("if (typeof(FrameExports) !=='undefined') {FrameExports.getToolboxFrameExports().removeToolboxMarkup();}");
 			_browser1.ReadEditableAreasNow();
 		}
 
@@ -919,7 +961,9 @@ namespace Bloom.Edit
 			var frame = _browser1.WebBrowser.Window.Document.GetElementById("page") as GeckoIFrameElement;
 			if(frame == null)
 				return null;
-			return frame.ContentDocument.Body;
+			// The following line looks like it should work, but it doesn't (at least not reliably in Geckofx45).
+			// return frame.ContentDocument.Body;
+			return frame.ContentWindow.Document.GetElementsByTagName("body").First();
 		}
 
 		/// <summary>
@@ -1230,19 +1274,14 @@ namespace Bloom.Edit
 
 		public void ShowAddPageDialog()
 		{
-//			if(_view == null || _inProcessOfDeleting || _addPageDialogShowing)
-//				return;
-			//_addPageDialogShowing = true;
-			var jsonTemplates = _model.GetAddPageArguments(false);
 			//if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
-			RunJavaScript("FrameExports.showAddPageDialog(" + jsonTemplates + ");");
+			RunJavaScript("FrameExports.showAddPageDialog(false);");
 		}
 
 		internal void ShowChangeLayoutDialog(IPage page)
 		{
-			var jsonTemplates = _model.GetAddPageArguments(true, page);
 			//if the dialog is already showing, it is up to this method we're calling to detect that and ignore our request
-			RunJavaScript("FrameExports.showAddPageDialog(" + jsonTemplates + ");");
+			RunJavaScript("FrameExports.showAddPageDialog(true);");
 		}
 
 
