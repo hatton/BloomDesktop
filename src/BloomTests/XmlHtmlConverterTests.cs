@@ -246,5 +246,20 @@ namespace BloomTests
 			// The XmlDocument.PreserveWhitespace setting appears to insert newlines that we don't care about.
 			Assert.AreEqual("<div><u><i style=\"test\"></i></u></div>", xml);
 		}
+
+		[Test]
+		public void SaveAsHTM_HasTypicalLabelCheckboxPattern_DoesNotRemoveCheckbox()
+		{
+			var pattern = "<label><input type='checkbox'/>Hello</label>";
+			var dom = new XmlDocument();
+			dom.LoadXml("<!DOCTYPE html><html><body>" +
+			  pattern +
+			  "</body></html>");
+			using (var temp = new TempFile())
+			{
+				XmlHtmlConverter.SaveDOMAsHtml5(dom, temp.Path);
+				AssertThatXmlIn.HtmlFile(temp.Path).HasSpecifiedNumberOfMatchesForXpath("//input", 1);
+			}
+		}
 	}
 }

@@ -20,6 +20,10 @@ html
 		h3(data-panelId='bookSettingsTool', data-order='100')
 			img(src="/bloom/bookEdit/toolbox/bookSettings/icon.svg")
 		div(data-panelId='bookSettingsTool')
+			h4(data-18n='EditTab.Toolbox.Settings.PageOptions.Label').first Page Options
+				.pageLayoutOptions
+					//this gets replaced by options, where there are any, by bookSettings.ts
+					div(data-18n='EditTab.Toolbox.Settings.PageOptions.NoOptions') This page has no options.
 			form#bookSettings
 				.showOnlyWhenBookWouldNormallyBeLocked
 					+text('EditTab.Toolbox.Settings.UnlockShellBookIntroductionText','Bloom normally prevents most changes to shellbooks. If you need to add pages, change images, etc., tick the box below.')

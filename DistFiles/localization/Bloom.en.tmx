@@ -4696,5 +4696,12 @@
         <seg>Advanced Program Settings</seg>
       </tuv>
     </tu>
-  </body>
+    <tu tuid="EditTab.Toolbox.Settings.PageOptions.FrontCover.ShowLanguageNames">
+      <prop type="x-dynamic">true</prop>
+      <tuv xml:lang="en">
+        <seg>Show Language Name(s)</seg>
+        <note>On the cover of the book, there is a place where Bloom can display the language(s) of the book. This label is on the checkbox that turns that on/off.</note>
+      </tuv>
+    </tu>
+    </body>
 </tmx>

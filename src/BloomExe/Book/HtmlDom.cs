@@ -934,6 +934,10 @@ namespace Bloom.Book
 					edittedPageDiv.SafeSelectNodes("//*[contains(concat(' ', @class, ' '), ' bloom-ui ')]").Cast<XmlNode>().ToArray())
 				node.ParentNode.RemoveChild(node);
 
+			// we normally only save the contents of the div, but this data attribute gets modified by the user so we need to save it, too
+			destinationPageDiv.SetAttribute("data-page-layout-options",
+				edittedPageDiv.GetOptionalStringAttribute("data-page-layout-options", ""));
+
 			destinationPageDiv.InnerXml = edittedPageDiv.InnerXml;
 
 			//Enhance: maybe we should just copy over all attributes?

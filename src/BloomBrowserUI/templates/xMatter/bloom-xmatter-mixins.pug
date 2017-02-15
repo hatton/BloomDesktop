@@ -82,6 +82,13 @@ mixin block-licenseAndCopyright
 			.licenseNotes(data-derived="licenseNotes", lang="en").Credits-Page-style
 				| {License Notes}
 
+mixin optionCheckbox(key, i18nKey, englishLabel)
+	//NB: a good pattern is to put the input inside of the label. But something, probably our HTMLTidy, is removing the checkbox when you do that
+	.optionCheckbox(data-option=key)
+		input(id=key type='checkbox')
+		label(for=key data-i18n=i18nKey)
+			=englishLabel
+
 //- -------------------------------------------------------------------------------
 //-	Unless every page of your xmatter pack needs to be different than the "factory"
 //-	one that comes with Bloom, use the following mixins to reuse the pages that
@@ -100,11 +107,17 @@ mixin factoryStandard-outsideFrontCover
 	// FRONT COVER
 	+page-cover('Front Cover')(data-export='front-matter-cover')&attributes(attributes).frontCover.outsideFrontCover#74731b2d-18b0-420f-ac96-6de20f659810
 
+		.pageLayoutOptions(style="display:none")
+			//+optionCheckbox('FrontCover.ShowN1Title', 'EditTab.Toolbox.Settings.PageOptions.FrontCover.ShowN1Title', 'Show National Language 1 Title')
+			//+optionCheckbox('FrontCover.ShowN2Title', 'EditTab.Toolbox.Settings.PageOptions.FrontCover.ShowN2Title', 'Show National Language 2 Title')
+			+optionCheckbox('FrontCover.ShowLanguageNames', 'EditTab.Toolbox.Settings.PageOptions.FrontCover.ShowLanguageNames', 'Show Language Name(s)')
+			// not ready yet: need the qtip to update when this changes +checkbox('FrontCover.ShowTopic', 'EditTab.Toolbox.Settings.PageOptions.FrontCover.ShowTopic', 'Show Topic')
+
 		//- enhance: could we 1) adjust stylesheet and 2) preserve bookTitle value to simplify this to
 		//- 	+field-matter('bookTitle').Title-On-Cover-style
 		//- 		label.bubble Book title in {lang}
-		//- This current pattern is born of pre-jade days when it didn't matter much, but now in the
-		//- light of jade it is overly complicated.
+		//- This current pattern is born of pre-jade/pug days when it didn't matter much, but now in the
+		//- light of pug it is overly complicated.
 
 		+field-prototypeDeclaredExplicity("V,N1").bookTitle
 			label.bubble Book title in {lang}
@@ -123,7 +136,7 @@ mixin factoryStandard-outsideFrontCover
 				.creditsRow(data-hint='You may use this space for author/illustrator, or anything else.')
 					+field-xmatter("V", "smallCoverCredits").Cover-Default-style
 				.bottomRow
-					.coverBottomLangName.Cover-Default-style(data-book='languagesOfBook')
+					.coverBottomLangName.Cover-Default-style(data-book='languagesOfBook', data-page-flag="{key:'front-lang-names',en:'Show Language Name(s)'}", data-page-flag-front-lang-names="true")
 					+chooser-topic.coverBottomBookTopic
 
 mixin factoryStandard-creditsInsideFrontCover
