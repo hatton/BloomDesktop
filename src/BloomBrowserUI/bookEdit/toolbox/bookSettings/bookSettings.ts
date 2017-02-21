@@ -70,7 +70,64 @@ function loadPageOptions() {
             $(".pageLayoutOptions").append(wiredUpOptionControls);
         });
     }
+    loadFieldLanguageOptions();
 }
+
+function loadFieldLanguageOptions() {
+    const page = getPage().find(".bloom-page")[0];
+    const groups = $(page).find(".bloom-translationGroup");
+    groups.each((iterator, group) => {
+        // at the moment, this is only for ISBN; we *could* allow people to hide it.
+        // but it we would need to at least not show all the language variants that
+        // some process sticks in there, which don't make sense. For now, I'm just
+        // leaving it out of the options.
+        if (group.getAttribute("data-default-languages") === "*") {
+            return;
+        }
+        const editables = $(group).find(".bloom-editable");
+
+        // we *could* allow people to turn on/off text blocks in the content of the book,
+        // but we're not going there right now.
+        if (!group.hasAttribute("data-book") && $(group).children("[data-book]").length === 0) {
+            return;
+        }
+        var groupLabel = group.getAttribute("data-book") || "";
+        editables.each((iterator2, editable) => {
+            //todo i18n
+            var lang = editable.getAttribute("lang");
+            //"*" (language unspecified) doesn't really belong in there if it is among others
+            if (lang === "*" && editables.length > 1) {
+                return;
+            }
+            // "z" is not a real language; sometimes used for supplying a prototype
+            if (lang === "z") {
+                return;
+            }
+            var dataLabelSometimesOnEditable = editable.getAttribute("data-book") || "";
+            var label = groupLabel + dataLabelSometimesOnEditable + " : " + lang;
+            var checkboxAndLabel = $("<div class='optionCheckbox'><input type='checkbox'></input><label>" + label + "</label></div>");
+            var editableIsVisible = $(editable).hasClass("bloom-visibility-user-on") ||
+                (!$(editable).hasClass("bloom-visibility-user-off") && $(editable).hasClass("bloom-visibility-code-on"));
+
+            (<HTMLInputElement>checkboxAndLabel.find('input')[0]).checked = editableIsVisible;
+
+            $(checkboxAndLabel).click((event) => {
+                editableIsVisible = !editableIsVisible;
+                if (editableIsVisible) {
+                    $(editable).removeClass("bloom-visibility-user-off");
+                    $(editable).addClass("bloom-visibility-user-on");
+                } else {
+                    $(editable).removeClass("bloom-visibility-user-on");
+                    $(editable).addClass("bloom-visibility-user-off");
+                }
+            });
+
+
+            $(".pageLayoutOptions").append(checkboxAndLabel);
+        });
+    });
+}
+
 export function handleBookSettingCheckboxClick(clickedButton: any) {
     // read our controls and send the model back to c#
     // enhance: this is just dirt-poor serialization of checkboxes for now

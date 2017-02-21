@@ -118,7 +118,12 @@ mixin factoryStandard-outsideFrontCover
 		//- 		label.bubble Book title in {lang}
 		//- This current pattern is born of pre-jade/pug days when it didn't matter much, but now in the
 		//- light of pug it is overly complicated.
-
+		//Enhance (Feb 2017) to agree with the above old comment....
+		//The existing way of defining this causes each bloom-editable to be in its own top level div in the data-div.
+		//It would be preferable to have the whole translation group saved there, instead.
+		//However there appears to be c# code that expects it this way, so that would need to be changed
+		//and we'd have to make sure that the upgrade / downgrade works with previous versions. So
+		//I'm leaving it for now.
 		+field-prototypeDeclaredExplicity("V,N1").bookTitle
 			label.bubble Book title in {lang}
 			+editable(kLanguageForPrototypeOnly).bloom-nodefaultstylerule.Title-On-Cover-style(data-book='bookTitle')
