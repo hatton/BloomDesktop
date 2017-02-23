@@ -158,12 +158,12 @@ mixin field-mono-version1(language, bubbleText)
 	+editable(language)(data-hint=bubbleText)&attributes(attributes)
 
 //- These are useful for front-back matter that will never be translated.
-//- When used in frontMatter, the dataBookName is mandatory.
+//- When used in xMatter, the key is mandatory.
 //- Language is always mandatory, but you can use '*' to mean "Don't worry what language it is"
-mixin field-mono-meta(language, dataBookName)
+mixin field-mono-meta(language, key)
 	- requireTwoArguments('field-mono-meta', arguments);
 	+field-prototypeDeclaredExplicity(language)
-		+editable(language)(data-book=dataBookName)&attributes(attributes)
+		+editable(language)(data-book=key)&attributes(attributes)
 			block
 
 mixin  page-splittable-choice-custom(englishLabel, englishDescription)

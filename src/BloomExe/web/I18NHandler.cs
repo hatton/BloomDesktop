@@ -5,6 +5,7 @@ using System.Threading;
 using Bloom.Collection;
 using L10NSharp;
 using Newtonsoft.Json;
+using SIL.WritingSystems;
 
 namespace Bloom.Api
 {
@@ -14,6 +15,7 @@ namespace Bloom.Api
 	static class I18NHandler
 	{
 		private static bool _localizing = false;
+		private static LanguageLookup _languageLookup;
 
 		public static bool HandleRequest(string localPath, IRequestInfo info, CollectionSettings currentCollectionSettings)
 		{
@@ -79,6 +81,35 @@ namespace Bloom.Api
 					{
 						info.ContentType = "text/plain";
 						info.WriteCompleteOutput(LocalizationManager.GetDynamicStringOrEnglish("Bloom", id, englishText, null, langId));
+						return true;
+					}
+					else if(id.StartsWith("LanguageNames."))
+					{
+						var code = id.Replace("LanguageNames.", "");
+						var languageName = code;
+						if(currentCollectionSettings.Language1Iso639Code == code)
+						{
+							// this is what the user wants to see for the vernacular, might not be the official name
+							languageName = currentCollectionSettings.Language1Name;
+						}
+						else
+						{
+							var langInfo = GetLanguageLookup().GetLanguageFromCode(code);
+							if(langInfo != null)
+							{
+								languageName = langInfo.DesiredName; // here "desired name" is just the first one
+
+								//allow for the l10n system to override how we show this language to this user
+								//(This isn't really going to find any hits at the moment? But if we were to add
+								//some major languages to the words people can translate, then this would work.)
+								if(LocalizationManager.GetIsStringAvailableForLangId(id, langId))
+								{
+									languageName = LocalizationManager.GetDynamicStringOrEnglish("Bloom", "LanguageNames."+languageName, languageName, null, langId);
+								}
+							}
+						}
+						info.ContentType = "text/plain";
+						info.WriteCompleteOutput(languageName);
 						return true;
 					}
 					else
@@ -204,6 +235,15 @@ namespace Bloom.Api
 					"added to the en.tmx, so that it can show up in the list of things to be localized even " +
 					"when the user has not encountered this part of the interface yet.");
 			}
+		}
+
+		private static LanguageLookup GetLanguageLookup()
+		{
+			if(_languageLookup == null)
+			{
+				_languageLookup = new LanguageLookup();
+			}
+			return _languageLookup;
 		}
 	}
 }

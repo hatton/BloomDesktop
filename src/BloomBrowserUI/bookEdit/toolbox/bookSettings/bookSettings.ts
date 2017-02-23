@@ -3,6 +3,7 @@
 import axios = require('axios');
 import * as JQuery from 'jquery';
 import * as $ from 'jquery';
+import theOneLocalizationManager from "../../../lib/localizationManager/localizationManager";
 
 $(document).ready(() => {
     // request our model and set the controls
@@ -91,25 +92,30 @@ function loadFieldLanguageOptions() {
         if (!group.hasAttribute("data-book") && $(group).children("[data-book]").length === 0) {
             return;
         }
-        var groupLabel = group.getAttribute("data-book") || "";
+        var groupLabel = group.getAttribute("data-label") || group.getAttribute("data-book") || "";
+        if (groupLabel.length > 0) {
+            //todo remove br, do with styles
+            $(".pageLayoutOptions").append($("<br/><div>" + groupLabel + "</div>"));
+        }
+        //Enhance: I would like to limit to the 3 languages of the collection, but I don't
+        //have a way get at that from here, yet. We could add that information to book/settings api.
         editables.each((iterator2, editable) => {
             //todo i18n
-            var lang = editable.getAttribute("lang");
+            var langIso = editable.getAttribute("lang");
             //"*" (language unspecified) doesn't really belong in there if it is among others
-            if (lang === "*" && editables.length > 1) {
+            if (langIso === "*" && editables.length > 1) {
                 return;
             }
             // "z" is not a real language; sometimes used for supplying a prototype
-            if (lang === "z") {
+            if (langIso === "z") {
                 return;
             }
-            var dataLabelSometimesOnEditable = editable.getAttribute("data-book") || "";
-            var label = groupLabel + dataLabelSometimesOnEditable + " : " + lang;
-            var checkboxAndLabel = $("<div class='optionCheckbox'><input type='checkbox'></input><label>" + label + "</label></div>");
+
+            var checkboxAndLabel = $("<div class='optionCheckbox'><input type='checkbox'></input><label>" + langIso + "</label></div>");
             var editableIsVisible = $(editable).hasClass("bloom-visibility-user-on") ||
                 (!$(editable).hasClass("bloom-visibility-user-off") && $(editable).hasClass("bloom-visibility-code-on"));
-
-            (<HTMLInputElement>checkboxAndLabel.find('input')[0]).checked = editableIsVisible;
+            var labelElement = (<HTMLInputElement>checkboxAndLabel.find("label")[0]);
+            (<HTMLInputElement>checkboxAndLabel.find("input")[0]).checked = editableIsVisible;
 
             $(checkboxAndLabel).click((event) => {
                 editableIsVisible = !editableIsVisible;
@@ -122,8 +128,13 @@ function loadFieldLanguageOptions() {
                 }
             });
 
-
             $(".pageLayoutOptions").append(checkboxAndLabel);
+
+            //now asynchronously, ask for the actual language name of this language,
+            //and fix up the checkbox
+            theOneLocalizationManager.asyncGetLanguageName(langIso).then(langLabel => {
+                labelElement.innerText = langLabel;
+            });
         });
     });
 }
