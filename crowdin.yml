@@ -1,0 +1,3 @@
+files:
+  - source: DistFiles/ReleaseNotes.md
+    translation: DistFiles/ReleaseNotes-%two_letters_code%.md
