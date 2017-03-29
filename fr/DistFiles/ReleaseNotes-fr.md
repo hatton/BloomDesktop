@@ -1,6 +1,6 @@
 ## 3.6
 
-This version focuses on what we are calling "the toolbox": a panel on the right side that you can open to do specialized tasks like working on decodable and leveled readers or recording audio for "talking books".
+Cette version met l’accent sur ce que nous appelons « la boîte à outils » : un panneau sur le côté droit que vous pouvez ouvrir pour faire des tâches spécialisées comme si on bossait sur lecteurs décodable et nivelés ou enregistrement audio pour « livres audio ».
 
 - You can now hide or show the toolbox
 - Talking book recording is now controlled from a panel in the toolbox
