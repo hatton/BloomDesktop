@@ -1,7 +1,7 @@
 /// <binding />
 var gulp = require('gulp');
 var semver = require('semver');
-var {engines} = require('./package');
+var { engines } = require('./package');
 
 var debug = require('gulp-debug');
 //var ts = require('gulp-typescript');
@@ -12,6 +12,7 @@ var sourcemaps = require('gulp-sourcemaps');
 //const babel = require('gulp-babel');
 //var browserify = require('gulp-browserify');
 var webpack = require('gulp-webpack');
+const shell = require('gulp-shell')
 var del = require('del');
 var runSequence = require('run-sequence');
 var gulpCopy = require('gulp-copy');
@@ -69,10 +70,13 @@ gulp.task('pugLRT', function () {
 });
 
 gulp.task('webpack', function () {
-    var webpackconfig = require('./webpack.config.js');
-    return gulp.src('unused') // webpack appears to ignore this since we're defining multiple entry points in webpack.config.js, which is good!
-        .pipe(webpack(webpackconfig))
-        .pipe(gulp.dest(outputDir));
+    return gulp.src('webpack.config.js') // webpack appears to ignore this since we're defining multiple entry points in webpack.config.js, which is good!
+        /* this stopped working with the upgrad to webpack 2
+             .pipe(webpack(webpackconfig))
+             .pipe(gulp.dest(outputDir));
+           so now we just make a shell call
+        */
+        .pipe(shell(['webpack']))
 });
 
 gulp.task('clean', function () {
