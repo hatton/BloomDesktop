@@ -93,7 +93,8 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
 
     render() {
         let self = this;
-        let colors: string[] = ["#E48C84", "#B0DEE4", "#98D0B9", "#C2A6BF", "#FFFFA4", "#FEBF00", "#7BDCB5", "#B2CC7D", "#F8B576", "#D29FEF", "#ABB8C3", "#C1EF93", "#FFD4D4", "#FFAAD4"];
+        let colors: string[] = ["#E48C84", "#B0DEE4", "#98D0B9", "#C2A6BF", "#FFFFA4", "#FEBF00", "#7BDCB5", "#B2CC7D", "#F8B576", "#D29FEF", "#ABB8C3", "#C1EF93", "#FFD4D4",
+            "Transparent"]; //transparent
 
 
         return (
@@ -162,7 +163,7 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IComponent
                 smaller, and then the down-arrow is not part of it and doesn't trigger the select action.
                 Modern browsers do not allow code to trigger the pulling down of the select list...it's
                 somehow considered a security risk, so we can't just put a click action on the button.
-                
+
                 Note: when the select has focus, the dotted focus outline is drawn around the text rather
                 than the whole select, putting a distracting line between the text and picture. For some reason
                 Firefox is drawing this inside the padding that is used to put the text at the top instead of

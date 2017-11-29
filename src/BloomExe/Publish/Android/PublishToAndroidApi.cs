@@ -59,13 +59,19 @@ namespace Bloom.Publish.Android
 
 		private static string ToCssColorString(System.Drawing.Color c)
 		{
-			return "#" + c.R.ToString("X2") + c.G.ToString("X2") + c.B.ToString("X2");
+			var transparentDigits = (c.A == 0) ? "00" : "";
+			return "#" + transparentDigits + c.R.ToString("X2") + c.G.ToString("X2") + c.B.ToString("X2");
 		}
 
 		private static bool TryCssColorFromString(string input, out Color result)
 		{
 			result = Color.White; // some default in case of error.
-			if (!input.StartsWith("#") || input.Length != 7)
+			if(input == "Transparent") //Oddly, the JS specifies "#00000000" but here we get "Transparent", ah well.
+			{
+				result = Color.FromArgb(0, 0, 0, 0);
+				return true;
+			}
+			else if (!input.StartsWith("#") || input.Length != 7)
 				return false; // arbitrary failure
 			try
 			{
