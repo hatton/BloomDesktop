@@ -1,18 +1,10 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import {
-    H1,
-    Div,
-    IUILanguageAwareProps,
-    Label
-} from "../../../react_components/l10n";
-import { RadioGroup, Radio } from "../../../react_components/radio";
+import { Label } from "../../../react_components/l10n";
 import axios from "axios";
 import { ToolBox, ITool } from "../toolbox";
 import ToolboxToolReactAdaptor from "../toolboxToolReactAdaptor";
 import Slider from "rc-slider";
-import AudioRecording from "../talkingBook/audioRecording";
-import { getPageFrameExports } from "../../js/bloomFrames";
 import "./signLanguage.less";
 
 // The recording process can be in one of these states:
@@ -179,7 +171,9 @@ export class SignLanguageToolControls extends React.Component<
                     id="importRecordingWrapper"
                     className={
                         "videoButtonWrapper" +
-                        (this.state.enabled && !this.state.haveRecording ? "" : " disabled ")
+                        (this.state.enabled && !this.state.haveRecording
+                            ? ""
+                            : " disabled ")
                     }
                 >
                     <button
@@ -236,6 +230,13 @@ export class SignLanguageToolControls extends React.Component<
                 >
                     Press any key to stop
                 </Label>
+
+                <Slider
+                    onChange={v => SignLanguageTool.setStart(v)}
+                    step={0.1}
+                    min={0.0}
+                    max={5.0}
+                />
             </div>
         );
     }
@@ -299,7 +300,6 @@ export class SignLanguageToolControls extends React.Component<
     private onKeyPress = () => {
         this.toggleRecording();
     };
-
     // Called when the record or stop button is clicked, or if a key is pressed while not in the waiting state
     // ...depending on the current state it either starts or ends the recording. It works as the action function
     // for things that only stop the recording because those controls are not enabled in the waiting state.
@@ -626,5 +626,20 @@ export class SignLanguageTool extends ToolboxToolReactAdaptor {
     private static getRecordingLabel(doc: Document): string {
         const labelElement = doc.getElementsByClassName("recordingLabel")[0]; // should only be one
         return labelElement !== null ? labelElement.textContent.trim() : null;
+    }
+
+    public static setStart(start: number) {
+        //const container = SignLanguageTool.getVideoContainers(true)[0];
+        var page = ToolBox.getPage();
+        var video = page.getElementsByTagName("video")[0] as HTMLMediaElement;
+        let src = video.getAttribute("src");
+        const re = /(.*)#t=([0-9]*[.][0-9]+)/;
+        var m = re.exec(src);
+        if (m && m.length === 3) {
+            src = m[1];
+        }
+        // todo: how do we know what the max duration is?
+        video.setAttribute("src", src + "#t=" + start.toFixed(1));
+        (video as any).fastSeek(start);
     }
 }

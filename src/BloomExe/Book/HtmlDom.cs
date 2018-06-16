@@ -1508,13 +1508,7 @@ namespace Bloom.Book
 				videoElt = videoContainer.AppendChild("video");
 			}
 
-			var srcElement = videoElt.GetChildWithName("source");
-			if (srcElement == null)
-			{
-				srcElement = videoElt.AppendChild("source");
-				srcElement.SetAttribute("type", "video/mp4");
-			}
-			srcElement.SetAttribute("src", url.UrlEncodedForHttpPath); // We need the fwd slash to come through unencoded
+			videoElt.SetAttribute("src", url.UrlEncodedForHttpPath); // We need the fwd slash to come through unencoded
 			// Hides the placeholder.
 			
 			videoContainer.SetAttribute("class",
