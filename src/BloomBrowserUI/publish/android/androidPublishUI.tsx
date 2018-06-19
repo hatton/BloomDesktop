@@ -52,10 +52,9 @@ class AndroidPublishUI extends React.Component<
         // See https://medium.com/@rjun07a/binding-callbacks-in-react-components-9133c0b396c6
         this.handleUpdateState = this.handleUpdateState.bind(this);
 
-        WebSocketManager.addListener(kWebSocketLifetime, event => {
-            var e = JSON.parse(event.data);
+        WebSocketManager.addListener(kWebSocketLifetime, e => {
             if (e.id === "publish/android/state") {
-                this.handleUpdateState(e.payload);
+                this.handleUpdateState(e.message);
             }
         });
 
@@ -357,7 +356,7 @@ class AndroidPublishUI extends React.Component<
                             </HtmlHelpLink>
                         </div>
                     </div>
-                    <ProgressBox lifetimeLabel={kWebSocketLifetime} />
+                    <ProgressBox clientContext={kWebSocketLifetime} />
                     <Link
                         id="copyProgressToClipboard"
                         href=""

@@ -19,7 +19,7 @@ import "./epubPublishUI.less";
 import EpubPreview from "./EpubPreview";
 import { RadioGroup, Radio } from "../../react_components/radio";
 
-const kWebSocketLifetime = "publish-epub";
+const kWebSocketClientContext = "publish-epub";
 
 interface PublishSettings {
     howToPublishImageDescriptions: string; // one of "None", "OnPage", "Links"
@@ -70,10 +70,9 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IState> {
     }
 
     private componentCleanup() {
-        // axios.post("/bloom/api/publish/epub/cleanup").then(result => {
-        //     WebSocketManager.closeSocket(kWebSocketLifetime);
-        // });
+        WebSocketManager.closeSocket(kWebSocketClientContext);
     }
+
     public render() {
         return (
             <div id="epubPublishReactRoot" className={"screen-root"}>
@@ -84,7 +83,9 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                 <div className="sections">
                     <section className="preview-section">
                         <H1 l10nKey="PublishTab.Preview">Preview</H1>
-                        <EpubPreview lifetimeLabel={kWebSocketLifetime} />
+                        <EpubPreview
+                            websocketClientContext={kWebSocketClientContext}
+                        />
                     </section>
                     <section className="publish-section">
                         {/* todo: pick correct l10nkey... same as tab? */}
@@ -106,7 +107,7 @@ class EpubPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                                 Progress
                             </H2>
                             <ProgressBox
-                                lifetimeLabel={kWebSocketLifetime}
+                                clientContext={kWebSocketClientContext}
                                 onReadyToReceive={() =>
                                     this.readyToReceiveProgress()
                                 }

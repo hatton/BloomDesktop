@@ -49,6 +49,7 @@ import { theOneLibSynphony } from "../readers/libSynphony/synphony_lib";
 import { TextFragment } from "../readers/libSynphony/bloomSynphonyExtensions";
 import axios from "axios";
 import * as toastr from "toastr";
+import WebSocketManager from "../../../utils/WebSocketManager";
 
 enum Status {
     Disabled, // Can't use button now (e.g., Play when there is no recording)
@@ -57,7 +58,7 @@ enum Status {
     Active // Button now active (Play while playing; Record while held down)
 }
 
-const kSocketName = "webSocket";
+const kWebsocketContext = "audio-recording";
 
 export default class AudioRecording {
     private recording: boolean;
@@ -153,16 +154,9 @@ export default class AudioRecording {
 
     // Called when a new page is loaded and (above) when the Talking Book Tool is chosen.
     public addAudioLevelListener(): void {
-        this.listenerFunction = event => {
-            var e = JSON.parse(event.data);
-            if (e.id == "peakAudioLevel") this.setstaticPeakLevel(e.payload);
-        };
-
-        // addEventListener is much preferred to onmessage, because onmessage doesn't support multiple listeners
-        var socket = this.getWebSocket();
-        if (socket) {
-            socket.addEventListener("message", this.listenerFunction);
-        }
+        WebSocketManager.addListener(kWebsocketContext, e => {
+            if (e.id == "peakAudioLevel") this.setstaticPeakLevel(e.message);
+        });
     }
 
     // Called by TalkingBookModel.detachFromPage(), which is called when changing tools, hiding the toolbox,
@@ -170,28 +164,11 @@ export default class AudioRecording {
     public removeRecordingSetup() {
         this.hiddenSourceBubbles.show();
         var page = this.getPage();
-        page
-            .find(".ui-audioCurrent")
+        page.find(".ui-audioCurrent")
             .removeClass("ui-audioCurrent")
             .removeClass("disableHighlight");
-        var socket = this.getWebSocket();
-        if (socket) {
-            socket.removeEventListener("message", this.listenerFunction);
-        }
-    }
 
-    // N.B. Apparently when the window is shutting down, it is still possible to return from this
-    // function with window[kSocketName] undefined.
-    private getWebSocket(): WebSocket {
-        if (!window.top[kSocketName]) {
-            //currently we use a different port for this websocket, and it's the main port + 1
-            let websocketPort = parseInt(window.location.port, 10) + 1;
-            //NB: testing shows that our webSocketServer does receive a close notification when this window goes away
-            window.top[kSocketName] = new WebSocket(
-                "ws://127.0.0.1:" + websocketPort.toString()
-            );
-        }
-        return window.top[kSocketName];
+        WebSocketManager.closeSocket(kWebsocketContext);
     }
 
     // We only do recording in editable divs in the main content language.
@@ -203,7 +180,7 @@ export default class AudioRecording {
         var divs = this.getPage().find(
             ":not(.bloom-noAudio) > div.bloom-editable.bloom-content1"
         );
-        return divs.filter(function (idx, elt) {
+        return divs.filter(function(idx, elt) {
             return theOneLibSynphony
                 .stringToSentences(elt.innerHTML)
                 .some(frag => {
@@ -312,7 +289,9 @@ export default class AudioRecording {
         var player = $("#player");
         player.attr(
             "src",
-            this.currentAudioUrl(this.idOfCurrentSentence) + "?nocache=" + new Date().getTime()
+            this.currentAudioUrl(this.idOfCurrentSentence) +
+                "?nocache=" +
+                new Date().getTime()
         );
     }
 
@@ -473,7 +452,7 @@ export default class AudioRecording {
             (<any>devList)
                 .one(
                     "click",
-                    function (event) {
+                    function(event) {
                         devList.hide();
                         var choice = $(event.target).data("choice");
                         axios
@@ -560,7 +539,9 @@ export default class AudioRecording {
                 // Note: this is not foolproof because the durationchange handler is
                 // being called asynchronously with stale data and sometimes restoring
                 // the deleted attribute.
-                var current = this.getPage().find("span#" + this.idOfCurrentSentence);
+                var current = this.getPage().find(
+                    "span#" + this.idOfCurrentSentence
+                );
                 if (current.length !== 0) {
                     current.first().removeAttr("data-duration");
                 }
@@ -970,7 +951,7 @@ export default class AudioRecording {
 
         var markedSentences = elt.find("span.audio-sentence");
         var reuse = []; // an array of id/md5 pairs for any existing sentences marked up for audio in the element.
-        markedSentences.each(function (index) {
+        markedSentences.each(function(index) {
             reuse.push({
                 id: $(this).attr("id"),
                 md5: $(this).attr("recordingmd5")
@@ -1101,7 +1082,10 @@ export default class AudioRecording {
 
         //set play and clear buttons based on whether we have an audio file for this
         axios
-            .get("/bloom/api/audio/checkForSegment?id=" + this.idOfCurrentSentence)
+            .get(
+                "/bloom/api/audio/checkForSegment?id=" +
+                    this.idOfCurrentSentence
+            )
             .then(response => {
                 if (response.data === "exists") {
                     this.setStatus("clear", Status.Enabled);
@@ -1124,7 +1108,7 @@ export default class AudioRecording {
 
         //set listen button based on whether we have an audio at all for this page
         var ids = [];
-        this.getAudioElements().each(function () {
+        this.getAudioElements().each(function() {
             ids.push(this.id);
         });
         axios

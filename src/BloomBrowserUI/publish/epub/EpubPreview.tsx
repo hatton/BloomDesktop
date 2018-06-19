@@ -1,10 +1,9 @@
 import * as React from "react";
-import * as ReactDOM from "react-dom";
-import { H1, Div, IUILanguageAwareProps } from "../../react_components/l10n";
+import { IUILanguageAwareProps } from "../../react_components/l10n";
 import WebSocketManager from "../../utils/WebSocketManager";
 
 interface IPreviewProps extends IUILanguageAwareProps {
-    lifetimeLabel: string;
+    websocketClientContext: string;
 }
 
 interface IComponentState {
@@ -21,10 +20,9 @@ export default class EpubPreview extends React.Component<
 > {
     constructor(props) {
         super(props);
-        WebSocketManager.addListener(props.lifetimeLabel, event => {
-            var e = JSON.parse(event.data);
+        WebSocketManager.addListener(props.websocketClientContext, e => {
             if (e.id === "epubPreview") {
-                this.setState({ previewSrc: e.payload });
+                this.setState({ previewSrc: e.message });
             }
         });
         this.state = { previewSrc: "" };

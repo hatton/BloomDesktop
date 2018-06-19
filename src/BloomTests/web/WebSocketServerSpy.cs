@@ -19,7 +19,7 @@ namespace BloomTests.web
 			_isInitialized = false;
 		}
 
-		public void Send(string eventId, string eventData, string eventStyle = null)
+		public void Send(string eventStyle, string eventId, string eventData)
 		{
 			if (!_isInitialized)
 				throw new ApplicationException("WebSocketServerSpy: Send() attempted when not initialized!");

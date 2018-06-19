@@ -1294,7 +1294,7 @@ namespace Bloom.Edit
 		private void addTextbox_Click()
 		{
 			var mousePoint = _browser1.ContextMenuLocation; // avoids compiler warning (CS1690) about marshal-by-reference class
-			_webSocketServer.Send("addTextBox", $"{mousePoint.X},{mousePoint.Y}");
+			_webSocketServer.SendLegacy("addTextBox", $"{mousePoint.X},{mousePoint.Y}");
 		}
 
 		private void _cutButton_Click(object sender, EventArgs e)
@@ -1305,7 +1305,7 @@ namespace Bloom.Edit
 		private void deleteTextbox_Click()
 		{
 			var mousePoint = _browser1.ContextMenuLocation; // avoids compiler warning (CS1690) about marshal-by-reference class
-			_webSocketServer.Send("deleteTextBox", $"{mousePoint.X},{mousePoint.Y}");
+			_webSocketServer.SendLegacy("deleteTextBox", $"{mousePoint.X},{mousePoint.Y}");
 		}
 
 		private void _undoButton_Click(object sender, EventArgs e)

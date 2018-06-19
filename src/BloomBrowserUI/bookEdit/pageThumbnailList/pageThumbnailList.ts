@@ -16,12 +16,12 @@ import "../../modified_libraries/gridly/jquery.gridly.js";
 import { SetImageElementUrl } from "../js/bloomImages";
 
 const timerName = "thumbnailInterval";
-const kSocketName = "webSocket";
+const kSocketName = "webSocket"; // TODO BL-6129 upgrade this to use WebSocketManger and a proper clientContext
 
 var thumbnailTimerInterval = 200;
 var listenerFunction;
 
-$(window).ready(function () {
+$(window).ready(function() {
     $(".gridly").gridly({
         base: 35, // px
         gutter: 10, // px
