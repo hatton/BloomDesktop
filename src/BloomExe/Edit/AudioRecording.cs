@@ -161,7 +161,7 @@ namespace Bloom.Edit
 			if(level != _previousLevel)
 			{
 				_previousLevel = level;
-				_webSocketServer.Send(kWebsocketContext, "peakAudioLevel", level.ToString(CultureInfo.InvariantCulture));
+				_webSocketServer.SendString(kWebsocketContext, "peakAudioLevel", level.ToString(CultureInfo.InvariantCulture));
 			}
 		}
 

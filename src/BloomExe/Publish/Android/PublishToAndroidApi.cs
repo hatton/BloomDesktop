@@ -229,7 +229,7 @@ namespace Bloom.Publish.Android
 
 		private void SetState(string state)
 		{
-			_webSocketServer.Send(kWebSocketContext, kWebsocketState_EventId, state);
+			_webSocketServer.SendString(kWebSocketContext, kWebsocketState_EventId, state);
 		}
 
 		public static void ReportAnalytics(string mode, Book.Book book)

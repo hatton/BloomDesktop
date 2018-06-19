@@ -65,7 +65,7 @@ namespace Bloom.Publish.Epub
 		// Message is presumed already localized.
 		private void ReportProgress(string message)
 		{
-			_webSocketServer.Send(kWebsocketContext, kWebsocketEventId_Progress, message);
+			_webSocketServer.SendString(kWebsocketContext, kWebsocketEventId_Progress, message);
 		}
 
 		public void RegisterWithServer(EnhancedImageServer server)
@@ -285,7 +285,7 @@ namespace Bloom.Publish.Epub
 			EpubMaker.RemoveFontSizes = newSettings.removeFontSizes;
 			// clear the obsolete preview, if any; this also ensures that when the new one gets done,
 			// we will really be changing the src attr in the preview iframe so the display will update.
-			_webSocketServer.Send(kWebsocketContext, kWebsocketEventId_Preview, "");
+			_webSocketServer.SendEvent(kWebsocketContext, kWebsocketEventId_Preview);
 			ReportProgress(LocalizationManager.GetString("PublishTab.Epub.PreparingPreview", "Preparing Preview"));
 			_previewWorker.RunWorkerCompleted += _previewWorker_RunWorkerCompleted;
 			_previewWorker.DoWork += (sender, args) =>
@@ -341,7 +341,7 @@ namespace Bloom.Publish.Epub
 				}
 			}
 
-			_webSocketServer.Send(kWebsocketContext, kWebsocketEventId_Preview, _previewSrc);
+			_webSocketServer.SendString(kWebsocketContext, kWebsocketEventId_Preview, _previewSrc);
 			ReportProgress(LocalizationManager.GetString("PublishTab.Epub.Done", "Done"));
 		}
 

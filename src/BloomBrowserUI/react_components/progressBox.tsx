@@ -49,7 +49,7 @@ export default class ProgressBox extends React.Component<
 
     public write(htmlToAdd: string) {
         this.setState({
-            progress: this.state.progress + this.props.clientContext + htmlToAdd
+            progress: this.state.progress + htmlToAdd
         });
     }
     public writeLine(htmlToAdd: string) {

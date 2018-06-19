@@ -49,7 +49,7 @@ namespace Bloom.web
 
 		public void MessageWithoutLocalizing(string message, params object[] args)
 		{
-			_bloomWebSocketServer.Send(_clientContext, "progress", String.Format(message, args));
+			_bloomWebSocketServer.SendString(_clientContext, "progress", String.Format(message, args));
 		}
 
 		public void MessageWithStyleWithoutLocalizing(string message, string cssStyleRules)
@@ -57,7 +57,7 @@ namespace Bloom.web
 			dynamic messageBundle = new DynamicJson();
 			messageBundle.message = message;
 			messageBundle.cssStyleRule = cssStyleRules;
-			_bloomWebSocketServer.Send(_clientContext, "progress", messageBundle);
+			_bloomWebSocketServer.SendBundle(_clientContext, "progress", messageBundle);
 		}
 
 		public void Message(string idSuffix, string comment, string message)

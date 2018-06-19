@@ -22,7 +22,6 @@ namespace Bloom.web.controllers
 		// Define a socket to signal the client window to refresh
 		private readonly BloomWebSocketServer _webSocketServer;
 		private readonly EpubMaker.Factory _epubMakerFactory;
-		private const string kWebsocketId = "a11yChecklist";
 
 		private readonly NavigationIsolator _isolator;
 		private readonly BookServer _bookServer;
@@ -50,7 +49,7 @@ namespace Bloom.web.controllers
 			_webSocketServer = webSocketServer;
 			_webSocketProgress = new WebSocketProgress(_webSocketServer, kWebSocketContext);
 			_epubMakerFactory = epubMakerFactory;
-			bookSelection.SelectionChanged += (unused1, unused2) => _webSocketServer.Send(kWebSocketContext, kWebsocketId, kBookSelectionChanged);
+			bookSelection.SelectionChanged += (unused1, unused2) => _webSocketServer.SendEvent(kWebSocketContext, kBookSelectionChanged);
 			bookRefreshEvent.Subscribe((book) => RefreshClient());
 		}
 		
@@ -63,7 +62,7 @@ namespace Bloom.web.controllers
 
 			server.RegisterEndpointHandler(kApiUrlPart + "showAccessibilityChecker", request =>
 			{
-				AccessibilityCheckWindow.StaticShow(()=>_webSocketServer.Send(kWebSocketContext, kWebsocketId, kWindowActivated));
+				AccessibilityCheckWindow.StaticShow(()=>_webSocketServer.SendEvent(kWebSocketContext, kWindowActivated));
 				request.PostSucceeded();
 			}, true);
 
@@ -262,7 +261,7 @@ namespace Bloom.web.controllers
 
 		private void RefreshClient()
 		{
-			_webSocketServer.Send(kWebSocketContext, kWebsocketId, kBookContentsMayHaveChanged);
+			_webSocketServer.SendEvent(kWebSocketContext, kBookContentsMayHaveChanged);
 		}
 	}
 }

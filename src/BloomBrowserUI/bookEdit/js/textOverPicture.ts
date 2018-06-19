@@ -17,7 +17,7 @@ class TextOverPictureManager {
     public initializeTextOverPictureManager(): void {
         this.listenerFunction = event => {
             var e = JSON.parse(event.data);
-            var locationArray = e.payload.split(","); // mouse right-click coordinates
+            var locationArray = e.message.split(","); // mouse right-click coordinates
             if (e.id === "addTextBox")
                 this.addFloatingTOPBox(locationArray[0], locationArray[1]);
             if (e.id === "deleteTextBox")

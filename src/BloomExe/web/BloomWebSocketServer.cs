@@ -93,12 +93,12 @@ namespace Bloom.Api
 		/// could be on screen at the same time. The ClientContext would tell us which one is supposed to be 
 		/// printing out messages coming with the "progress" eventId. </param>
 		/// <param name="eventId"></param>
-		/// <param name="eventDetails"></param>
-		public void Send(string clientContext, string eventId, dynamic eventDetails)
+		/// <param name="eventBundle"></param>
+		public void SendBundle(string clientContext, string eventId, dynamic eventBundle)
 		{
 			// We're going to take this and add routing info to it, so it's
 			// no longer just the "details".
-			var eventObject = eventDetails;
+			var eventObject = eventBundle;
 			eventObject.clientContext = clientContext;
 			eventObject.id = eventId;
 
@@ -132,16 +132,19 @@ namespace Bloom.Api
 		// don't know about "clientContext"s yet.
 		public void SendLegacy(string eventId, string message)
 		{
-			dynamic e = new DynamicJson();
-			e.message = message;
-			Send("legacy", eventId, e);
+			SendString("legacy", eventId, message);
 		}
 
-		public void Send(string clientContext, string eventId, string message)
+		public void SendString(string clientContext, string eventId, string message)
 		{
-			dynamic e = new DynamicJson();
-			e.message = message;
-			Send(clientContext, eventId, e);
+			dynamic eventBundle = new DynamicJson();
+			eventBundle.message = message;
+			SendBundle(clientContext, eventId, eventBundle);
+		}
+		public void SendEvent(string clientContext, string eventId)
+		{
+			dynamic eventBundle = new DynamicJson(); // nothing to put in it
+			SendBundle(clientContext, eventId, eventBundle);
 		}
 
 		public void Dispose()

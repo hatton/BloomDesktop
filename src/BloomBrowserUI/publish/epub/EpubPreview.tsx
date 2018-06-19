@@ -12,7 +12,7 @@ interface IComponentState {
 // This component shows a simulated device with a live epub inside of it.
 // The preview lives in an iframe and is activated by setting the src of the iframe
 // by broadcasting a message on the web socket. The message should have id 'preview'
-// and payload the URL for the preview iframe. An empty string may be broadcast
+// and the "message" should be the URL for the preview iframe. An empty string may be broadcast
 // to clear the preview.
 export default class EpubPreview extends React.Component<
     IPreviewProps,
