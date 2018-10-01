@@ -2050,13 +2050,13 @@
       </trans-unit>
       <trans-unit id="EditTab.Toolbox.TalkingBookTool.Listen" sil:dynamic="true">
         <source xml:lang="en">Listen to the whole page</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.Listen</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentence" sil:dynamic="true">
-        <source xml:lang="en">2) Look at the highlighted sentence</source>
-        <note>ID: EditTab.Toolbox.TalkingBookTool.LookAtSentence</note>
-      </trans-unit>
-      <trans-unit id="EditTab.Toolbox.TalkingBookTool.Next" sil:dynamic="true">
+                <note>ID: EditTab.Toolbox.TalkingBookTool.Listen</note>
+            </trans-unit>
+            <trans-unit id="EditTab.Toolbox.TalkingBookTool.LookAtSentence" sil:dynamic="true">
+                <source xml:lang="en">2) Look at the highlighted text</source>
+                <note>ID: EditTab.Toolbox.TalkingBookTool.LookAtSentence</note>
+            </trans-unit>
+            <trans-unit id="EditTab.Toolbox.TalkingBookTool.Next" sil:dynamic="true">
         <source xml:lang="en">5) Next</source>
         <note>ID: EditTab.Toolbox.TalkingBookTool.Next</note>
       </trans-unit>

@@ -98,6 +98,9 @@ export default class AudioRecording {
         $("#audio-clear")
             .off()
             .click(e => this.clearRecording());
+        $("#audio-recordBySentences")
+            .off()
+            .click(e => this.switchRecordBySentenceSetting());
         $("#player").off();
         $("#player").attr("preload", "auto"); // speeds playback, ensures we get the durationchange event
         $("#player").bind("error", e => {
@@ -556,6 +559,10 @@ export default class AudioRecording {
             });
         this.updatePlayerStatus();
         this.changeStateAndSetExpected("record");
+    }
+    private switchRecordBySentenceSetting() {
+        toastr.info("switchRecordBySentenceSetting");
+        // TODO: FIX ME
     }
     public getPageFrame(): HTMLIFrameElement {
         return <HTMLIFrameElement>parent.window.document.getElementById("page");
