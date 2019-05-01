@@ -34,6 +34,14 @@ module.exports = {
             {
                 test: /\.css$/,
                 loader: "style-loader!css-loader"
+            },
+            {
+                // this allows things like background-image: url("myComponentsButton.svg") and have the resulting path look for the svg in the stylesheet's folder
+                // the last few seem to be needed for (at least) slick-carousel to build.
+                test: /\.(svg|jpg|png|ttf|eot|gif)$/,
+                use: {
+                    loader: "file-loader"
+                }
             }
         ]
     },
