@@ -1,0 +1,16 @@
+.publishScreenRoot {
+    display: flex;
+    flex-direction: row;
+    /* this can go away somehow... should be at a higher level */
+}
+.publishScreenRoot img {
+    width: 200px;
+    margin-left: 50px;
+}
+.publishScreenRoot .buttonWrapper {
+    margin-top: 12px;
+    /*match padding of radio buttons*/
+}
+.publishScreenRoot a {
+    font-family: "roboto";
+}

@@ -28,13 +28,15 @@ export const ConciseRadioGroup: React.FunctionComponent<{
 }> = props => {
     const [value, setValue] = useState(props.value);
     return (
-        <FormControl>
+        <FormControl margin="dense">
+            {/* this 'dense' doesn't seem to do anything?*/}
             <RadioGroup
                 value={value}
                 onChange={(event, newValue) => setValue(newValue)}
             >
                 {Object.keys(props.choices).map(key => (
                     <FormControlLabel
+                        key={key}
                         value={key}
                         control={<Radio color="primary" />}
                         label={(props.choices as any)[key]}

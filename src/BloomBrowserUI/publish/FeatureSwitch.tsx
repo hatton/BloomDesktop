@@ -13,6 +13,7 @@ export const FeatureSwitch: React.FunctionComponent<{
                 <Checkbox
                     checked={checked}
                     onChange={(e, newState) => setChecked(newState)}
+                    color="primary"
                 />
             }
             label={props.label}

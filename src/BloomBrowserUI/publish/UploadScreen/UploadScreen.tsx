@@ -29,7 +29,7 @@ export const UploadScreen = () => {
                 <LanguageGroup />
                 <AudioGroup />
                 <HelpGroup>
-                    <Link>About BloomLibrary.org</Link>
+                    <Link variant="body2">About BloomLibrary.org</Link>
                 </HelpGroup>
             </SettingsPanel>
         </BasePublishScreen>
