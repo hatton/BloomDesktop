@@ -9,7 +9,6 @@ body,
     text-align: left;
     height: 100%;
 }
-
 .sidePanel {
     padding-left: 20px;
     width: 300px;
@@ -19,24 +18,21 @@ body,
     background-color: #f3f3f3;
     height: 100%;
 }
-
 .main {
     height: 100%;
     width: 100%;
     flex-grow: 1;
 }
-
 .helpGroup {
     margin-top: auto;
     margin-bottom: 20px;
     display: flex;
     flex-direction: column;
 }
-
 .preview {
     height: 400px;
     width: 100%;
-    background-color: rgb(26, 26, 26);
+    background-color: #1a1a1a;
     padding-left: 30px;
     padding-top: 30px;
 }
@@ -45,7 +41,6 @@ body,
     flex-direction: column;
     padding: 20px;
 }
-
 .settingsGroup {
     margin-top: 20px;
 }

@@ -1,0 +1,92 @@
+.deviceFrame {
+    height: 300px;
+    width: 200px;
+    position: absolute;
+    padding-left: 10px;
+    padding-top: 25px;
+    padding-bottom: 18px;
+    border-radius: 20px;
+    background-color: #636363;
+    box-shadow: 0px 0px 50px 10px rgba(0, 0, 0, 0.1);
+}
+.deviceFrame:before {
+    width: 80px;
+    height: 5px;
+    top: 10px;
+    left: calc(50% - 40px);
+    border-radius: 5px;
+    background-color: lightGray;
+    content: "";
+    position: absolute;
+}
+.deviceFrame:after {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: lightGray;
+    left: calc(50% - 10px);
+    bottom: 10px;
+    content: "";
+    position: absolute;
+}
+.deviceScreen {
+    background: #f1f1f1;
+    width: calc(16px * @scale);
+    height: 190px;
+    border-width: 10px;
+    border-style: solid;
+    border-color: yellow;
+    border-top-width: 20px;
+    border-bottom-width: 35px;
+    border-radius: 15px;
+}
+.deviceScreen:before {
+    width: 80px;
+    height: 5px;
+    border-radius: 5px;
+    background-color: red;
+    content: "";
+    position: absolute;
+    margin-top: -12px;
+    margin-left: 37px;
+}
+.deviceScreen:after {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: red;
+    left: calc(50% - 10px);
+    bottom: 10px;
+    content: "";
+    position: absolute;
+}
+.device-square .device:before {
+    width: 40px;
+    height: 2.5px;
+    top: 7px;
+    left: calc(50% - 20px);
+    border-radius: 2.5px;
+    background-color: #eee;
+}
+.device-square .device.landscape:before {
+    height: 40px;
+    width: 2.5px;
+    left: 7px;
+    bottom: calc(50% - 20px);
+    top: initial;
+}
+.device-square .device:after {
+    width: 2.5px;
+    height: 2.5px;
+    color: #eee;
+    left: 20px;
+    top: 7px;
+    bottom: initial;
+    border: solid 1px #eee;
+    background-color: #eee;
+}
+.device-square .device.landscape:after {
+    left: 7px;
+    bottom: 20px;
+    top: initial;
+}
