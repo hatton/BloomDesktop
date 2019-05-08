@@ -7,9 +7,14 @@ import { addDecorator } from "@storybook/react";
 import { BRPublishScreen } from "./BRPublish/BRPublishScreen";
 import { UploadScreen } from "./UploadScreen/UploadScreen";
 import { DeviceFrame } from "./BasePublishScreen/DeviceFrame";
+import { StorybookContext } from "./StoryBookContext";
 
 addDecorator(storyFn => (
-    <ThemeProvider theme={theme}>{storyFn()}</ThemeProvider>
+    <ThemeProvider theme={theme}>
+        <StorybookContext.Provider value={true}>
+            {storyFn()}
+        </StorybookContext.Provider>
+    </ThemeProvider>
 ));
 
 storiesOf("PublishScreens", module)

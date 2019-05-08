@@ -27,7 +27,7 @@ export const BRPublishScreen = () => {
                 <ThumbnailGroup />
                 <HelpGroup>
                     <Link>About Bloom Reader</Link>
-                    <Link>About Book Features</Link>
+                    {/* <Link>About Book Features</Link> */}
                     <Link>Troubleshooting Tips</Link>
                     <Link>Get Bloom Reader App</Link>
                 </HelpGroup>

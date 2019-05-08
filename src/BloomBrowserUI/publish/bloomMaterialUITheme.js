@@ -12,11 +12,11 @@ const theme = createMuiTheme({
         secondary: { main: bloomBlue }
     },
     typography: {
-        fontSize: 16
+        fontSize: 12
     },
     props: {
         MuiLink: {
-            variant: "body2" // without this, they come out in times new roman :-)
+            variant: "body1" // without this, they come out in times new roman :-)
         }
     },
     overrides: {

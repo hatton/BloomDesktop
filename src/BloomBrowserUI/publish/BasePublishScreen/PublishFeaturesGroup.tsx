@@ -6,10 +6,10 @@ import { SettingsGroup } from "./BasePublishScreen";
 export const PublishFeaturesGroup: React.FunctionComponent = () => (
     <SettingsGroup label="Features">
         <FormGroup>
-            <FeatureSwitch label="Talking Book" />
+            {/* <FeatureSwitch label="Talking Book" /> */}
             <FeatureSwitch label="Motion Book" />
-            <FeatureSwitch label="Sign Language" />
-            <FeatureSwitch label="Image Descriptions" />
+            {/* <FeatureSwitch label="Sign Language" />
+            <FeatureSwitch label="Image Descriptions" /> */}
         </FormGroup>
     </SettingsGroup>
 );
