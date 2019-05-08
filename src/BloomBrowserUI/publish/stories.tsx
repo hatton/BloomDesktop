@@ -13,6 +13,11 @@ addDecorator(storyFn => (
 ));
 
 storiesOf("PublishScreens", module)
-    .add("DeviceFrame", () => <DeviceFrame landscape={false} />)
+    .add("DeviceFrame Portrait", () => (
+        <DeviceFrame landscape={false}>Portrait</DeviceFrame>
+    ))
+    .add("DeviceFrame Landscape", () => (
+        <DeviceFrame landscape={true}>Landscape</DeviceFrame>
+    ))
     .add("BRPublishScreen", () => <BRPublishScreen />)
     .add("UploadScreen", () => <UploadScreen />);

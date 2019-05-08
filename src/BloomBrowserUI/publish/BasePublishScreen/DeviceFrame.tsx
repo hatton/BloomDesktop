@@ -11,8 +11,7 @@ import "./DeviceFrame.less";
 export const DeviceFrame: React.FunctionComponent<{
     landscape: boolean;
 }> = props => (
-    // <div className="deviceFrame">
-    //     <div className="deviceScreen">{props.children}</div>
-    // </div>
-    <div className="deviceScreen">{props.children}</div>
+    <div className={"deviceFrame " + (props.landscape ? "landscape" : "")}>
+        {props.children}
+    </div>
 );

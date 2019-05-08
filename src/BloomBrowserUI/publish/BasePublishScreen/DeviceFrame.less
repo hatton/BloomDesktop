@@ -1,138 +1,50 @@
-@small-speaker-color: #eee;
-@LightGrey: lightGray; //@bloom-gray;
-@ButtonDiameter: 20px;
-@dot-left: 20px;
-@dot-top: 7px;
-@bezel: 10px;
-@speakerlength : 80px;
-@speakerwidth: 5px;
-.deviceFrame {
-    height: 300px; //800px;
-    width: 200px; // 400px;
-    position: absolute; // currently required by the speaker and button graphics
-    padding-left: @bezel;
-    padding-top: 25px;
-    padding-bottom: 18px;
-    //border: 5px solid white;
-    border-radius: 20px;
-    background-color: #636363;
-    //The 'speaker' (grey bar at top that looks like a phone speaker) is a "before" rule
-    // again we have legacy version for ePUB and the new versions below in .device-square.
+@phoneFeaturesColor: #ababab;
+@buttonDiameter: 20px;
+@bezelWidth: 10px;
+@speaker-length : 80px; // prettier extension changes speakerLength to speakerlength. So weird.
+@speakerHeight: 5px;
 
-    box-shadow: 0px 0px 50px 10px rgba(0, 0, 0, 0.1);
-    // .device-square & {
-    //     height: @small-device-size;
-    //     width: @small-device-width;
-    //     margin-left: @small-device-size - @small-device-width - 20px; // almost right-aligned
-    //     padding-left: 0;
-    //     padding-top: @space-for-speaker;
-    //     padding-bottom: 0;
-    //     border-radius: 4.7mm;
-    // }
-    // .device-square &.landscape {
-    //     height: @small-device-width;
-    //     width: @small-device-size;
-    //     margin-top: @small-preview-margin;
-    //     margin-left: 0;
-    //     padding-top: 0;
-    //     padding-left: @space-for-speaker;
-    // }
-
-    &:before {
-        width: @speakerlength;
-        height: @speakerwidth;
-        top: 10px;
-        left: calc(~"50% - " @speakerlength / 2);
-        border-radius: @speakerwidth;
-        background-color: @LightGrey;
-        content: "";
-        position: absolute;
-    }
-
-    //the bottom 'button' (looks like phone home button) is the "after" rule
-    // This is only for the legacy ePUB version.
-    &:after {
-        width: @ButtonDiameter;
-        height: @ButtonDiameter;
-        border-radius: 50%;
-        //border: solid 5px @LightGrey;
-        background: @LightGrey;
-        left: calc(~"50% - " @ButtonDiameter / 2);
-        bottom: 10px;
-        content: "";
-        position: absolute;
-    }
-}
 @scale: 20;
 @height: calc(~"16px" * @scale);
 // gets filled by the components children, if there are any
-.deviceScreen {
+.deviceFrame {
     background: rgb(241, 241, 241);
     width: calc(~"9px" * @scale);
     height: @height;
-    border-width: @bezel;
+    border-width: @bezelWidth;
     border-style: solid;
     border-color: #636363;
     border-top-width: 20px;
     border-bottom-width: 35px;
     border-radius: 15px;
+    display: flex;
 
+    &.landscape {
+        transform: rotate(-90deg) translate(68px, 101px);
+    }
+
+    // speaker
     &:before {
-        width: @speakerlength;
-        height: @speakerwidth;
+        width: @speaker-length;
+        height: @speakerHeight;
         margin-top: -12px;
-        margin-left: calc((~"9px" * @scale - @speakerlength) / 2);
-        border-radius: @speakerwidth;
-        background-color: red;
+        margin-left: calc((~"9px" * @scale - @speaker-length) / 2);
+        border-radius: @speakerHeight;
+        background-color: @phoneFeaturesColor;
         content: "";
         position: absolute;
     }
 
     //the bottom 'button' (looks like phone home button) is the "after" rule
     &:after {
-        width: @ButtonDiameter;
-        height: @ButtonDiameter;
+        width: @buttonDiameter;
+        height: @buttonDiameter;
         border-radius: 50%;
         //border: solid 5px @LightGrey;
-        background: red;
-        margin-left: calc((~"9px" * @scale - @ButtonDiameter) / 2);
+        background: @phoneFeaturesColor;
+        margin-left: calc((~"9px" * @scale - @buttonDiameter) / 2);
         margin-top: calc(@height + 10px);
         content: "";
         position: absolute;
-    }
-}
-
-.device-square {
-    .device:before {
-        width: @speakerlength / 2;
-        height: @speakerwidth / 2;
-        top: 7px;
-        left: calc(~"50% - " @speakerlength / 4);
-        border-radius: @speakerwidth / 2;
-        background-color: @small-speaker-color;
-    }
-    .device.landscape:before {
-        height: @speakerlength / 2;
-        width: @speakerwidth / 2;
-        left: 7px;
-        bottom: calc(~"50% - " @speakerlength / 4);
-        top: initial;
-    }
-    // in the new preview 'after' is used for a small dot at the top.
-    // (I think it's meant to emulate a phone's camera.)
-    .device:after {
-        width: @speakerwidth / 2;
-        height: @speakerwidth / 2;
-        color: @small-speaker-color;
-        left: @dot-left;
-        top: @dot-top;
-        bottom: initial;
-        border: solid 1px @small-speaker-color;
-        background-color: @small-speaker-color;
-    }
-    .device.landscape:after {
-        left: @dot-top;
-        bottom: @dot-left;
-        top: initial;
     }
 }
