@@ -8,6 +8,7 @@ import { BRPublishScreen } from "./BRPublish/BRPublishScreen";
 import { UploadScreen } from "./UploadScreen/UploadScreen";
 import { DeviceFrame } from "./BasePublishScreen/DeviceFrame";
 import { StorybookContext } from "./StoryBookContext";
+import { ProgressDialog } from "./ProgressDialog";
 
 addDecorator(storyFn => (
     <ThemeProvider theme={theme}>
@@ -18,6 +19,7 @@ addDecorator(storyFn => (
 ));
 
 storiesOf("PublishScreens", module)
+    .add("ProgressDialog", () => <ProgressDialog />)
     .add("DeviceFrame Portrait", () => (
         <DeviceFrame landscape={false}>Portrait</DeviceFrame>
     ))
