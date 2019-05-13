@@ -33,7 +33,7 @@ export default class WebSocketManager {
      * Instead the client should call "addListener(clientContext)" and then when cleaning
      * up, call "closeSocket(clientContext)".
      */
-    private static getOrCreateWebSocket(clientContext: string): WebSocket {
+    public static getOrCreateWebSocket(clientContext: string): WebSocket {
         if (!WebSocketManager.socketMap[clientContext]) {
             //currently we use a different port for this websocket, and it's the main port + 1
             let websocketPort = parseInt(window.location.port, 10) + 1;

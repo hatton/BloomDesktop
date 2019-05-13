@@ -2,7 +2,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import WebSocketManager from "../utils/WebSocketManager";
 
-interface IProgressBoxProps {
+export interface IProgressBoxProps {
     clientContext: string;
     // If the client is going to start doing something right away that will
     // cause progress messages to happen, it had better wait until this is invoked;
@@ -10,6 +10,7 @@ interface IProgressBoxProps {
     // once, immediately if the socket is already open, otherwise, as soon as
     // it is in the "OPEN" state where messages can be received (and sent).
     onReadyToReceive?: () => void;
+    testProgressHtml?: string;
 }
 
 interface IProgressState {
@@ -23,7 +24,7 @@ export default class ProgressBox extends React.Component<
     IProgressState
 > {
     public readonly state: IProgressState = {
-        progress: ""
+        progress: this.props.testProgressHtml || ""
     };
 
     constructor(props: IProgressBoxProps) {

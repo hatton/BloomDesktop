@@ -9,7 +9,8 @@ const theme = createMuiTheme({
     //spacing: 23,
     palette: {
         primary: { main: bloomBlue },
-        secondary: { main: bloomBlue }
+        secondary: { main: bloomBlue },
+        warning: { main: "#F3AA18" }
     },
     typography: {
         fontSize: 12
