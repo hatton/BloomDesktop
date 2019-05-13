@@ -5,12 +5,11 @@ import {
     BasePublishScreen,
     PreviewPanel,
     PublishPanel,
-    SettingsGroup,
     HelpGroup,
     SettingsPanel
 } from "../BasePublishScreen/BasePublishScreen";
 
-import { UploadControl } from "./UploadControl";
+import { UploadControl } from "./LibraryPublishControls";
 import { PublishFeaturesGroup } from "../BasePublishScreen/PublishFeaturesGroup";
 import { LanguageGroup } from "../BasePublishScreen/LanguageGroup";
 import { AudioGroup } from "../BasePublishScreen/AudioGroup";

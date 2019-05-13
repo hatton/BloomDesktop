@@ -4,7 +4,7 @@ const wifiImage = require("./publish-via-wifi.svg");
 const usbImage = require("./publish-via-usb.svg");
 const fileImage = require("./publish-to-file.svg");
 import Button from "@material-ui/core/Button";
-import "./BRPublishScreen.less";
+import "./ReaderPublish.less";
 import { ConciseRadioGroup } from "../ConciseRadioGroup";
 
 const methodNameToImageUrl = {

@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useState } from "react";
 import Button from "@material-ui/core/Button";
-import "./UploadScreen.less";
+import "./LibraryPublish.less";
 import Stepper from "@material-ui/core/Stepper";
 import Step from "@material-ui/core/Step";
 import StepLabel from "@material-ui/core/StepLabel";
