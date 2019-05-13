@@ -18,9 +18,7 @@ import { AudioGroup } from "../BasePublishScreen/AudioGroup";
 export const UploadScreen = () => {
     return (
         <BasePublishScreen>
-            <PreviewPanel>
-                Preview of the book page will look like on bloomlibrary.org
-            </PreviewPanel>
+            <PreviewPanel />
             <PublishPanel>
                 <UploadControl />
             </PublishPanel>

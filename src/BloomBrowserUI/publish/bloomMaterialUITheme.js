@@ -1,6 +1,9 @@
 import { createMuiTheme } from "@material-ui/core/styles";
 
 const bloomBlue = "#1d94a4";
+// the value that gets us to the 4.5 AA ratio depends on the background.
+// So the "aside"/features right-panel color effects this.
+const AACompliantBloomBlue = "#177c8a";
 
 // lots of examples: https://github.com/search?q=createMuiTheme&type=Code
 const theme = createMuiTheme({
@@ -8,8 +11,8 @@ const theme = createMuiTheme({
     // would be spacing{unit:23} but that gives an error saying to use a number
     //spacing: 23,
     palette: {
-        primary: { main: bloomBlue },
-        secondary: { main: bloomBlue },
+        primary: { main: AACompliantBloomBlue },
+        secondary: { main: AACompliantBloomBlue },
         warning: { main: "#F3AA18" }
     },
     typography: {

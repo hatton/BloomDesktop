@@ -72,6 +72,7 @@ export class ColorChooser extends React.Component<
                         // even though we don't have Bloom exe running to act as a server to deliver the actual thumbnail
                         // so we can show the current color:
                         style={{ backgroundColor: this.props.backColorSetting }}
+                        aria-label="color picker"
                     />
                 </div>
                 <div

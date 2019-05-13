@@ -17,6 +17,8 @@ export const UploadControl: React.FunctionComponent = () => {
                     <StepLabel>Give your book a summary</StepLabel>
                     <StepContent>
                         <TextField
+                            // needed by aria for a11y
+                            id="book summary"
                             className={"summary"}
                             // value={this.state.name}
                             //onChange={this.handleChange('name')}
@@ -28,6 +30,7 @@ export const UploadControl: React.FunctionComponent = () => {
                             }}
                             multiline
                             rows="2"
+                            aria-label="Book summary"
                         />
                     </StepContent>
                 </Step>
