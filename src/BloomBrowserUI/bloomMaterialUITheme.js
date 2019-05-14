@@ -1,3 +1,9 @@
+/* --------------- NOTE --------------------
+    This is current js instead of ts because as of 4.0.0-beta,
+    the typescript definitions for material-ui
+    don't allow some perfectly valid ThemeOptions. I guess I could "any" the object instead...
+*/
+
 import { createMuiTheme } from "@material-ui/core/styles";
 
 const bloomBlue = "#1d94a4";

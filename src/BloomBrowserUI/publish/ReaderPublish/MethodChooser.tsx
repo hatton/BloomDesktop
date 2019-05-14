@@ -5,7 +5,7 @@ const usbImage = require("./publish-via-usb.svg");
 const fileImage = require("./publish-to-file.svg");
 import Button from "@material-ui/core/Button";
 import "./ReaderPublish.less";
-import { ConciseRadioGroup } from "../ConciseRadioGroup";
+import { ConciseRadioGroup } from "../commonPublish/ConciseRadioGroup";
 
 const methodNameToImageUrl = {
     wifi: wifiImage,
@@ -19,7 +19,7 @@ export const MethodChooser: React.FunctionComponent = () => {
     const methodImage = (methodNameToImageUrl as any)[method];
     return (
         <>
-            <div className={"publishScreenRoot"}>
+            <div className={"methodChooserRoot"}>
                 <ConciseRadioGroup
                     value={method}
                     setter={setMethod}

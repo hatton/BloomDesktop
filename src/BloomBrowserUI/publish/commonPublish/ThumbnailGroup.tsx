@@ -3,7 +3,7 @@ import { SettingsGroup } from "./BasePublishScreen";
 import { ColorChooser } from "../../react_components/colorChooser";
 import { BloomApi } from "../../utils/bloomApi";
 import { useState } from "react";
-import { StorybookContext } from "../StoryBookContext";
+import { StorybookContext } from "../../.storybook/StoryBookContext";
 
 export const ThumbnailGroup: React.FunctionComponent = () => (
     <SettingsGroup label="Thumbnail">

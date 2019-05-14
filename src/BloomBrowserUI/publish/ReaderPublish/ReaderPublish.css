@@ -1,16 +1,19 @@
 .publishScreenRoot {
+    height: 100%;
+}
+.methodChooserRoot {
     display: flex;
     flex-direction: row;
     /* this can go away somehow... should be at a higher level */
 }
-.publishScreenRoot img {
+.methodChooserRoot img {
     width: 200px;
     margin-left: 50px;
 }
-.publishScreenRoot .buttonWrapper {
+.methodChooserRoot .buttonWrapper {
     margin-top: 12px;
     /*match padding of radio buttons*/
 }
-.publishScreenRoot a {
+.methodChooserRoot a {
     font-family: "roboto";
 }

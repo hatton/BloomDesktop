@@ -7,22 +7,23 @@ import {
     PublishPanel,
     HelpGroup,
     SettingsPanel
-} from "../BasePublishScreen/BasePublishScreen";
+} from "../commonPublish/BasePublishScreen";
 
-import { UploadControl } from "./LibraryPublishControls";
-import { PublishFeaturesGroup } from "../BasePublishScreen/PublishFeaturesGroup";
-import { LanguageGroup } from "../BasePublishScreen/LanguageGroup";
-import { AudioGroup } from "../BasePublishScreen/AudioGroup";
+import { LibraryPublishSteps } from "./LibraryPublishSteps";
+import { PublishFeaturesGroup } from "../commonPublish/PublishFeaturesGroup";
+import { LanguageGroup } from "../commonPublish/LanguageGroup";
+import { AudioGroup } from "../commonPublish/AudioGroup";
 import { LibraryPreview } from "./LibraryPreview";
+import ReactDOM = require("react-dom");
 
-export const UploadScreen = () => {
+export const LibraryPublishScreen = () => {
     return (
         <BasePublishScreen>
             <PreviewPanel>
                 <LibraryPreview />
             </PreviewPanel>
             <PublishPanel>
-                <UploadControl />
+                <LibraryPublishSteps />
             </PublishPanel>
             <SettingsPanel>
                 <PublishFeaturesGroup />
@@ -35,3 +36,12 @@ export const UploadScreen = () => {
         </BasePublishScreen>
     );
 };
+// a bit goofy... currently the html loads everything in publishUIBundlejs. So all the publish screens
+// get any not-in-a-class code called, including ours. But it only makes sense to get wired up
+// if that html has the root page we need.
+if (document.getElementById("LibraryPublishScreen")) {
+    ReactDOM.render(
+        <LibraryPublishScreen />,
+        document.getElementById("LibraryPublishScreen")
+    );
+}

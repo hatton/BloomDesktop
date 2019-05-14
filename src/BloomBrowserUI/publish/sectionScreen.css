@@ -1,0 +1,233 @@
+/* A common stylesheet for Publish-Tab screens that have common elements of
+having various sections, including settings and help on the right */
+/* Common Bloom UI styling */
+.react-tabs {
+    margin: 20px;
+}
+.react-tabs__tab-list {
+    margin-bottom: 0;
+}
+.react-tabs__tab {
+    background-color: lightgray;
+    margin-right: 5px;
+}
+.react-tabs__tab--selected {
+    background-color: white;
+    font-weight: bold;
+}
+.react-tabs__tab-panel--selected > div {
+    padding-right: 20px;
+    padding-bottom: 20px;
+    padding-left: 20px;
+    background-color: white;
+}
+.invisible {
+    display: none !important;
+}
+body.developer .untranslated,
+body.alpha .untranslated {
+    color: darkred;
+    background-color: yellow;
+}
+body.highlightTranslatedStrings.developer .translated {
+    color: green;
+}
+body.highlightTranslatedStrings.developer .assumedTranslated {
+    color: lightgreen;
+}
+/* all of this worked in the latest firefox, but not Bloom.
+    We may want it someday, as it sure seems clearer to put
+    in a ? than the black box that FF normally uses, to mean
+    indeterminate.
+
+input[type="checkbox"]:indeterminate {
+    background: white;
+    -moz-appearance: none;
+    appearance: none;
+    outline: 0;
+    height: 14px;
+    width: 14px;
+    border: 1px solid black;
+}
+input[type="checkbox"]:indeterminate::after {
+    content: "?";
+    position: absolute;
+    top: -2px;
+    left: 2px;
+    font-family: sans;
+    font-weight: bold;
+    //color: gray;
+}
+*/
+* {
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+[contenteditable="true"] * {
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+html.publishTabScreen {
+    height: 100%;
+    padding: 10px;
+    margin: 0;
+}
+html.publishTabScreen body {
+    margin: 0;
+    background-color: #f0f0f0;
+    font-family: "Segoe UI", "Sans";
+    font-size: 10pt;
+    height: 100%;
+}
+html.publishTabScreen body header img {
+    vertical-align: middle;
+}
+html.publishTabScreen body header .intro {
+    margin-top: 0;
+    font-size: 12pt;
+    font-weight: bold;
+    display: inline-block;
+    vertical-align: unset;
+}
+html.publishTabScreen body .screen-root {
+    height: 100%;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: start;
+    box-sizing: border-box;
+}
+html.publishTabScreen body .screen-root .bottom-scroll-shim {
+    flex: 0 0 auto;
+    min-height: 10px;
+    width: 100%;
+}
+html.publishTabScreen body .screen-root .in-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    flex-grow: 1;
+}
+html.publishTabScreen body .screen-root .in-column {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+html.publishTabScreen body .screen-root .right-column {
+    width: 180px;
+}
+html.publishTabScreen body > div.react-tool-root {
+    height: 100%;
+}
+html.publishTabScreen body .sections {
+    padding-top: 10px;
+    display: flex;
+    flex-direction: row;
+}
+html.publishTabScreen body .sections.left-column {
+    flex: 1 1 auto;
+}
+html.publishTabScreen body .sections section h1 {
+    margin: 10px 0;
+}
+html.publishTabScreen body .sections section > h1 {
+    background-color: lightgray;
+    text-align: center;
+    margin-bottom: 10px;
+    margin-top: 0;
+}
+html.publishTabScreen body .sections .publish-section .publish-contents {
+    padding: 0 10px;
+    flex: 1 0 auto;
+}
+html.publishTabScreen body .sections .publish-section h2 {
+    margin-top: 0;
+}
+html.publishTabScreen body .sections .right-column-subsection {
+    padding-left: 10px;
+}
+html.publishTabScreen
+    body
+    .sections
+    .right-column-subsection
+    + .right-column-subsection {
+    padding-top: 10px;
+}
+html.publishTabScreen body .sections .settings-section {
+    flex: 2;
+}
+html.publishTabScreen body .sections .settings-subheading {
+    font-weight: bold;
+}
+html.publishTabScreen .preview-section {
+    margin-right: 25px;
+}
+html.publishTabScreen .publish-section {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    margin-right: 25px;
+}
+html.publishTabScreen .publish-section .publish-controls-column {
+    flex: 1;
+}
+html.publishTabScreen
+    .publish-section
+    .publish-controls-column
+    .method-select-wrapper {
+    margin-right: 10px;
+}
+html.publishTabScreen .help-section {
+    flex: 1;
+    display: block;
+}
+html.publishTabScreen .progress-column {
+    width: 100%;
+    padding-left: 10px;
+    flex: 1 1 auto;
+}
+html.publishTabScreen button {
+    background-color: white;
+    padding: 0.5em;
+}
+html.publishTabScreen button:disabled {
+    color: #575757;
+}
+html.publishTabScreen button + button {
+    margin-left: 10px;
+}
+html.publishTabScreen .hidden {
+    display: none;
+}
+html.publishTabScreen a {
+    display: block;
+    color: #1d94a4;
+}
+html.publishTabScreen a:hover {
+    color: #1d94a4;
+}
+html.publishTabScreen h1 {
+    font-size: 12pt;
+    font-weight: bold;
+}
+html.publishTabScreen h2 {
+    font-size: 12pt;
+}
+html.publishTabScreen h2.label {
+    margin-bottom: 0;
+}
+#progress-box {
+    min-height: 100px;
+    max-height: 750px;
+    width: 100%;
+    border: solid thin #575757;
+    overflow-x: auto;
+    overflow-y: scroll;
+    flex: 1;
+    box-sizing: border-box;
+    padding: 10px;
+}

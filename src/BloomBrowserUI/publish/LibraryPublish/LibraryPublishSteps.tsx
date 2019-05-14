@@ -9,7 +9,7 @@ import StepContent from "@material-ui/core/StepContent";
 import { FormControlLabel, Checkbox, TextField } from "@material-ui/core";
 
 // This is a set of radio buttons and image that goes with each choice, plus a button to start off the sharing/saving
-export const UploadControl: React.FunctionComponent = () => {
+export const LibraryPublishSteps: React.FunctionComponent = () => {
     return (
         <>
             <Stepper orientation="vertical">

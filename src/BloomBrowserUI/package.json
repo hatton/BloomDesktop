@@ -38,7 +38,7 @@
         "gitSemiClean": "git clean -X --dry-run --exclude='!node_modules'",
         "gitSemiCleanForReal": "git clean -fX --exclude='!node_modules'",
         "tslint": "tslint --project tsconfig.json",
-        "storybook": "start-storybook"
+        "storybook": "start-storybook -s ../../output/browser"
     },
     "repository": {
         "type": "git",

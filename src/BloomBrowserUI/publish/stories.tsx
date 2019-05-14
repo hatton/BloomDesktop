@@ -1,14 +1,14 @@
-import theme from "./bloomMaterialUITheme";
+import theme from "../bloomMaterialUITheme";
 import * as React from "react";
 import { ThemeProvider } from "@material-ui/styles";
 import { storiesOf } from "@storybook/react";
 import { addDecorator } from "@storybook/react";
 //import "typeface-roboto";
-import { BRPublishScreen } from "./ReaderPublish/ReaderPublishScreen";
-import { UploadScreen } from "./LibraryPublish/LibraryPublishScreen";
-import { DeviceFrame } from "./BasePublishScreen/DeviceFrame";
-import { StorybookContext } from "./StoryBookContext";
-import { ProgressDialog, ProgressState } from "./ProgressDialog";
+import { ReaderPublishScreen } from "./ReaderPublish/ReaderPublishScreen";
+import { LibraryPublishScreen } from "./LibraryPublish/LibraryPublishScreen";
+import { DeviceFrame } from "./commonPublish/DeviceFrame";
+import { StorybookContext } from "../.storybook/StoryBookContext";
+import { ProgressDialog, ProgressState } from "./commonPublish/ProgressDialog";
 import { loremIpsum } from "lorem-ipsum";
 import { withA11y } from "@storybook/addon-a11y";
 import { LibraryPreview } from "./LibraryPublish/LibraryPreview";
@@ -69,7 +69,7 @@ storiesOf("Publish/Library", module)
             <LibraryPreview />
         </div>
     ))
-    .add("UploadScreen", () => <UploadScreen />);
+    .add("UploadScreen", () => <LibraryPublishScreen />);
 
 storiesOf("Publish/DeviceFrame", module)
     .add("DeviceFrame Portrait", () => (
@@ -80,5 +80,5 @@ storiesOf("Publish/DeviceFrame", module)
     ));
 
 storiesOf("Publish/Reader", module).add("BRPublishScreen", () => (
-    <BRPublishScreen />
+    <ReaderPublishScreen />
 ));
