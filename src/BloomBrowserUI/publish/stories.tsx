@@ -11,7 +11,7 @@ import { StorybookContext } from "./StoryBookContext";
 import { ProgressDialog, ProgressState } from "./ProgressDialog";
 import { loremIpsum } from "lorem-ipsum";
 import { withA11y } from "@storybook/addon-a11y";
-import { withKnobs, text } from "@storybook/addon-knobs";
+import { LibraryPreview } from "./LibraryPublish/LibraryPreview";
 
 addDecorator(withA11y);
 
@@ -30,7 +30,7 @@ const testText =
         units: "paragraphs"
     }) + "<a target='_blank' href='https://google.com'>google.com</a>";
 
-storiesOf("ProgressDialog", module)
+storiesOf("Publish/ProgressDialog", module)
     .add("Working", () => (
         <div>
             <ProgressDialog
@@ -59,12 +59,26 @@ storiesOf("ProgressDialog", module)
         </div>
     ));
 
-storiesOf("PublishScreens", module)
+storiesOf("Publish/Library", module)
+    .add("preview", () => (
+        <div
+            style={{
+                padding: "40px"
+            }}
+        >
+            <LibraryPreview />
+        </div>
+    ))
+    .add("UploadScreen", () => <UploadScreen />);
+
+storiesOf("Publish/DeviceFrame", module)
     .add("DeviceFrame Portrait", () => (
         <DeviceFrame landscape={false}>Portrait</DeviceFrame>
     ))
     .add("DeviceFrame Landscape", () => (
         <DeviceFrame landscape={true}>Landscape</DeviceFrame>
-    ))
-    .add("BRPublishScreen", () => <BRPublishScreen />)
-    .add("UploadScreen", () => <UploadScreen />);
+    ));
+
+storiesOf("Publish/Reader", module).add("BRPublishScreen", () => (
+    <BRPublishScreen />
+));

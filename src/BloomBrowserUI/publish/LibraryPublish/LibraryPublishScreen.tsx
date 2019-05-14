@@ -13,11 +13,14 @@ import { UploadControl } from "./LibraryPublishControls";
 import { PublishFeaturesGroup } from "../BasePublishScreen/PublishFeaturesGroup";
 import { LanguageGroup } from "../BasePublishScreen/LanguageGroup";
 import { AudioGroup } from "../BasePublishScreen/AudioGroup";
+import { LibraryPreview } from "./LibraryPreview";
 
 export const UploadScreen = () => {
     return (
         <BasePublishScreen>
-            <PreviewPanel />
+            <PreviewPanel>
+                <LibraryPreview />
+            </PreviewPanel>
             <PublishPanel>
                 <UploadControl />
             </PublishPanel>
