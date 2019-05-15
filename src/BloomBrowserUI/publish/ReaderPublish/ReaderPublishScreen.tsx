@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState, useContext } from "react";
-import { Link } from "@material-ui/core";
+import { Link, Button } from "@material-ui/core";
 import {
     BasePublishScreen,
     PreviewPanel,
@@ -23,6 +23,8 @@ import { BloomApi } from "../../utils/bloomApi";
 
 export const ReaderPublishScreen = () => {
     const inStorybookMode = useContext(StorybookContext);
+    //const [showingDialog, setShowingDialog] = useState(false);
+
     const [bookUrl, setBookUrl] = useState(
         inStorybookMode
             ? // "https://s3.amazonaws.com/BloomLibraryBooks-Sandbox/ken@example.com/11c2c600-35af-488b-a8d6-3479edcb9217/Aeneas"
@@ -53,8 +55,9 @@ export const ReaderPublishScreen = () => {
         <ThemeProvider theme={theme}>
             <BasePublishScreen>
                 <PreviewPanel>
-                    <DeviceFrame landscape={false}>
+                    <DeviceFrame defaultLandscape={false}>
                         <iframe
+                            title="book preview"
                             style={{ width: "100%", height: "100%" }}
                             src={
                                 pathToOutputBrowser +

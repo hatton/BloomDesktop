@@ -73,10 +73,10 @@ storiesOf("Publish/Library", module)
 
 storiesOf("Publish/DeviceFrame", module)
     .add("DeviceFrame Portrait", () => (
-        <DeviceFrame landscape={false}>Portrait</DeviceFrame>
+        <DeviceFrame defaultLandscape={false}>Portrait</DeviceFrame>
     ))
     .add("DeviceFrame Landscape", () => (
-        <DeviceFrame landscape={true}>Landscape</DeviceFrame>
+        <DeviceFrame defaultLandscape={true}>Landscape</DeviceFrame>
     ));
 
 storiesOf("Publish/Reader", module).add("BRPublishScreen", () => (

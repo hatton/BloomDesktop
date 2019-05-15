@@ -7,6 +7,17 @@
 @scale: 20;
 @height: calc(~"16px" * @scale);
 // gets filled by the components children, if there are any
+
+.deviceAndControls {
+    display: flex;
+    flex-direction: row;
+
+    .orientation-button {
+        height: 50px;
+        margin-top: auto;
+    }
+}
+
 .deviceFrame {
     background: rgb(241, 241, 241);
     width: calc(~"9px" * @scale);
