@@ -1,4 +1,5 @@
 import * as React from "react";
+import ReactDOM = require("react-dom");
 import { Link } from "@material-ui/core";
 
 import {
@@ -14,7 +15,8 @@ import { PublishFeaturesGroup } from "../commonPublish/PublishFeaturesGroup";
 import { LanguageGroup } from "../commonPublish/LanguageGroup";
 import { AudioGroup } from "../commonPublish/AudioGroup";
 import { LibraryPreview } from "./LibraryPreview";
-import ReactDOM = require("react-dom");
+import { ThemeProvider } from "@material-ui/styles";
+import theme from "../../bloomMaterialUITheme";
 
 export const LibraryPublishScreen = () => {
     return (
@@ -41,7 +43,9 @@ export const LibraryPublishScreen = () => {
 // if that html has the root page we need.
 if (document.getElementById("LibraryPublishScreen")) {
     ReactDOM.render(
-        <LibraryPublishScreen />,
+        <ThemeProvider theme={theme}>
+            <LibraryPublishScreen />
+        </ThemeProvider>,
         document.getElementById("LibraryPublishScreen")
     );
 }

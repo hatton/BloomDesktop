@@ -52,36 +52,35 @@ export const ReaderPublishScreen = () => {
         // the themeprovider is needed only because at the moment this is a top-level component because our Publish
         // tab is still in c# win-forms land. Once that tab has moved to a web screen, then the theme can be moved
         // up to the new root
-        <ThemeProvider theme={theme}>
-            <BasePublishScreen>
-                <PreviewPanel>
-                    <DeviceFrame defaultLandscape={false}>
-                        <iframe
-                            title="book preview"
-                            style={{ width: "100%", height: "100%" }}
-                            src={
-                                pathToOutputBrowser +
-                                "bloom-player/dist/bloomplayer.htm?url=" +
-                                bookUrl
-                            }
-                        />
-                    </DeviceFrame>
-                </PreviewPanel>
-                <PublishPanel>
-                    <MethodChooser />
-                </PublishPanel>
-                <SettingsPanel>
-                    <PublishFeaturesGroup />
-                    <ThumbnailGroup />
-                    <HelpGroup>
-                        <Link>About Bloom Reader</Link>
-                        {/* <Link>About Book Features</Link> */}
-                        <Link>Troubleshooting Tips</Link>
-                        <Link>Get Bloom Reader App</Link>
-                    </HelpGroup>
-                </SettingsPanel>
-            </BasePublishScreen>
-        </ThemeProvider>
+
+        <BasePublishScreen>
+            <PreviewPanel>
+                <DeviceFrame defaultLandscape={false}>
+                    <iframe
+                        title="book preview"
+                        style={{ width: "100%", height: "100%" }}
+                        src={
+                            pathToOutputBrowser +
+                            "bloom-player/dist/bloomplayer.htm?url=" +
+                            bookUrl
+                        }
+                    />
+                </DeviceFrame>
+            </PreviewPanel>
+            <PublishPanel>
+                <MethodChooser />
+            </PublishPanel>
+            <SettingsPanel>
+                <PublishFeaturesGroup />
+                <ThumbnailGroup />
+                <HelpGroup>
+                    <Link>About Bloom Reader</Link>
+                    {/* <Link>About Book Features</Link> */}
+                    <Link>Troubleshooting Tips</Link>
+                    <Link>Get Bloom Reader App</Link>
+                </HelpGroup>
+            </SettingsPanel>
+        </BasePublishScreen>
     );
 };
 
@@ -90,7 +89,9 @@ export const ReaderPublishScreen = () => {
 // if that html has the root page we need.
 if (document.getElementById("BloomReaderPublishScreen")) {
     ReactDOM.render(
-        <ReaderPublishScreen />,
+        <ThemeProvider theme={theme}>
+            <ReaderPublishScreen />
+        </ThemeProvider>,
         document.getElementById("BloomReaderPublishScreen")
     );
 }
