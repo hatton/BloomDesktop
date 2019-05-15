@@ -11,6 +11,7 @@ import DialogActions from "@material-ui/core/DialogActions";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import DialogContent from "@material-ui/core/DialogContent";
 import { useTheme } from "@material-ui/styles";
+import "./ProgressDialog.less";
 
 export enum ProgressState {
     Closed,
@@ -26,11 +27,12 @@ export const ProgressDialog: React.FunctionComponent<
     }
 > = props => {
     const theme = useTheme();
+    const kProgressBoxId = "progressBoxInsideDialog";
     const onCopy = () => {
         // document.execCommand("copy") does not work in Bloom's geckofx.
         BloomApi.postDataWithConfig(
             "publish/android/textToClipboard",
-            document.getElementById("progress-box")!.innerText, // want to crash here if no progress box
+            document.getElementById(kProgressBoxId)!.innerText, // want to crash here if no progress box
             { headers: { "Content-Type": "text/plain" } }
         );
     };
@@ -62,7 +64,7 @@ export const ProgressDialog: React.FunctionComponent<
             </DialogTitle>
             <DialogContent style={{ width: "500px", height: "300px" }}>
                 <Typography>
-                    <ProgressBox {...props} />
+                    <ProgressBox {...props} progressBoxId={kProgressBoxId} />
                 </Typography>
             </DialogContent>
             <DialogActions>

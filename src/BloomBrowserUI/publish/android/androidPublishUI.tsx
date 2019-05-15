@@ -510,6 +510,7 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                                         onReadyToReceive={() =>
                                             this.readyToReceiveProgress()
                                         }
+                                        progressBoxId="progress-box"
                                     />
                                     <Link
                                         id="copyProgressToClipboard"

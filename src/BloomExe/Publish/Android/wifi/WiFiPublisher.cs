@@ -94,6 +94,7 @@ namespace Bloom.Publish.Android.wifi
 
 			_progress.Message(idSuffix: "WifiInstructions1",
 				message: "On the Android, run Bloom Reader, open the menu and choose 'Receive Books from computer'.");
+
 			_progress.Message(idSuffix: "WifiInstructions2",
 				message: "You can do this on as many devices as you like. Make sure each device is connected to the same network as this computer.");
 		}

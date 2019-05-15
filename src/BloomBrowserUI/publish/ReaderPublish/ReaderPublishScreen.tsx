@@ -20,6 +20,10 @@ import theme from "../../bloomMaterialUITheme";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import WebSocketManager from "../../utils/WebSocketManager";
 import { BloomApi } from "../../utils/bloomApi";
+import { ProgressDialog, ProgressState } from "../commonPublish/ProgressDialog";
+const kWebSocketLifetime = "publish-android";
+
+let globalErrorEncountered = false;
 
 export const ReaderPublishScreen = () => {
     const inStorybookMode = useContext(StorybookContext);
@@ -34,6 +38,28 @@ export const ReaderPublishScreen = () => {
                   "/templates/Sample Shells/The Moon and the Cap" // Enhance: provide an actual bloomd in the source tree
             : "" // otherwise, wait for the websocket to deliver a url when the c# has finished creating the bloomd
     );
+    const [progressState, setProgressState] = useState(ProgressState.Working);
+    React.useEffect(() => {
+        WebSocketManager.addListener(kWebSocketLifetime, e => {
+            if (e.id === "publish/android/state") {
+                switch (e.message) {
+                    case "stopped":
+                        setProgressState(ProgressState.Done);
+                        break;
+                    case "UsbStarted":
+                    case "ServingOnWifi":
+                        setProgressState(ProgressState.Working);
+                        break;
+                    default:
+                        throw new Error(
+                            "Method Chooser does not understand the state: " +
+                                e.message
+                        );
+                }
+            }
+        });
+    });
+
     React.useEffect(() => {
         //nb: this clientContext must match what the c# end of the socket is sending on
         WebSocketManager.addListener("publish-android", e => {
@@ -43,9 +69,9 @@ export const ReaderPublishScreen = () => {
             }
         });
     }, []);
-    React.useEffect(() => {
-        BloomApi.postData("publish/android/updatePreview", {});
-    }, []);
+    // React.useEffect(() => {
+    //     BloomApi.postData("publish/android/updatePreview", {});
+    // }, []);
     const pathToOutputBrowser = inStorybookMode ? "./" : "../../";
 
     return (
@@ -78,6 +104,33 @@ export const ReaderPublishScreen = () => {
                     </HelpGroup>
                 </SettingsPanel>
             </BasePublishScreen>
+
+            <ProgressDialog
+                progressState={progressState}
+                clientContext="publish-android"
+                testProgressHtml={"hello"}
+                onGotErrorMessage={() => {
+                    setProgressState(ProgressState.Error);
+                    // we can't use a state-based flag because that is async
+                    // and, in tests, the updatePreview returns before the
+                    // state change actually makes it out to the state variable
+                    globalErrorEncountered = true;
+                }}
+                onUserClosed={() => {
+                    setProgressState(ProgressState.Closed);
+                }}
+                onReadyToReceive={() => {
+                    BloomApi.postData(
+                        "publish/android/updatePreview",
+                        {},
+                        () => {
+                            if (!globalErrorEncountered) {
+                                setProgressState(ProgressState.Closed);
+                            }
+                        }
+                    );
+                }}
+            />
         </>
     );
 };

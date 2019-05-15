@@ -1,6 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import WebSocketManager from "../utils/WebSocketManager";
+import { string } from "prop-types";
 
 export interface IProgressBoxProps {
     clientContext: string;
@@ -11,6 +12,8 @@ export interface IProgressBoxProps {
     // it is in the "OPEN" state where messages can be received (and sent).
     onReadyToReceive?: () => void;
     testProgressHtml?: string;
+    onGotErrorMessage?: () => void;
+    progressBoxId?: string;
 }
 
 interface IProgressState {
@@ -32,6 +35,11 @@ export default class ProgressBox extends React.Component<
         //get progress messages from c#
         WebSocketManager.addListener(props.clientContext, e => {
             if (e.id === "progress") {
+                if (e.message!.indexOf("error") > -1) {
+                    if (props.onGotErrorMessage) {
+                        props.onGotErrorMessage();
+                    }
+                }
                 if (e.cssStyleRule) {
                     this.writeLine(
                         `<span style='${e.cssStyleRule}'>${e.message}</span>`
@@ -45,7 +53,7 @@ export default class ProgressBox extends React.Component<
     }
 
     public componentDidMount() {
-        alert("constructing progress box for " + this.props.clientContext);
+        //alert("constructing progress box for " + this.props.clientContext);
         if (this.props.onReadyToReceive) {
             WebSocketManager.notifyReady(
                 this.props.clientContext,
@@ -82,7 +90,7 @@ export default class ProgressBox extends React.Component<
     public render() {
         return (
             <div
-                id="progress-box"
+                id={this.props.progressBoxId || ""}
                 dangerouslySetInnerHTML={{ __html: this.state.progress }}
             />
         );
