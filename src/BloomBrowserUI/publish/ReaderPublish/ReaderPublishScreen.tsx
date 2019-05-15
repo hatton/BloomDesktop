@@ -52,32 +52,33 @@ export const ReaderPublishScreen = () => {
         // the themeprovider is needed only because at the moment this is a top-level component because our Publish
         // tab is still in c# win-forms land. Once that tab has moved to a web screen, then the theme can be moved
         // up to the new root
-
-        <BasePublishScreen>
-            <PreviewPanel>
-                <DeviceFrame
-                    defaultLandscape={false}
-                    url={
-                        pathToOutputBrowser +
-                        "bloom-player/dist/bloomplayer.htm?url=" +
-                        bookUrl
-                    }
-                />
-            </PreviewPanel>
-            <PublishPanel>
-                <MethodChooser />
-            </PublishPanel>
-            <SettingsPanel>
-                <PublishFeaturesGroup />
-                <ThumbnailGroup />
-                <HelpGroup>
-                    <Link>About Bloom Reader</Link>
-                    {/* <Link>About Book Features</Link> */}
-                    <Link>Troubleshooting Tips</Link>
-                    <Link>Get Bloom Reader App</Link>
-                </HelpGroup>
-            </SettingsPanel>
-        </BasePublishScreen>
+        <>
+            <BasePublishScreen>
+                <PreviewPanel>
+                    <DeviceFrame
+                        defaultLandscape={false}
+                        url={
+                            pathToOutputBrowser +
+                            "bloom-player/dist/bloomplayer.htm?url=" +
+                            bookUrl
+                        }
+                    />
+                </PreviewPanel>
+                <PublishPanel>
+                    <MethodChooser />
+                </PublishPanel>
+                <SettingsPanel>
+                    <PublishFeaturesGroup />
+                    <ThumbnailGroup />
+                    <HelpGroup>
+                        <Link>About Bloom Reader</Link>
+                        {/* <Link>About Book Features</Link> */}
+                        <Link>Troubleshooting Tips</Link>
+                        <Link>Get Bloom Reader App</Link>
+                    </HelpGroup>
+                </SettingsPanel>
+            </BasePublishScreen>
+        </>
     );
 };
 

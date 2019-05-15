@@ -29,7 +29,6 @@ export default class ProgressBox extends React.Component<
 
     constructor(props: IProgressBoxProps) {
         super(props);
-        let self = this;
         //get progress messages from c#
         WebSocketManager.addListener(props.clientContext, e => {
             if (e.id === "progress") {
@@ -46,7 +45,7 @@ export default class ProgressBox extends React.Component<
     }
 
     public componentDidMount() {
-        //alert("constructing progress box for " + this.props.clientContext);
+        alert("constructing progress box for " + this.props.clientContext);
         if (this.props.onReadyToReceive) {
             WebSocketManager.notifyReady(
                 this.props.clientContext,
@@ -67,7 +66,7 @@ export default class ProgressBox extends React.Component<
     private tryScrollToBottom() {
         // Must be done AFTER painting once, so we
         // get a real current scroll height.
-        let progressDiv = document.getElementById("progress-box");
+        const progressDiv = document.getElementById("progress-box");
 
         // in my testing in FF, this worked the first time
         if (progressDiv) progressDiv.scrollTop = progressDiv.scrollHeight;

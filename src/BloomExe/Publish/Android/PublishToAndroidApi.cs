@@ -198,8 +198,9 @@ namespace Bloom.Publish.Android
 			}, true);
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "wifi/start", request =>
 			{
-				_wifiPublisher.Start(request.CurrentBook, request.CurrentCollectionSettings, _thumbnailBackgroundColor);
 				SetState("ServingOnWifi");
+				_wifiPublisher.Start(request.CurrentBook, request.CurrentCollectionSettings, _thumbnailBackgroundColor);
+				
 				request.PostSucceeded();
 			}, true);
 

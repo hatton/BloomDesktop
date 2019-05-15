@@ -37,6 +37,7 @@ storiesOf("Publish/ProgressDialog", module)
                 progressState={ProgressState.Working}
                 clientContext="progress"
                 testProgressHtml={testText}
+                onUserClosed={() => {}}
             />
         </div>
     ))
@@ -46,6 +47,7 @@ storiesOf("Publish/ProgressDialog", module)
                 progressState={ProgressState.Done}
                 clientContext="progress"
                 testProgressHtml={testText}
+                onUserClosed={() => {}}
             />
         </div>
     ))
@@ -55,6 +57,7 @@ storiesOf("Publish/ProgressDialog", module)
                 progressState={ProgressState.Error}
                 clientContext="progress"
                 testProgressHtml={testText}
+                onUserClosed={() => {}}
             />
         </div>
     ));
