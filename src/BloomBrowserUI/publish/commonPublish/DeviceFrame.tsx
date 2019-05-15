@@ -12,12 +12,17 @@ import { useState } from "react";
 
 export const DeviceFrame: React.FunctionComponent<{
     defaultLandscape: boolean;
+    url: string;
 }> = props => {
     const [landscape, setLandscape] = useState(props.defaultLandscape);
     return (
         <div className="deviceAndControls">
-            <div className={"deviceFrame " + (landscape ? "landscape" : "")}>
-                {props.children}
+            <div
+                className={
+                    "deviceFrame " + (landscape ? "landscape" : "portrait")
+                }
+            >
+                <iframe title="book preview" src={props.url} />
             </div>
             <OrientationButton
                 landscape={false}

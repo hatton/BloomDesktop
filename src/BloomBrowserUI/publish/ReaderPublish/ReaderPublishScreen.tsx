@@ -55,17 +55,14 @@ export const ReaderPublishScreen = () => {
 
         <BasePublishScreen>
             <PreviewPanel>
-                <DeviceFrame defaultLandscape={false}>
-                    <iframe
-                        title="book preview"
-                        style={{ width: "100%", height: "100%" }}
-                        src={
-                            pathToOutputBrowser +
-                            "bloom-player/dist/bloomplayer.htm?url=" +
-                            bookUrl
-                        }
-                    />
-                </DeviceFrame>
+                <DeviceFrame
+                    defaultLandscape={false}
+                    url={
+                        pathToOutputBrowser +
+                        "bloom-player/dist/bloomplayer.htm?url=" +
+                        bookUrl
+                    }
+                />
             </PreviewPanel>
             <PublishPanel>
                 <MethodChooser />

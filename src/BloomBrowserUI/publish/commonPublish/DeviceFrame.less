@@ -29,9 +29,22 @@
     border-bottom-width: 35px;
     border-radius: 15px;
     display: flex;
-
+    &.portrait iframe {
+        width: 100%;
+        height: 100%;
+    }
     &.landscape {
-        transform: rotate(-90deg) translate(68px, 101px);
+        transform-origin: top left;
+        transform: translate(0, 200px /* down*/)
+            rotate(-90deg /*counter clockwise*/);
+        iframe {
+            // To simulate the device noticing that it rotated (and thus rotating the screen),
+            // we have to then de-rotate the contents of the frame:
+            transform: rotate(90deg) translate(70px, 70px);
+            height: 55%; // roughly 9/16, fine tuned
+            width: 176%; // roughly 16/9
+            flex-shrink: 0;
+        }
     }
 
     // speaker
