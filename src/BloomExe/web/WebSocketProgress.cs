@@ -52,7 +52,7 @@ namespace Bloom.web
 
 		public virtual void ErrorWithoutLocalizing(string message)
 		{
-			MessageWithoutLocalizing($"<span class='error' style='color:red'>{message}</span>");
+			MessageWithoutLocalizing($"<span data-errorMessage style='color:red'>{message}</span>");
 			SIL.Reporting.Logger.WriteEvent($"Error: {message}");
 		}
 

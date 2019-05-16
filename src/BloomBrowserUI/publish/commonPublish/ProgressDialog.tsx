@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
 import Typography from "@material-ui/core/Typography";
@@ -17,18 +17,18 @@ export enum ProgressState {
     Closed,
     Working, // doing something that will lead to a "Done" or "Error"
     Done,
-    Serving, // doing something indefinitely, which user can stop
-    Error
+    Serving // doing something indefinitely, which user can stop
 }
-
-export const ProgressDialog: React.FunctionComponent<
-    IProgressBoxProps & {
-        progressState: ProgressState;
-        onUserClosed: () => void;
-        onUserStopped: () => void;
-        onUserCanceled: () => void;
-    }
-> = props => {
+//IProgressBoxProps &
+export const ProgressDialog: React.FunctionComponent<{
+    messages: string;
+    progressState: ProgressState;
+    errorEncountered?: boolean; // do something visual to indicate there was a problem
+    onUserClosed: () => void;
+    onUserStopped: () => void;
+    onUserCanceled: () => void;
+}> = props => {
+    const messagesDivRef = React.useRef<HTMLDivElement>(null);
     const theme = useTheme();
     const kProgressBoxId = "progressBoxInsideDialog";
     const onCopy = () => {
@@ -44,19 +44,40 @@ export const ProgressDialog: React.FunctionComponent<
         props.progressState == ProgressState.Working ||
         props.progressState == ProgressState.Serving;
 
+    // const scrollMessagesBoxToBottom = () => {
+    //     // in  testing in FF, this worked the first time...
+    //     // ...but in the old "ProgressBox" implementation, there apparently were times when the div wasn't around
+    //     // yet, so it did a something like this
+    //     window.requestAnimationFrame(() => {
+    //         if (messagesDiv.current) {
+    //             messagesDiv.current.scrollTop =
+    //                 messagesDiv.current.scrollHeight;
+    //         }
+    //     });
+    // };
+
+    useEffect(() => {
+        if (messagesDivRef.current) {
+            messagesDivRef.current.scrollTop =
+                messagesDivRef.current.scrollHeight;
+        }
+    }, [props.messages]); // do this every time the message text changes
+
     return (
         <Dialog
             className="progressDialog"
             open={props.progressState !== ProgressState.Closed}
-            onClose={() => {
+            onBackdropClick={() => {
                 // allow just clicking out of the dialog to close, unless we're still working,
                 // in which case you have to go and click on "CANCEL" or "Stop Sharing"
-                return somethingStillGoing;
+                if (!somethingStillGoing) {
+                    props.onUserClosed();
+                }
             }}
         >
             <DialogTitle
                 style={
-                    props.progressState === ProgressState.Error
+                    props.errorEncountered
                         ? {
                               backgroundColor: (theme as any).palette.warning
                                   .main
@@ -68,7 +89,10 @@ export const ProgressDialog: React.FunctionComponent<
             </DialogTitle>
             <DialogContent style={{ width: "500px", height: "300px" }}>
                 <Typography>
-                    <ProgressBox {...props} progressBoxId={kProgressBoxId} />
+                    <div
+                        ref={messagesDivRef}
+                        dangerouslySetInnerHTML={{ __html: props.messages }}
+                    />
                 </Typography>
             </DialogContent>
             <DialogActions>
@@ -96,15 +120,16 @@ export const ProgressDialog: React.FunctionComponent<
                             );
 
                         case ProgressState.Working:
-                            return (
+                            return null;
+                        /* eventually we'll want this, but at the moment, we only use this state
+                                    for making previews, and in that state Bloom doesn't have a way of
+                                    cancelling.
                                 <Button
                                     onClick={props.onUserCanceled}
                                     color="primary"
                                 >
                                     Cancel
-                                </Button>
-                            );
-                        case ProgressState.Error:
+                                </Button>*/
                         case ProgressState.Done:
                             return (
                                 <Button

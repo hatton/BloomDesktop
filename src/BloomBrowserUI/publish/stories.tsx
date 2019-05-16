@@ -35,8 +35,7 @@ storiesOf("Publish/ProgressDialog", module)
         <div>
             <ProgressDialog
                 progressState={ProgressState.Working}
-                clientContext="progress"
-                testProgressHtml={testText}
+                messages={testText}
                 onUserClosed={() => {}}
                 onUserCanceled={() => {}}
                 onUserStopped={() => {}}
@@ -48,8 +47,7 @@ storiesOf("Publish/ProgressDialog", module)
         <div>
             <ProgressDialog
                 progressState={ProgressState.Done}
-                clientContext="progress"
-                testProgressHtml={testText}
+                messages={testText}
                 onUserClosed={() => {}}
                 onUserCanceled={() => {}}
                 onUserStopped={() => {}}
@@ -59,9 +57,9 @@ storiesOf("Publish/ProgressDialog", module)
     .add("Error", () => (
         <div>
             <ProgressDialog
-                progressState={ProgressState.Error}
-                clientContext="progress"
-                testProgressHtml={testText}
+                progressState={ProgressState.Done}
+                errorEncountered={true}
+                messages={testText}
                 onUserClosed={() => {}}
                 onUserCanceled={() => {}}
                 onUserStopped={() => {}}
