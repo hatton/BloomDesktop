@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState, useContext } from "react";
-import { Link, Button } from "@material-ui/core";
+import { Link } from "@material-ui/core";
 import {
     BasePublishScreen,
     PreviewPanel,
@@ -15,15 +15,10 @@ import "./ReaderPublish.less";
 import { DeviceFrame } from "../commonPublish/DeviceFrame";
 import ReactDOM = require("react-dom");
 import { ThemeProvider } from "@material-ui/styles";
-
 import theme from "../../bloomMaterialUITheme";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import WebSocketManager from "../../utils/WebSocketManager";
-import { BloomApi } from "../../utils/bloomApi";
-import { ProgressDialog, ProgressState } from "../commonPublish/ProgressDialog";
-const kWebSocketLifetime = "publish-android";
-
-let globalErrorEncountered = false;
+import { ReaderPublishProgress } from "./ReaderPublishProgress";
 
 export const ReaderPublishScreen = () => {
     const inStorybookMode = useContext(StorybookContext);
@@ -38,27 +33,6 @@ export const ReaderPublishScreen = () => {
                   "/templates/Sample Shells/The Moon and the Cap" // Enhance: provide an actual bloomd in the source tree
             : "" // otherwise, wait for the websocket to deliver a url when the c# has finished creating the bloomd
     );
-    const [progressState, setProgressState] = useState(ProgressState.Working);
-    React.useEffect(() => {
-        WebSocketManager.addListener(kWebSocketLifetime, e => {
-            if (e.id === "publish/android/state") {
-                switch (e.message) {
-                    case "stopped":
-                        setProgressState(ProgressState.Done);
-                        break;
-                    case "UsbStarted":
-                    case "ServingOnWifi":
-                        setProgressState(ProgressState.Working);
-                        break;
-                    default:
-                        throw new Error(
-                            "Method Chooser does not understand the state: " +
-                                e.message
-                        );
-                }
-            }
-        });
-    });
 
     React.useEffect(() => {
         //nb: this clientContext must match what the c# end of the socket is sending on
@@ -75,9 +49,6 @@ export const ReaderPublishScreen = () => {
     const pathToOutputBrowser = inStorybookMode ? "./" : "../../";
 
     return (
-        // the themeprovider is needed only because at the moment this is a top-level component because our Publish
-        // tab is still in c# win-forms land. Once that tab has moved to a web screen, then the theme can be moved
-        // up to the new root
         <>
             <BasePublishScreen>
                 <PreviewPanel>
@@ -105,32 +76,7 @@ export const ReaderPublishScreen = () => {
                 </SettingsPanel>
             </BasePublishScreen>
 
-            <ProgressDialog
-                progressState={progressState}
-                clientContext="publish-android"
-                testProgressHtml={"hello"}
-                onGotErrorMessage={() => {
-                    setProgressState(ProgressState.Error);
-                    // we can't use a state-based flag because that is async
-                    // and, in tests, the updatePreview returns before the
-                    // state change actually makes it out to the state variable
-                    globalErrorEncountered = true;
-                }}
-                onUserClosed={() => {
-                    setProgressState(ProgressState.Closed);
-                }}
-                onReadyToReceive={() => {
-                    BloomApi.postData(
-                        "publish/android/updatePreview",
-                        {},
-                        () => {
-                            if (!globalErrorEncountered) {
-                                setProgressState(ProgressState.Closed);
-                            }
-                        }
-                    );
-                }}
-            />
+            <ReaderPublishProgress />
         </>
     );
 };
