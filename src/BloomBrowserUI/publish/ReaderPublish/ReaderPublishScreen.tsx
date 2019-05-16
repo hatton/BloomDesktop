@@ -18,7 +18,7 @@ import { ThemeProvider } from "@material-ui/styles";
 import theme from "../../bloomMaterialUITheme";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import WebSocketManager from "../../utils/WebSocketManager";
-import { ReaderPublishProgress } from "./ReaderPublishProgress";
+import { ReaderPublishProgressDialog } from "./ReaderPublishProgressDialog";
 
 export const ReaderPublishScreen = () => {
     const inStorybookMode = useContext(StorybookContext);
@@ -76,7 +76,7 @@ export const ReaderPublishScreen = () => {
                 </SettingsPanel>
             </BasePublishScreen>
 
-            <ReaderPublishProgress />
+            <ReaderPublishProgressDialog />
         </>
     );
 };

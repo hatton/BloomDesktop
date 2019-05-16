@@ -60,7 +60,7 @@ export const MethodChooser: React.FunctionComponent = () => {
                 >
                     Share
                 </BloomButton>
-            </div>{" "}
+            </div>
         </>
     );
 };

@@ -238,13 +238,15 @@ namespace Bloom.Publish.Android
 				}
 				if (fontFileFinder.FontsWeCantInstall.Contains(font))
 				{
-					progress.ErrorWithParams("LicenseForbids","{0} is a font name", "Checking {0} font: License does not permit embedding.", font);
+					progress.Error("Common.Warning", "Warning");
+					progress.ErrorWithParams("LicenseForbids","{0} is a font name", "This book has text in a font named \"{0}\". The license for \"{0}\" does not permit Bloom to embed the font in the book.", font);
 				}
 				else
 				{
-					progress.ErrorWithParams("NoFontFound", "{0} is a font name", "Checking {0} font: No font found to embed.", font);
+					progress.Error("Common.Warning", "Warning");
+					progress.ErrorWithParams("NoFontFound", "{0} is a font name", "This book has text in a font named \"{0}\", but Bloom could not find that font on this computer.", font);
 				}
-				progress.ErrorWithParams("SubstitutingAndika", "{0} and {1} are font names", "Substituting \"{0}\" for \"{1}\"", defaultFont, font);
+				progress.ErrorWithParams("SubstitutingAndika", "{0} is a font name", "Bloom will substitute \"{0}\" instead.", defaultFont, font);
 			}
 			foreach (var file in filesToEmbed)
 			{

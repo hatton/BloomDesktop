@@ -15,8 +15,9 @@ import "./ProgressDialog.less";
 
 export enum ProgressState {
     Closed,
-    Working,
+    Working, // doing something that will lead to a "Done" or "Error"
     Done,
+    Serving, // doing something indefinitely, which user can stop
     Error
 }
 
@@ -24,6 +25,8 @@ export const ProgressDialog: React.FunctionComponent<
     IProgressBoxProps & {
         progressState: ProgressState;
         onUserClosed: () => void;
+        onUserStopped: () => void;
+        onUserCanceled: () => void;
     }
 > = props => {
     const theme = useTheme();
@@ -36,19 +39,19 @@ export const ProgressDialog: React.FunctionComponent<
             { headers: { "Content-Type": "text/plain" } }
         );
     };
+    //React.useEffect(() => alert("constructing ProgressDialog"), []);
+    const somethingStillGoing =
+        props.progressState == ProgressState.Working ||
+        props.progressState == ProgressState.Serving;
 
-    const stillWorking = props.progressState == ProgressState.Working;
-    const handleClose = () => {
-        props.onUserClosed();
-    };
     return (
         <Dialog
             className="progressDialog"
             open={props.progressState !== ProgressState.Closed}
             onClose={() => {
                 // allow just clicking out of the dialog to close, unless we're still working,
-                // in which case you have to go and click on "CANCEL"
-                return stillWorking || handleClose();
+                // in which case you have to go and click on "CANCEL" or "Stop Sharing"
+                return somethingStillGoing;
             }}
         >
             <DialogTitle
@@ -69,7 +72,7 @@ export const ProgressDialog: React.FunctionComponent<
                 </Typography>
             </DialogContent>
             <DialogActions>
-                {stillWorking || (
+                {somethingStillGoing || (
                     <Button
                         onClick={() => onCopy()}
                         color="secondary"
@@ -78,19 +81,44 @@ export const ProgressDialog: React.FunctionComponent<
                         Copy to Clipboard
                     </Button>
                 )}
-                {stillWorking ? (
-                    <Button onClick={handleClose} color="primary">
-                        Cancel
-                    </Button>
-                ) : (
-                    <Button
-                        variant="contained"
-                        onClick={handleClose}
-                        color="primary"
-                    >
-                        Close
-                    </Button>
-                )}
+
+                {(() => {
+                    switch (props.progressState) {
+                        case ProgressState.Serving:
+                            return (
+                                <Button
+                                    onClick={props.onUserStopped}
+                                    color="primary"
+                                    variant="contained"
+                                >
+                                    Stop Sharing
+                                </Button>
+                            );
+
+                        case ProgressState.Working:
+                            return (
+                                <Button
+                                    onClick={props.onUserCanceled}
+                                    color="primary"
+                                >
+                                    Cancel
+                                </Button>
+                            );
+                        case ProgressState.Error:
+                        case ProgressState.Done:
+                            return (
+                                <Button
+                                    variant="contained"
+                                    onClick={props.onUserClosed}
+                                    color="primary"
+                                >
+                                    Close
+                                </Button>
+                            );
+                        case ProgressState.Closed:
+                            return null;
+                    }
+                })()}
             </DialogActions>
         </Dialog>
     );

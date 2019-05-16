@@ -32,6 +32,7 @@ export default class ProgressBox extends React.Component<
 
     constructor(props: IProgressBoxProps) {
         super(props);
+        //alert("constructing progress box for " + this.props.clientContext);
         //get progress messages from c#
         WebSocketManager.addListener(props.clientContext, e => {
             if (e.id === "progress") {
@@ -53,7 +54,7 @@ export default class ProgressBox extends React.Component<
     }
 
     public componentDidMount() {
-        //alert("constructing progress box for " + this.props.clientContext);
+        //alert("mounting progress box for " + this.props.clientContext);
         if (this.props.onReadyToReceive) {
             WebSocketManager.notifyReady(
                 this.props.clientContext,

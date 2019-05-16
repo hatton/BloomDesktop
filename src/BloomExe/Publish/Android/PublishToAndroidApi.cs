@@ -344,7 +344,10 @@ namespace Bloom.Publish.Android
 			{
 				// The progress object has been initialized to use an id prefix.  So we'll access L10NSharp explicitly here.  We also want to make the string blue,
 				// which requires a special argument.
-				var msgFormat = L10NSharp.LocalizationManager.GetString("PublishTab.Android.WrongLayout.Message",
+				var msgFormat = L10NSharp.LocalizationManager.GetString("Common.Note",
+					"Note", "A heading shown above some messages.");
+				progress.MessageWithStyleWithoutLocalizing(msgFormat, "color:blue");
+				 msgFormat = L10NSharp.LocalizationManager.GetString("PublishTab.Android.WrongLayout.Message",
 					"The layout of this book is currently \"{0}\". Bloom Reader will display it using \"{1}\", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to \"{1}\".",
 					"{0} and {1} are book layout tags.");
 				var desiredLayout = desiredLayoutSize + layout.SizeAndOrientation.OrientationName;

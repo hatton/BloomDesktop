@@ -38,6 +38,9 @@ storiesOf("Publish/ProgressDialog", module)
                 clientContext="progress"
                 testProgressHtml={testText}
                 onUserClosed={() => {}}
+                onUserCanceled={() => {}}
+                onUserStopped={() => {}}
+            />
             />
         </div>
     ))
@@ -48,6 +51,8 @@ storiesOf("Publish/ProgressDialog", module)
                 clientContext="progress"
                 testProgressHtml={testText}
                 onUserClosed={() => {}}
+                onUserCanceled={() => {}}
+                onUserStopped={() => {}}
             />
         </div>
     ))
@@ -58,6 +63,9 @@ storiesOf("Publish/ProgressDialog", module)
                 clientContext="progress"
                 testProgressHtml={testText}
                 onUserClosed={() => {}}
+                onUserCanceled={() => {}}
+                onUserStopped={() => {}}
+            />
             />
         </div>
     ));
