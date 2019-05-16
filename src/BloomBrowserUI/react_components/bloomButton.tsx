@@ -1,11 +1,11 @@
 import { BloomApi } from "../utils/bloomApi";
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import {
     ILocalizationProps,
     ILocalizationState,
     LocalizableElement
 } from "./l10n";
+import { Button } from "@material-ui/core";
 
 export interface IButtonProps extends ILocalizationProps {
     id?: string;
@@ -53,7 +53,9 @@ export default class BloomButton extends LocalizableElement<
             tip = this.getLocalizedTooltip(this.props.enabled);
         }
         return (
-            <button
+            <Button
+                variant="contained"
+                color="primary"
                 id={this.props.id}
                 className={
                     this.props.className + (this.props.hidden ? " hidden" : "")
@@ -76,7 +78,7 @@ export default class BloomButton extends LocalizableElement<
             >
                 {image}
                 {this.props.hasText && this.getLocalizedContent()}
-            </button>
+            </Button>
         );
     }
 }

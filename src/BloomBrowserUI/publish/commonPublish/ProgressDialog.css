@@ -1,0 +1,3 @@
+.progressDialog .MuiDialogContent-root {
+    overflow-y: scroll;
+}

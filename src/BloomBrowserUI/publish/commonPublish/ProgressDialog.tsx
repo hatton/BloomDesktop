@@ -43,6 +43,7 @@ export const ProgressDialog: React.FunctionComponent<
     };
     return (
         <Dialog
+            className="progressDialog"
             open={props.progressState !== ProgressState.Closed}
             onClose={() => {
                 // allow just clicking out of the dialog to close, unless we're still working,

@@ -191,7 +191,6 @@ html.publishTabScreen .progress-column {
     flex: 1 1 auto;
 }
 html.publishTabScreen button {
-    background-color: white;
     padding: 0.5em;
 }
 html.publishTabScreen button:disabled {
