@@ -9,6 +9,7 @@ const kWebSocketLifetime = "publish-android";
 export const ReaderPublishProgressDialog = () => {
     const [accumulatedMessages, setAccumulatedMessages] = useState("");
     const [progressState, setProgressState] = useState(ProgressState.Working);
+    const [heading, setHeading] = useState("Creating Digital Book");
     // see note below on the use of this variable
     const [errorWasEncountered, setGlobalErrorEncountered] = useState(false);
     React.useEffect(() => {
@@ -19,7 +20,11 @@ export const ReaderPublishProgressDialog = () => {
                         setProgressState(ProgressState.Done);
                         break;
                     case "UsbStarted":
+                        setHeading("Sending via USB Cable");
+                        setProgressState(ProgressState.Serving);
+                        break;
                     case "ServingOnWifi":
+                        setHeading("Sharing");
                         setProgressState(ProgressState.Serving);
                         break;
                     default:
@@ -71,6 +76,7 @@ export const ReaderPublishProgressDialog = () => {
     }, []);
     return (
         <ProgressDialog
+            heading={heading}
             messages={accumulatedMessages}
             progressState={progressState}
             onUserStopped={() => {

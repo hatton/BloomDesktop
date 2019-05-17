@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Button from "@material-ui/core/Button";
 import "./ReaderPublish.less";
 import { ConciseRadioGroup } from "../commonPublish/ConciseRadioGroup";
@@ -7,6 +7,7 @@ import { ProgressDialog, ProgressState } from "../commonPublish/ProgressDialog";
 import WebSocketManager from "../../utils/WebSocketManager";
 import BloomButton from "../../react_components/bloomButton";
 import { BloomApi } from "../../utils/bloomApi";
+import { isLinux } from "../../utils/isLinux";
 
 const wifiImage = require("./publish-via-wifi.svg");
 const usbImage = require("./publish-via-usb.svg");
@@ -23,12 +24,24 @@ export const MethodChooser: React.FunctionComponent = () => {
     const [method, setMethod] = useState("file"); //initially set state to wifi. Enhance: remember from last time?
 
     const methodImage = (methodNameToImageUrl as any)[method];
+    useEffect(
+        () =>
+            BloomApi.get("publish/android/method", result => {
+                setMethod(result.data);
+            }),
+        []
+    );
+
     return (
         <>
             <div className={"methodChooserRoot"}>
                 <ConciseRadioGroup
                     value={method}
-                    setter={setMethod}
+                    setter={m => {
+                        setMethod(m);
+                        // let Bloom remember this choice as the default for next time
+                        BloomApi.postString("publish/android/method", m);
+                    }}
                     choices={{
                         wifi: "Share over Wi-FI",
                         file: "Save to a file",
@@ -44,23 +57,52 @@ export const MethodChooser: React.FunctionComponent = () => {
                 //had to wrap this button because else material-ui overrides the margin
                 className={"buttonWrapper"}
             >
-                {/* <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => setProgressState(ProgressState.Working)}
+                {getStartButton(method)}
+            </div>
+        </>
+    );
+};
+
+function getStartButton(method: string) {
+    switch (method) {
+        case "file":
+            return (
+                <BloomButton
+                    l10nKey="PublishTab.Save"
+                    l10nComment="Button that tells Bloom to save the book as a .bloomD file."
+                    clickEndpoint="publish/android/file/save"
+                    enabled={true}
+                    hasText={true}
                 >
-                    Share
-                </Button> */}
+                    Save...
+                </BloomButton>
+            );
+        case "usb":
+            return (
+                <BloomButton
+                    l10nKey="PublishTab.Android.Usb.Start"
+                    l10nComment="Button that tells Bloom to send the book to a device via USB cable."
+                    enabled={true}
+                    clickEndpoint="publish/android/usb/start"
+                    hidden={isLinux()}
+                    hasText={true}
+                >
+                    Connect with USB cable
+                </BloomButton>
+            );
+        case "wifi":
+            return (
                 <BloomButton
                     l10nKey="PublishTab.Android.Wifi.Start"
                     l10nComment="Button that tells Bloom to begin offering this book on the wifi network."
-                    enabled={true} //enabled={this.state.stateId === "stopped"}
+                    enabled={true}
                     clickEndpoint="publish/android/wifi/start"
                     hasText={true}
                 >
                     Share
                 </BloomButton>
-            </div>
-        </>
-    );
-};
+            );
+        default:
+            throw new Error("Unhandled method choice");
+    }
+}

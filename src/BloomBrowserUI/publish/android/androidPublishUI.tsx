@@ -441,7 +441,7 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                                                 clickEndpoint="publish/android/wifi/start"
                                                 hasText={true}
                                             >
-                                                Start Serving
+                                                Share
                                             </BloomButton>
                                             <BloomButton
                                                 l10nKey="PublishTab.Android.Wifi.Stop"

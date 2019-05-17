@@ -135,6 +135,15 @@ export class BloomApi {
         );
     }
 
+    public static postString(urlSuffix: string, value: string) {
+        BloomApi.wrapAxios(
+            axios.post(this.kBloomApiPrefix + urlSuffix, value, {
+                headers: {
+                    "Content-Type": "text/plain"
+                }
+            })
+        );
+    }
     // This method is used to post something from Bloom.
     public static post(
         urlSuffix: string,

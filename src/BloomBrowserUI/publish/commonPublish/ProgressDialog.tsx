@@ -21,6 +21,7 @@ export enum ProgressState {
 }
 //IProgressBoxProps &
 export const ProgressDialog: React.FunctionComponent<{
+    heading?: string;
     messages: string;
     progressState: ProgressState;
     errorEncountered?: boolean; // do something visual to indicate there was a problem
@@ -85,7 +86,7 @@ export const ProgressDialog: React.FunctionComponent<{
                         : {}
                 }
             >
-                Progress
+                {props.heading || "Progress"}
             </DialogTitle>
             <DialogContent style={{ width: "500px", height: "300px" }}>
                 <Typography>

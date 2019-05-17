@@ -24,15 +24,14 @@ import {
 export const ConciseRadioGroup: React.FunctionComponent<{
     choices: any;
     value: string;
-    setter: Dispatch<SetStateAction<string>>;
+    setter: (method: string) => void;
 }> = props => {
-    const [value, setValue] = useState(props.value);
     return (
         <FormControl margin="dense">
             {/* this 'dense' doesn't seem to do anything?*/}
             <RadioGroup
-                value={value}
-                onChange={(event, newValue) => setValue(newValue)}
+                value={props.value}
+                onChange={(event, newValue) => props.setter(newValue)}
             >
                 {Object.keys(props.choices).map(key => (
                     <FormControlLabel
