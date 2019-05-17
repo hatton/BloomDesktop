@@ -6,7 +6,7 @@ import { addDecorator } from "@storybook/react";
 //import "typeface-roboto";
 import { ReaderPublishScreen } from "./ReaderPublish/ReaderPublishScreen";
 import { LibraryPublishScreen } from "./LibraryPublish/LibraryPublishScreen";
-import { DeviceFrame } from "./commonPublish/DeviceFrame";
+import { DeviceAndControls } from "./commonPublish/DeviceAndControls";
 import { StorybookContext } from "../.storybook/StoryBookContext";
 import { ProgressDialog, ProgressState } from "./commonPublish/ProgressDialog";
 import { loremIpsum } from "lorem-ipsum";
@@ -82,14 +82,14 @@ storiesOf("Publish/Library", module)
 
 storiesOf("Publish/DeviceFrame", module)
     .add("DeviceFrame Portrait", () => (
-        <DeviceFrame defaultLandscape={false} url="">
+        <DeviceAndControls defaultLandscape={false} url="">
             Portrait
-        </DeviceFrame>
+        </DeviceAndControls>
     ))
     .add("DeviceFrame Landscape", () => (
-        <DeviceFrame defaultLandscape={true} url="">
+        <DeviceAndControls defaultLandscape={true} url="">
             Landscape
-        </DeviceFrame>
+        </DeviceAndControls>
     ));
 
 storiesOf("Publish/Reader", module).add("BRPublishScreen", () => (

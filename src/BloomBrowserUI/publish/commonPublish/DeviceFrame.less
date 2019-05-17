@@ -1,34 +1,48 @@
+// didn't help with the Bloom vs. modern browser disparity (see  &:after below)
+// : @import "../../node_modules/normalize.css/normalize.css";
+
 @phoneFeaturesColor: #ababab;
-@buttonDiameter: 20px;
 @bezelWidth: 10px;
 @speaker-length : 80px; // prettier extension changes speakerLength to speakerlength. So weird.
 @speakerHeight: 5px;
 
 @scale: 20;
-@height: calc(~"16px" * @scale);
+@buttonScale: 0.2;
 // gets filled by the components children, if there are any
 
 .deviceAndControls {
     display: flex;
     flex-direction: row;
-
-    .orientation-button {
-        height: 50px;
-        margin-top: auto;
-    }
 }
 
 .deviceFrame {
+    --screenHeight: calc(16px * @scale);
+    --screenWidth: calc(9px * @scale);
+
     background: rgb(241, 241, 241);
-    width: calc(~"9px" * @scale);
-    height: @height;
+    box-sizing: content-box; // Our width & height are sizing the screen (the glass). All the bezel and stuff doesn't count.
+    width: var(--screenWidth);
+    height: var(--screenHeight);
     border-width: @bezelWidth;
     border-style: solid;
     border-color: #636363;
     border-top-width: 20px;
-    border-bottom-width: 35px;
+    border-bottom-width: 20px;
     border-radius: 15px;
-    display: flex;
+
+    position: relative;
+    flex-direction: column;
+    flex-shrink: 0;
+
+    display: flex !important;
+    --scale: 1;
+
+    &.orientation-button {
+        --scale: @buttonScale;
+        //            margin-top: auto;
+        transform: scale(@buttonScale);
+    }
+
     &.portrait iframe {
         width: 100%;
         height: 100%;
@@ -36,7 +50,8 @@
     &.landscape {
         transform-origin: top left;
         transform: translate(0, 200px /* down*/)
-            rotate(-90deg /*counter clockwise*/);
+            rotate(-90deg /*counter clockwise*/) scale(var(--scale));
+
         iframe {
             // To simulate the device noticing that it rotated (and thus rotating the screen),
             // we have to then de-rotate the contents of the frame:
@@ -49,25 +64,13 @@
 
     // speaker
     &:before {
-        width: @speaker-length;
+        --speakerWidth: ~"calc(var(--screenWidth) / 3)";
+        width: var(--speakerWidth);
         height: @speakerHeight;
         margin-top: -12px;
-        margin-left: calc((~"9px" * @scale - @speaker-length) / 2);
+        margin-left: ~"calc((var(--screenWidth)/2) - (var(--speakerWidth)/2))";
         border-radius: @speakerHeight;
         background-color: @phoneFeaturesColor;
-        content: "";
-        position: absolute;
-    }
-
-    //the bottom 'button' (looks like phone home button) is the "after" rule
-    &:after {
-        width: @buttonDiameter;
-        height: @buttonDiameter;
-        border-radius: 50%;
-        //border: solid 5px @LightGrey;
-        background: @phoneFeaturesColor;
-        margin-left: calc((~"9px" * @scale - @buttonDiameter) / 2);
-        margin-top: calc(@height + 10px);
         content: "";
         position: absolute;
     }

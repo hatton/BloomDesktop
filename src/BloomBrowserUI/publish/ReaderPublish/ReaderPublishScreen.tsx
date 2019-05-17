@@ -12,7 +12,7 @@ import { MethodChooser } from "./MethodChooser";
 import { PublishFeaturesGroup } from "../commonPublish/PublishFeaturesGroup";
 import { ThumbnailGroup } from "../commonPublish/ThumbnailGroup";
 import "./ReaderPublish.less";
-import { DeviceFrame } from "../commonPublish/DeviceFrame";
+import { DeviceAndControls } from "../commonPublish/DeviceAndControls";
 import ReactDOM = require("react-dom");
 import { ThemeProvider } from "@material-ui/styles";
 import theme from "../../bloomMaterialUITheme";
@@ -52,7 +52,7 @@ export const ReaderPublishScreen = () => {
         <>
             <BasePublishScreen>
                 <PreviewPanel>
-                    <DeviceFrame
+                    <DeviceAndControls
                         defaultLandscape={false}
                         url={
                             pathToOutputBrowser +

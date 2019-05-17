@@ -22,6 +22,7 @@ body,
     height: 100%;
     width: 100%;
     flex-grow: 1;
+    background-color: white;
 }
 .helpGroup {
     margin-top: auto;
@@ -34,7 +35,7 @@ body,
     width: 100%;
     background-color: #1a1a1a;
     padding-left: 30px;
-    padding-top: 30px;
+    padding-top: 20px;
 }
 .publish {
     display: flex;

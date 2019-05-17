@@ -10,7 +10,7 @@ import { useState } from "react";
   </DeviceFrame>
 */
 
-export const DeviceFrame: React.FunctionComponent<{
+export const DeviceAndControls: React.FunctionComponent<{
     defaultLandscape: boolean;
     url: string;
 }> = props => {
@@ -40,12 +40,11 @@ const OrientationButton: React.FunctionComponent<{
     landscape: boolean;
     onClick: (landscape: boolean) => void;
 }> = props => (
-    <Button
-        className="orientation-button"
-        variant="contained"
-        color="primary"
+    <div
+        className={
+            "deviceFrame orientation-button " +
+            (props.landscape ? "landscape" : "portrait")
+        }
         onClick={() => props.onClick(props.landscape)}
-    >
-        {props.landscape ? "Landscape" : "Portrait"}
-    </Button>
+    />
 );
