@@ -81,13 +81,18 @@ storiesOf("Publish/Library", module)
     .add("UploadScreen", () => <LibraryPublishScreen />);
 
 storiesOf("Publish/DeviceFrame", module)
-    .add("DeviceFrame Portrait", () => (
-        <DeviceAndControls defaultLandscape={false} url="">
+    .add("DeviceFrame Default Portrait, rotate-able", () => (
+        <DeviceAndControls defaultLandscape={false} canRotate={true} url="">
             Portrait
         </DeviceAndControls>
     ))
-    .add("DeviceFrame Landscape", () => (
-        <DeviceAndControls defaultLandscape={true} url="">
+    .add("DeviceFrame Landscape only", () => (
+        <DeviceAndControls defaultLandscape={true} canRotate={false} url="">
+            Landscape
+        </DeviceAndControls>
+    ))
+    .add("DeviceFrame Landscape , rotate-able", () => (
+        <DeviceAndControls defaultLandscape={true} canRotate={true} url="">
             Landscape
         </DeviceAndControls>
     ));

@@ -3,6 +3,7 @@ import { useState, useContext } from "react";
 import { ProgressDialog, ProgressState } from "../commonPublish/ProgressDialog";
 import { BloomApi } from "../../utils/bloomApi";
 import WebSocketManager from "../../utils/WebSocketManager";
+import { StorybookContext } from "../../.storybook/StoryBookContext";
 
 const kWebSocketLifetime = "publish-android";
 
@@ -55,7 +56,9 @@ export const ReaderPublishProgressDialog = () => {
                 }
             }
         });
+    }, []);
 
+    React.useEffect(() => {
         // we need to be ready to listen to progress messages from the server,
         // before we kick anything off on the server.
         WebSocketManager.notifyReady("publish-android", () => {
@@ -74,6 +77,7 @@ export const ReaderPublishProgressDialog = () => {
             });
         });
     }, []);
+
     return (
         <ProgressDialog
             heading={heading}

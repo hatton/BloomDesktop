@@ -39,13 +39,35 @@
 
     &.orientation-button {
         --scale: @buttonScale;
-        //            margin-top: auto;
-        transform: scale(@buttonScale);
+        transform-origin: top;
+        &.portrait {
+            margin-right: -60px;
+            margin-left: 100px;
+            transform: translate(0, 65px) scale(@buttonScale);
+        }
+        &.landscape {
+            transform: translate(0, 117px) rotate(-90deg /*counter clockwise*/)
+                scale(@buttonScale);
+        }
+        &.disabled {
+            opacity: 0.5;
+        }
+        .selectedOrientation {
+            border: solid yellow;
+            margin: -35px;
+            width: 135%;
+            height: 135%;
+        }
     }
-
-    &.portrait iframe {
-        width: 100%;
-        height: 100%;
+    transition: all 200ms;
+    &.portrait {
+        &.fullSize {
+            transform: translate(143px, 0);
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+        }
     }
     &.landscape {
         transform-origin: top left;
@@ -56,9 +78,14 @@
             // To simulate the device noticing that it rotated (and thus rotating the screen),
             // we have to then de-rotate the contents of the frame:
             transform: rotate(90deg) translate(70px, 70px);
-            height: 55%; // roughly 9/16, fine tuned
-            width: 176%; // roughly 16/9
+            height: (900% / 16); // roughly 9/16, fine tuned
+            width: (1600%/9); // roughly 16/9
             flex-shrink: 0;
+
+            // height: 183px;
+            // width: 321px;
+            // flex-shrink: 0;
+            border: none;
         }
     }
 

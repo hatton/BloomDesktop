@@ -229,6 +229,24 @@ namespace Bloom.Publish.Android
 				PortableClipboard.SetText(request.RequiredPostString());
 				request.PostSucceeded();
 			}, true);
+
+			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "canRotate",
+				request =>
+				{
+					return request.CurrentBook.getHasMotionPages();
+				},
+				null, // no write action
+				false,
+				true); // we don't really know, just safe default
+
+			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "defaultLandscape",
+				request =>
+				{
+					return request.CurrentBook.GetLayout().SizeAndOrientation.IsLandScape;
+				},
+				null, // no write action
+				false,
+				true); // we don't really know, just safe default
 		}
 
 		public void Stop()

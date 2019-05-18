@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { Link } from "@material-ui/core";
 import {
     BasePublishScreen,
@@ -19,11 +19,15 @@ import theme from "../../bloomMaterialUITheme";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
 import WebSocketManager from "../../utils/WebSocketManager";
 import { ReaderPublishProgressDialog } from "./ReaderPublishProgressDialog";
+import { BloomApi } from "../../utils/bloomApi";
 
 export const ReaderPublishScreen = () => {
     const inStorybookMode = useContext(StorybookContext);
     //const [showingDialog, setShowingDialog] = useState(false);
 
+    const [defaultLandscape, setDefaultLandscape] = useState(false);
+    const [canRotate, setCanRotate] = useState(false);
+    const [foo, setFoo] = useState("originalfoo");
     const [bookUrl, setBookUrl] = useState(
         inStorybookMode
             ? // "https://s3.amazonaws.com/BloomLibraryBooks-Sandbox/ken@example.com/11c2c600-35af-488b-a8d6-3479edcb9217/Aeneas"
@@ -34,15 +38,36 @@ export const ReaderPublishScreen = () => {
             : "" // otherwise, wait for the websocket to deliver a url when the c# has finished creating the bloomd
     );
 
-    React.useEffect(() => {
-        //nb: this clientContext must match what the c# end of the socket is sending on
-        WebSocketManager.addListener("publish-android", e => {
-            if (e.id === "androidPreview" && e.message) {
-                const x = e.message;
-                setBookUrl(x);
-            }
-        });
-    }, []);
+    if (inStorybookMode) {
+        useEffect(() => {
+            window.setTimeout(() => {
+                setFoo("After useEffect() Foo");
+                setDefaultLandscape(true);
+                setCanRotate(true);
+            }, 1000);
+        }, []);
+    } else {
+        useEffect(() => {
+            BloomApi.get("publish/android/defaultLandscape", result => {
+                setDefaultLandscape(result.data);
+            });
+        }, []);
+        useEffect(() => {
+            BloomApi.get("publish/android/canRotate", result => {
+                setCanRotate(result.data);
+            });
+        }, []);
+
+        useEffect(() => {
+            //nb: this clientContext must match what the c# end of the socket is sending on
+            WebSocketManager.addListener("publish-android", e => {
+                if (e.id === "androidPreview" && e.message) {
+                    const x = e.message;
+                    setBookUrl(x);
+                }
+            });
+        }, []);
+    }
     // React.useEffect(() => {
     //     BloomApi.postData("publish/android/updatePreview", {});
     // }, []);
@@ -53,7 +78,8 @@ export const ReaderPublishScreen = () => {
             <BasePublishScreen>
                 <PreviewPanel>
                     <DeviceAndControls
-                        defaultLandscape={false}
+                        defaultLandscape={defaultLandscape}
+                        canRotate={canRotate}
                         url={
                             pathToOutputBrowser +
                             "bloom-player/dist/bloomplayer.htm?url=" +
@@ -76,7 +102,7 @@ export const ReaderPublishScreen = () => {
                 </SettingsPanel>
             </BasePublishScreen>
 
-            <ReaderPublishProgressDialog />
+            {inStorybookMode || <ReaderPublishProgressDialog />}
         </>
     );
 };
