@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState, useContext, useEffect } from "react";
-import { Link } from "@material-ui/core";
+
 import {
     BasePublishScreen,
     PreviewPanel,
@@ -20,6 +20,9 @@ import { StorybookContext } from "../../.storybook/StoryBookContext";
 import WebSocketManager from "../../utils/WebSocketManager";
 import { ReaderPublishProgressDialog } from "./ReaderPublishProgressDialog";
 import { BloomApi } from "../../utils/bloomApi";
+import HelpLink from "../../react_components/helpLink";
+import HtmlHelpLink from "../../react_components/htmlHelpLink";
+import Link from "../../react_components/link";
 
 export const ReaderPublishScreen = () => {
     const inStorybookMode = useContext(StorybookContext);
@@ -94,10 +97,34 @@ export const ReaderPublishScreen = () => {
                     <PublishFeaturesGroup />
                     <ThumbnailGroup />
                     <HelpGroup>
-                        <Link>About Bloom Reader</Link>
-                        {/* <Link>About Book Features</Link> */}
-                        <Link>Troubleshooting Tips</Link>
-                        <Link>Get Bloom Reader App</Link>
+                        <HelpLink
+                            l10nKey="PublishTab.Android.AboutBloomReader"
+                            helpId="Concepts/Bloom_Reader_App.htm"
+                        >
+                            About Bloom Reader
+                        </HelpLink>
+                        <HtmlHelpLink
+                            l10nKey="PublishTab.Android.Troubleshooting"
+                            fileid="Publish-Android-Troubleshooting"
+                        >
+                            Troubleshooting Tips
+                        </HtmlHelpLink>
+                        <div className="icon-link-row get-bloom-reader">
+                            <a href="https://play.google.com/store/search?q=%22sil%20international%22%2B%22bloom%20reader%22&amp;c=apps">
+                                <img
+                                    className="playIcon"
+                                    src="Google_Play_symbol_2016.svg"
+                                />
+                            </a>
+                            <Link
+                                id="getBloomReaderLink"
+                                href="https://play.google.com/store/search?q=%22sil%20international%22%2B%22bloom%20reader%22&amp;c=apps"
+                                l10nKey="PublishTab.Android.GetBloomReader"
+                                l10nComment="Link to find Bloom Reader on Google Play Store"
+                            >
+                                Get Bloom Reader App
+                            </Link>
+                        </div>
                     </HelpGroup>
                 </SettingsPanel>
             </BasePublishScreen>

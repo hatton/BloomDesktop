@@ -1,5 +1,6 @@
 // didn't help with the Bloom vs. modern browser disparity (see  &:after below)
 // : @import "../../node_modules/normalize.css/normalize.css";
+@import "../../bloomUI.less";
 
 @phoneFeaturesColor: #ababab;
 @bezelWidth: 10px;
@@ -53,10 +54,12 @@
             opacity: 0.5;
         }
         .selectedOrientation {
-            border: solid yellow;
-            margin: -35px;
-            width: 135%;
-            height: 135%;
+            border: solid @bloom-blue; // @bloom-yellow;
+            margin: -46px;
+            width: 148%;
+            height: 132%;
+            border-radius: 18px;
+            border-width: 7px;
         }
     }
     transition: all 200ms;

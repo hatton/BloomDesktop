@@ -38,7 +38,7 @@ import {
     IUILanguageAwareProps
 } from "../../react_components/l10n";
 import WebSocketManager from "../../utils/WebSocketManager";
-import "./androidPublishUI.less";
+// this whole file will be removed, but for now, remove this side effect of it existing import "./androidPublishUI.less";
 import "errorHandler";
 
 const kWebSocketLifetime = "publish-android";
