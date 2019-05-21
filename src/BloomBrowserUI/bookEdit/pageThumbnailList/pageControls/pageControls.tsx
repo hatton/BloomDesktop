@@ -5,6 +5,8 @@ import BloomButton from "../../../react_components/bloomButton";
 import WebSocketManager from "../../../utils/WebSocketManager";
 import "./pageControls.less";
 import "errorHandler";
+import theme from "../../../bloomMaterialUITheme";
+import { ThemeProvider } from "@material-ui/styles";
 
 // This is one of the root files for our webpack build, the root from which
 // pageControlsBundle.js is built. Currently, contrary to our usual practice,
@@ -98,6 +100,7 @@ class PageControls extends React.Component<{}, IPageControlsState> {
             <div id="pageControlsRoot">
                 <div>
                     <BloomButton
+                        transparent={true}
                         l10nKey="EditTab.AddPageDialog.AddPageButton"
                         l10nComment="This is for the button that LAUNCHES the dialog, not the \'Add this page\' button that is IN the dialog."
                         enabled={this.state.canAddState}
@@ -112,6 +115,7 @@ class PageControls extends React.Component<{}, IPageControlsState> {
                 </div>
                 <div id="row2">
                     <BloomButton
+                        transparent={true}
                         enabled={this.state.canDuplicateState}
                         l10nKey="EditTab.DuplicatePageButton"
                         l10nComment="Button that tells Bloom to duplicate the currently selected page."
@@ -125,6 +129,7 @@ class PageControls extends React.Component<{}, IPageControlsState> {
                     />
                     <BloomButton
                         l10nKey="EditTab.DeletePageButton"
+                        transparent={true}
                         l10nComment="Button that tells Bloom to delete the currently selected page."
                         enabled={this.state.canDeleteState}
                         clickEndpoint="edit/pageControls/deletePage"
@@ -139,6 +144,7 @@ class PageControls extends React.Component<{}, IPageControlsState> {
                         <span>
                             {this.state.lockState === "BookLocked" && (
                                 <BloomButton
+                                    transparent={true}
                                     l10nKey="EditTab.UnlockBook"
                                     l10nComment="Button that tells Bloom to temporarily unlock a shell book for editing other than translation."
                                     enabled={true}
@@ -150,6 +156,7 @@ class PageControls extends React.Component<{}, IPageControlsState> {
                             )}
                             {this.state.lockState === "BookUnlocked" && (
                                 <BloomButton
+                                    transparent={true}
                                     l10nKey="EditTab.LockBook"
                                     l10nComment="Button that tells Bloom to re-lock a shell book so it can't be modified (other than translation)."
                                     enabled={true}
@@ -161,6 +168,7 @@ class PageControls extends React.Component<{}, IPageControlsState> {
                             )}
                             {this.state.lockState === "NoLocking" && (
                                 <BloomButton
+                                    transparent={true}
                                     l10nKey="EditTab.NeverLocked"
                                     l10nComment="Button in a state that indicates books in this collection are always unlocked."
                                     enabled={false}
