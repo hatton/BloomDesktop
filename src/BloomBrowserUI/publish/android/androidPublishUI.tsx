@@ -438,7 +438,7 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                                                     this.state.stateId ===
                                                     "stopped"
                                                 }
-                                                clickEndpoint="publish/android/wifi/start"
+                                                clickApiEndpoint="publish/android/wifi/start"
                                                 hasText={true}
                                             >
                                                 Share
@@ -450,7 +450,7 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                                                     this.state.stateId ===
                                                     "ServingOnWifi"
                                                 }
-                                                clickEndpoint="publish/android/wifi/stop"
+                                                clickApiEndpoint="publish/android/wifi/stop"
                                                 hasText={true}
                                             >
                                                 Stop Serving
@@ -466,7 +466,7 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                                                     this.state.stateId ===
                                                     "stopped"
                                                 }
-                                                clickEndpoint="publish/android/usb/start"
+                                                clickApiEndpoint="publish/android/usb/start"
                                                 hidden={this.isLinux}
                                                 hasText={true}
                                             >
@@ -479,7 +479,7 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                                                     this.state.stateId ===
                                                     "UsbStarted"
                                                 }
-                                                clickEndpoint="publish/android/usb/stop"
+                                                clickApiEndpoint="publish/android/usb/stop"
                                                 hasText={true}
                                             >
                                                 Stop Trying
@@ -491,7 +491,7 @@ class AndroidPublishUI extends React.Component<IUILanguageAwareProps, IState> {
                                             <BloomButton
                                                 l10nKey="PublishTab.Save"
                                                 l10nComment="Button that tells Bloom to save the book as a .bloomD file."
-                                                clickEndpoint="publish/android/file/save"
+                                                clickApiEndpoint="publish/android/file/save"
                                                 enabled={true}
                                                 hasText={true}
                                             >

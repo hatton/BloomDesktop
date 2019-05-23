@@ -1,6 +1,8 @@
 import axios, { AxiosResponse, AxiosRequestConfig, AxiosPromise } from "axios";
 import * as StackTrace from "stacktrace-js";
 import { reportError, reportPreliminaryError } from "../lib/errorHandler";
+import { useState } from "react";
+import React = require("react");
 
 export class BloomApi {
     private static kBloomApiPrefix = "/bloom/api/";
@@ -122,6 +124,38 @@ export class BloomApi {
         );
     }
 
+    // A react hook for controlling an API-backed boolean from a React pure functional component
+    // Returns a tuple of [theCurrentValue, aFunctionForChangingTheValue(newValue)]
+    // When you call the returned function, two things happen: 1) we POST the value to the Bloom API
+    // and 2) we tell react that the value changed. It will then re-render the component;
+    // the component will call this again, but this the tuple will contain the new value.
+    public static useGetBoolean(
+        urlSuffix: string,
+        defaultValue: boolean
+    ): [boolean, (value: boolean) => void] {
+        const [value, setValue] = React.useState(defaultValue);
+        React.useEffect(() => {
+            BloomApi.getBoolean(urlSuffix, c => {
+                setValue(c);
+            });
+        }, []);
+
+        const fn = (value: boolean) => {
+            BloomApi.postBoolean(urlSuffix, value);
+            setValue(value);
+        };
+        return [value, fn];
+    }
+
+    public static getBoolean(
+        urlSuffix: string,
+        successCallback: (value: boolean) => void
+    ) {
+        return BloomApi.get(urlSuffix, result => {
+            successCallback(result.data);
+        });
+    }
+
     // This method is used to get a result from Bloom, passing paramaters to the nested axios call.
     public static getWithConfig(
         urlSuffix: string,
@@ -144,6 +178,19 @@ export class BloomApi {
             })
         );
     }
+    public static postBoolean(urlSuffix: string, value: boolean) {
+        BloomApi.wrapAxios(
+            axios.post(this.kBloomApiPrefix + urlSuffix, value, {
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+        );
+    }
+    // public static useApiGetBoolean(urlSuffix: string):boolean {
+    //     return BloomApi.get(urlSuffix);
+    // }
+
     // This method is used to post something from Bloom.
     public static post(
         urlSuffix: string,

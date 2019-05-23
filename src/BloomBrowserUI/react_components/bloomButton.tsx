@@ -10,7 +10,7 @@ import { Button } from "@material-ui/core";
 export interface IButtonProps extends ILocalizationProps {
     id?: string;
     enabled: boolean;
-    clickEndpoint?: string;
+    clickApiEndpoint?: string;
     onClick?: () => void;
     transparent?: boolean;
     mightNavigate?: boolean; // true if the post of clickEndpoint might navigate to a new page.
@@ -80,11 +80,11 @@ export default class BloomButton extends LocalizableElement<
     private onClick() {
         if (this.props.onClick) {
             this.props.onClick();
-        } else if (this.props.clickEndpoint) {
+        } else if (this.props.clickApiEndpoint) {
             if (this.props.mightNavigate) {
-                BloomApi.postThatMightNavigate(this.props.clickEndpoint);
+                BloomApi.postThatMightNavigate(this.props.clickApiEndpoint);
             } else {
-                BloomApi.post(this.props.clickEndpoint);
+                BloomApi.post(this.props.clickApiEndpoint);
             }
         }
     }

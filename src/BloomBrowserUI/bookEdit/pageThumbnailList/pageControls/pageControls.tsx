@@ -104,7 +104,7 @@ class PageControls extends React.Component<{}, IPageControlsState> {
                         l10nKey="EditTab.AddPageDialog.AddPageButton"
                         l10nComment="This is for the button that LAUNCHES the dialog, not the \'Add this page\' button that is IN the dialog."
                         enabled={this.state.canAddState}
-                        clickEndpoint="edit/pageControls/addPage"
+                        clickApiEndpoint="edit/pageControls/addPage"
                         mightNavigate={true}
                         enabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/addPage.png"
                         disabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/addPageDisabled.png"
@@ -119,7 +119,7 @@ class PageControls extends React.Component<{}, IPageControlsState> {
                         enabled={this.state.canDuplicateState}
                         l10nKey="EditTab.DuplicatePageButton"
                         l10nComment="Button that tells Bloom to duplicate the currently selected page."
-                        clickEndpoint="edit/pageControls/duplicatePage"
+                        clickApiEndpoint="edit/pageControls/duplicatePage"
                         mightNavigate={true}
                         enabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/duplicatePage.svg"
                         disabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/duplicatePageDisabled.svg"
@@ -132,7 +132,7 @@ class PageControls extends React.Component<{}, IPageControlsState> {
                         transparent={true}
                         l10nComment="Button that tells Bloom to delete the currently selected page."
                         enabled={this.state.canDeleteState}
-                        clickEndpoint="edit/pageControls/deletePage"
+                        clickApiEndpoint="edit/pageControls/deletePage"
                         mightNavigate={true}
                         enabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/deletePage.svg"
                         disabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/deletePageDisabled.svg"
@@ -148,7 +148,7 @@ class PageControls extends React.Component<{}, IPageControlsState> {
                                     l10nKey="EditTab.UnlockBook"
                                     l10nComment="Button that tells Bloom to temporarily unlock a shell book for editing other than translation."
                                     enabled={true}
-                                    clickEndpoint="edit/pageControls/unlockBook"
+                                    clickApiEndpoint="edit/pageControls/unlockBook"
                                     enabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/lockedPage.svg"
                                     hasText={false}
                                     l10nTipEnglishEnabled="This book is in translate-only mode. If you want to make other changes, click this to temporarily unlock the book."
@@ -160,7 +160,7 @@ class PageControls extends React.Component<{}, IPageControlsState> {
                                     l10nKey="EditTab.LockBook"
                                     l10nComment="Button that tells Bloom to re-lock a shell book so it can't be modified (other than translation)."
                                     enabled={true}
-                                    clickEndpoint="edit/pageControls/lockBook"
+                                    clickApiEndpoint="edit/pageControls/lockBook"
                                     enabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/unlockedPage.svg"
                                     hasText={false}
                                     l10nTipEnglishEnabled="This book is temporarily unlocked."
@@ -172,7 +172,7 @@ class PageControls extends React.Component<{}, IPageControlsState> {
                                     l10nKey="EditTab.NeverLocked"
                                     l10nComment="Button in a state that indicates books in this collection are always unlocked."
                                     enabled={false}
-                                    clickEndpoint="edit/pageControls/lockBook"
+                                    clickApiEndpoint="edit/pageControls/lockBook"
                                     disabledImageFile="/bloom/bookEdit/pageThumbnailList/pageControls/unlockedPage.svg"
                                     hasText={false}
                                     l10nTipEnglishEnabled="Books are never locked in a Source Collection."

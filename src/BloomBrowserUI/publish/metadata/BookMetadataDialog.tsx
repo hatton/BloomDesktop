@@ -84,7 +84,7 @@ export default class BookMetadataDialog extends React.Component<{}, IState> {
                                 id="helpButton"
                                 enabled={true}
                                 l10nKey="Common.Help"
-                                clickEndpoint="help/User_Interface/Dialog_boxes/Book_Metadata_dialog_box.htm"
+                                clickApiEndpoint="help/User_Interface/Dialog_boxes/Book_Metadata_dialog_box.htm"
                                 hasText={true}
                             >
                                 Help

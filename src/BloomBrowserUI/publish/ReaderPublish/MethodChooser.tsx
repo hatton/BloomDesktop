@@ -70,7 +70,7 @@ function getStartButton(method: string) {
                 <BloomButton
                     l10nKey="PublishTab.Save"
                     l10nComment="Button that tells Bloom to save the book as a .bloomD file."
-                    clickEndpoint="publish/android/file/save"
+                    clickApiEndpoint="publish/android/file/save"
                     enabled={true}
                     hasText={true}
                 >
@@ -83,7 +83,7 @@ function getStartButton(method: string) {
                     l10nKey="PublishTab.Android.Usb.Start"
                     l10nComment="Button that tells Bloom to send the book to a device via USB cable."
                     enabled={true}
-                    clickEndpoint="publish/android/usb/start"
+                    clickApiEndpoint="publish/android/usb/start"
                     hidden={isLinux()}
                     hasText={true}
                 >
@@ -96,7 +96,7 @@ function getStartButton(method: string) {
                     l10nKey="PublishTab.Android.Wifi.Start"
                     l10nComment="Button that tells Bloom to begin offering this book on the wifi network."
                     enabled={true}
-                    clickEndpoint="publish/android/wifi/start"
+                    clickApiEndpoint="publish/android/wifi/start"
                     hasText={true}
                 >
                     Share

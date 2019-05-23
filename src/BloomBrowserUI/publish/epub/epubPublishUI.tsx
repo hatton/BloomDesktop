@@ -99,7 +99,7 @@ class EpubPublishUI extends React.Component<
                             <BloomButton
                                 className="save-button"
                                 enabled={true}
-                                clickEndpoint={"publish/epub/save"}
+                                clickApiEndpoint={"publish/epub/save"}
                                 hasText={true}
                                 l10nKey="PublishTab.Save"
                             >
