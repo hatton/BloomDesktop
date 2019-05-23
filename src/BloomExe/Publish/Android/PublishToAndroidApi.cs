@@ -121,21 +121,16 @@ namespace Bloom.Publish.Android
 				}
 			}, true);
 
-
-			apiHandler.RegisterEndpointHandler(kApiUrlPart + "motionBookMode", request =>
-			{
-				if (request.HttpMethod == HttpMethods.Get)
+			apiHandler.RegisterBooleanEndpointHandler(kApiUrlPart + "motionBookMode",
+				readRequest =>
 				{
-					// this is temporary, just trying to get support for full screen pan & zoom out quickly in 4.2
-					request.ReplyWithText(request.CurrentBook.UseMotionModeInBloomReader.ToString()
-						.ToLowerInvariant());  // "false", not "False"
-				}
-				else // post
+					return readRequest.CurrentBook.UseMotionModeInBloomReader;
+				},
+				(writeRequest, value) =>
 				{
-					request.CurrentBook.UseMotionModeInBloomReader = bool.Parse(request.RequiredPostString());
-					request.PostSucceeded();
+					writeRequest.CurrentBook.UseMotionModeInBloomReader = value;
 				}
-			}, true);
+			, true);
 
 			apiHandler.RegisterEndpointHandler(kApiUrlPart + "updatePreview", request =>
 			{

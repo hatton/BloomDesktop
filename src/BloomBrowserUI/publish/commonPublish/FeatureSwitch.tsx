@@ -1,22 +1,28 @@
 import * as React from "react";
-import { useState } from "react";
-import { FormControlLabel, Checkbox } from "@material-ui/core";
+import { MuiCheckbox } from "../../react_components/muiCheckBox";
+import { BloomApi } from "../../utils/bloomApi";
 
-// wrap up the complex material-ui checkbox in something simple
+// A checkbox that is backed by a boolean API get/set
 export const FeatureSwitch: React.FunctionComponent<{
-    label: string;
+    english: string;
+    l10nKey: string;
+    l10nComment?: string;
+    apiEndpoint: string;
 }> = props => {
-    const [checked, setChecked] = useState(true);
+    const [checked, setChecked] = BloomApi.useGetBoolean(
+        props.apiEndpoint,
+        false
+    );
+
     return (
-        <FormControlLabel
-            control={
-                <Checkbox
-                    checked={checked}
-                    onChange={(e, newState) => setChecked(newState)}
-                    color="primary"
-                />
-            }
-            label={props.label}
+        <MuiCheckbox
+            checked={checked}
+            english={props.english}
+            l10nKey={props.l10nKey}
+            l10nComment={props.l10nComment}
+            onCheckChanged={(newState: boolean | null) => {
+                setChecked(!!newState);
+            }}
         />
     );
 };

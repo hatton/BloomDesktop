@@ -6,8 +6,8 @@ import { SettingsGroup } from "./BasePublishScreen";
 export const LanguageGroup: React.FunctionComponent = () => (
     <SettingsGroup label="Languages">
         <FormGroup>
-            <FeatureSwitch label="English" />
-            <FeatureSwitch label="Español" />
+            {/* <FeatureSwitch label="English" />
+            <FeatureSwitch label="Español" /> */}
         </FormGroup>
     </SettingsGroup>
 );
