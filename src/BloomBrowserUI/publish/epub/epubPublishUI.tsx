@@ -12,7 +12,7 @@ import {
     H1,
     H2,
     IUILanguageAwareProps
-} from "../../react_components/l10n";
+} from "../../react_components/l10nComponents";
 import PWithLink from "../../react_components/pWithLink";
 import "./epubPublishUI.less";
 import "../previewCommon.less";

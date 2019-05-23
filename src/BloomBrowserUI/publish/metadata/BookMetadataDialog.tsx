@@ -7,7 +7,7 @@ import { BloomApi } from "../../utils/bloomApi";
 import * as mobx from "mobx";
 import * as mobxReact from "mobx-react";
 import BloomButton from "../../react_components/bloomButton";
-import { Div } from "../../react_components/l10n";
+import { Div } from "../../react_components/l10nComponents";
 
 // tslint:disable-next-line:no-empty-interface
 interface IState {

@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as MUI from "@material-ui/core";
 
-import { ILocalizationProps, LocalizableElement } from "./l10n";
+import { ILocalizationProps, LocalizableElement } from "./l10nComponents";
 
 interface ILinkProps extends ILocalizationProps {
     id?: string;

@@ -36,7 +36,7 @@ import {
     H2,
     Div,
     IUILanguageAwareProps
-} from "../../react_components/l10n";
+} from "../../react_components/l10nComponents";
 import WebSocketManager from "../../utils/WebSocketManager";
 // this whole file will be removed, but for now, remove this side effect of it existing import "./androidPublishUI.less";
 import "errorHandler";
