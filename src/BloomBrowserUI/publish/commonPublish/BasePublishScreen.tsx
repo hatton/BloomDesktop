@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Typography } from "@material-ui/core";
 import "./BasePublishScreen.less";
-
+import { String } from "../../react_components/l10nComponents";
 /*
   Example usage:
   <BasePublishScreen>
@@ -57,7 +57,7 @@ export const HelpGroup: React.FunctionComponent = props => {
     return (
         <section className={"helpGroup"}>
             <Typography component="h1" variant="h6">
-                Help
+                <String l10nKey="Common.Help">Help</String>
             </Typography>
             {props.children}
         </section>
