@@ -1,13 +1,13 @@
 import * as React from "react";
 import { FormGroup } from "@material-ui/core";
-import { FeatureSwitch } from "./FeatureSwitch";
+import { ApiCheckbox } from "../../react_components/ApiCheckbox";
 import { SettingsGroup } from "./BasePublishScreen";
 
 export const PublishFeaturesGroup: React.FunctionComponent = () => (
     <SettingsGroup label="Features">
         <FormGroup>
             {/* <FeatureSwitch label="Talking Book" /> */}
-            <FeatureSwitch
+            <ApiCheckbox
                 english="Motion Book"
                 l10nKey="PublishTab.Android.MotionBookMode"
                 // tslint:disable-next-line:max-line-length

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { FormGroup } from "@material-ui/core";
-import { FeatureSwitch } from "./FeatureSwitch";
+import { ApiCheckbox } from "../../react_components/ApiCheckbox";
 import { SettingsGroup } from "./BasePublishScreen";
 
 export const AudioGroup: React.FunctionComponent = () => (

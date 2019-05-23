@@ -1,10 +1,7 @@
 import * as React from "react";
-import { ILocalizationProps, LocalizableElement, Label } from "./l10n";
-
 import { useState } from "react";
 import { FormControlLabel, Checkbox } from "@material-ui/core";
-import { BloomApi } from "../utils/bloomApi";
-import theOneLocalizationManager from "../lib/localizationManager/localizationManager";
+import { useL10n } from "./l10nHooks";
 
 // wrap up the complex material-ui checkbox in something simple and make it handle tristate
 export const MuiCheckbox: React.FunctionComponent<{
@@ -61,12 +58,3 @@ export const MuiCheckbox: React.FunctionComponent<{
         />
     );
 };
-
-function useL10n(english: string, l10nKey: string, l10nComment?: string) {
-    const [localizedLabel, setLocalizedLabel] = useState(english);
-    React.useEffect(() => {
-        window.setTimeout(() => setLocalizedLabel("localized"), 2000);
-        //theOneLocalizationManager.asyncGetText()
-    });
-    return localizedLabel;
-}

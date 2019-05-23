@@ -4,7 +4,7 @@ import { Expandable } from "./expandable";
 import { Checkbox } from "./checkbox";
 import { MuiCheckbox } from "./muiCheckBox";
 import { useState } from "react";
-import { FeatureSwitch } from "../publish/commonPublish/FeatureSwitch";
+import { ApiCheckbox } from "./ApiCheckbox";
 
 storiesOf("Localizable Widgets", module).add("Expandable", () => (
     <Expandable
@@ -71,9 +71,9 @@ storiesOf("MUI Localizable Widgets/Checkbox", module)
             );
         })
     );
-storiesOf("FeatureSwitch (API)", module).add("MotionBook", () =>
+storiesOf("ApiCheckbox", module).add("MotionBook", () =>
     React.createElement(() => (
-        <FeatureSwitch
+        <ApiCheckbox
             english="Motion Book"
             l10nKey="PublishTab.Android.MotionBookMode"
             apiEndpoint="publish/android/motionBookMode"

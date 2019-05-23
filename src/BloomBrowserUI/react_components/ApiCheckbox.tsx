@@ -1,9 +1,9 @@
 import * as React from "react";
-import { MuiCheckbox } from "../../react_components/muiCheckBox";
-import { BloomApi } from "../../utils/bloomApi";
+import { MuiCheckbox } from "./muiCheckBox";
+import { BloomApi } from "../utils/bloomApi";
 
-// A checkbox that is backed by a boolean API get/set
-export const FeatureSwitch: React.FunctionComponent<{
+// A localized checkbox that is backed by a boolean API get/set
+export const ApiCheckbox: React.FunctionComponent<{
     english: string;
     l10nKey: string;
     l10nComment?: string;
