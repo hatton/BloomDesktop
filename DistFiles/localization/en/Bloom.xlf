@@ -2791,7 +2791,7 @@
         <note>ID: PublishTab.Android.ChooseUSB</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.ChooseWifi" sil:dynamic="true">
-        <source xml:lang="en">Serve on WiFi Network</source>
+        <source xml:lang="en">Share over Wi-Fi</source>
         <note>ID: PublishTab.Android.ChooseWifi</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.Control" sil:dynamic="true">
@@ -3000,6 +3000,7 @@
         <source xml:lang="en">Share</source>
         <note>ID: PublishTab.Android.Wifi.Start</note>
         <note>Button that tells Bloom to begin offering this book on the wifi network.</note>
+        <note>Last use was for version 4.5</note>
       </trans-unit>
       <trans-unit id="PublishTab.Android.WrongLayout.Message">
         <source xml:lang="en">The layout of this book is currently "{0}". Bloom Reader will display it using "{1}", so text might not fit. To see if anything needs adjusting, go back to the Edit Tab and change the layout to "{1}".</source>

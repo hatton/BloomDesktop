@@ -8,6 +8,7 @@ import WebSocketManager from "../../utils/WebSocketManager";
 import BloomButton from "../../react_components/bloomButton";
 import { BloomApi } from "../../utils/bloomApi";
 import { isLinux } from "../../utils/isLinux";
+import { useL10n } from "../../react_components/l10nHooks";
 
 const wifiImage = require("./publish-via-wifi.svg");
 const usbImage = require("./publish-via-usb.svg");
@@ -43,9 +44,18 @@ export const MethodChooser: React.FunctionComponent = () => {
                         BloomApi.postString("publish/android/method", m);
                     }}
                     choices={{
-                        wifi: "Share over Wi-FI",
-                        file: "Save to a file",
-                        usb: "Send via USB Cable"
+                        wifi: useL10n(
+                            "Share over Wi-Fi",
+                            "PublishTab.Android.ChooseWifi"
+                        ),
+                        file: useL10n(
+                            "Save Bloom Reader File",
+                            "PublishTab.Android.ChooseFile"
+                        ),
+                        usb: useL10n(
+                            "Send over USB Cable",
+                            "PublishTab.Android.ChooseUSB"
+                        )
                     }}
                 />
                 <img

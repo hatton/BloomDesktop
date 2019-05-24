@@ -4,9 +4,10 @@ import { ColorChooser } from "../../react_components/colorChooser";
 import { BloomApi } from "../../utils/bloomApi";
 import { useState } from "react";
 import { StorybookContext } from "../../.storybook/StoryBookContext";
+import { useL10n } from "../../react_components/l10nHooks";
 
 export const ThumbnailGroup: React.FunctionComponent = () => (
-    <SettingsGroup label="Thumbnail">
+    <SettingsGroup label={useL10n("Thumbnail", "PublishTab.Android.Thumbnail")}>
         <ThumbnailControl />
     </SettingsGroup>
 );

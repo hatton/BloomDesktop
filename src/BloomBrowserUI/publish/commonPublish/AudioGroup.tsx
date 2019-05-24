@@ -4,7 +4,7 @@ import { ApiCheckbox } from "../../react_components/ApiCheckbox";
 import { SettingsGroup } from "./BasePublishScreen";
 
 export const AudioGroup: React.FunctionComponent = () => (
-    <SettingsGroup label="Audio">
+    <SettingsGroup label="Audio todo localize">
         <FormGroup>
             {/* <FeatureSwitch label="Narration" />
             <FeatureSwitch label="Background Music" /> */}

@@ -2,9 +2,10 @@ import * as React from "react";
 import { FormGroup } from "@material-ui/core";
 import { ApiCheckbox } from "../../react_components/ApiCheckbox";
 import { SettingsGroup } from "./BasePublishScreen";
+import { useL10n } from "../../react_components/l10nHooks";
 
 export const PublishFeaturesGroup: React.FunctionComponent = () => (
-    <SettingsGroup label="Features">
+    <SettingsGroup label={useL10n("Features", "PublishTab.Android.Features")}>
         <FormGroup>
             {/* <FeatureSwitch label="Talking Book" /> */}
             <ApiCheckbox
