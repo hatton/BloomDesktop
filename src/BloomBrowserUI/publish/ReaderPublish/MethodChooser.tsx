@@ -19,27 +19,18 @@ const methodNameToImageUrl = {
 
 // This is a set of radio buttons and image that goes with each choice, plus a button to start off the sharing/saving
 export const MethodChooser: React.FunctionComponent = () => {
-    const [method, setMethod] = useState("file"); //initially set state to wifi. Enhance: remember from last time?
-
-    const methodImage = (methodNameToImageUrl as any)[method];
-    useEffect(
-        () =>
-            BloomApi.get("publish/android/method", result => {
-                setMethod(result.data);
-            }),
-        []
+    const [method, setMethod] = BloomApi.useApiString(
+        "publish/android/method",
+        "wifi"
     );
 
+    const methodImage = (methodNameToImageUrl as any)[method];
     return (
         <>
             <div className={"methodChooserRoot"}>
                 <ConciseRadioGroup
                     value={method}
-                    setter={m => {
-                        setMethod(m);
-                        // let Bloom remember this choice as the default for next time
-                        BloomApi.postString("publish/android/method", m);
-                    }}
+                    setter={m => setMethod(m)}
                     choices={{
                         wifi: useL10n(
                             "Share over Wi-Fi",
@@ -60,12 +51,8 @@ export const MethodChooser: React.FunctionComponent = () => {
                     alt="An image that just illustrates the currently selected publishing method."
                 />
             </div>
-            <div
-                //had to wrap this button because else material-ui overrides the margin
-                className={"buttonWrapper"}
-            >
-                {getStartButton(method)}
-            </div>
+
+            {getStartButton(method)}
         </>
     );
 };

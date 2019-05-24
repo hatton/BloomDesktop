@@ -19,7 +19,9 @@ export function useL10n(
             l10nParam1,
             // Review: what should we do with this lookupSuccessful?
             callback: (t, lookupSuccessful) => {
-                setLocalizedText(t);
+                if (lookupSuccessful) {
+                    setLocalizedText(t);
+                }
             }
         });
     }, []);

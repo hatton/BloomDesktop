@@ -1,5 +1,4 @@
 import * as React from "react";
-import { useState, Dispatch, SetStateAction } from "react";
 import {
     FormControlLabel,
     FormControl,
@@ -7,8 +6,10 @@ import {
     Radio
 } from "@material-ui/core";
 
-/* Example use:
-    const [method, setMethod] = useState("file");
+/* This is a "controlled component".
+
+Example use:
+    const [method, setMethod] = BloomApi.useApiString("publish/android/method", "wifi");
     return(
         <ConciseRadioGroup
           value={method}
@@ -22,7 +23,9 @@ import {
 */
 
 export const ConciseRadioGroup: React.FunctionComponent<{
-    choices: any;
+    // the choices object should have an entry for each choice; the field of each is the key, and the value is the string
+    choices: object;
+    // the current value, must match one of the keys found in `choices`.
     value: string;
     setter: (method: string) => void;
 }> = props => {

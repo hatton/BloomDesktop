@@ -114,6 +114,15 @@ export class BloomApi {
         BloomApi.pageIsClosing = true;
     }
 
+    public static getString(
+        urlSuffix: string,
+        successCallback: (value: string) => void
+    ) {
+        BloomApi.get(urlSuffix, result => {
+            successCallback(result.data);
+        });
+    }
+
     // This method is used to get a result from Bloom.
     public static get(
         urlSuffix: string,
@@ -142,6 +151,24 @@ export class BloomApi {
 
         const fn = (value: boolean) => {
             BloomApi.postBoolean(urlSuffix, value);
+            setValue(value);
+        };
+        return [value, fn];
+    }
+
+    public static useApiString(
+        urlSuffix: string,
+        defaultValue: string
+    ): [string, (value: string) => void] {
+        const [value, setValue] = React.useState(defaultValue);
+        React.useEffect(() => {
+            BloomApi.getString(urlSuffix, c => {
+                setValue(c);
+            });
+        }, []);
+
+        const fn = (value: string) => {
+            BloomApi.postString(urlSuffix, value);
             setValue(value);
         };
         return [value, fn];
