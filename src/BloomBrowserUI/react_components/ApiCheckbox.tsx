@@ -9,7 +9,7 @@ export const ApiCheckbox: React.FunctionComponent<{
     l10nComment?: string;
     apiEndpoint: string;
 }> = props => {
-    const [checked, setChecked] = BloomApi.useGetBoolean(
+    const [checked, setChecked] = BloomApi.useApiBoolean(
         props.apiEndpoint,
         false
     );
