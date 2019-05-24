@@ -156,6 +156,11 @@ export class BloomApi {
         return [value, fn];
     }
 
+    // A react hook for controlling an API-backed boolean from a React pure functional component
+    // Returns a tuple of [theCurrentValue, aFunctionForChangingTheValue(newValue)]
+    // When you call the returned function, two things happen: 1) we POST the value to the Bloom API
+    // and 2) we tell react that the value changed. It will then re-render the component;
+    // the component will call this again, but this the tuple will contain the new value.
     public static useApiString(
         urlSuffix: string,
         defaultValue: string

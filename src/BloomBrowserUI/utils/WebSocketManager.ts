@@ -1,10 +1,34 @@
 import { BloomApi } from "./bloomApi";
+import { useEffect } from "react";
 
 interface IBloomWebSocketEvent {
     clientContext: string;
     id: string;
     message?: string;
     cssStyleRule?: string;
+}
+
+export function useWebSocketListener(
+    clientContext: string,
+    listener: (messageEvent: IBloomWebSocketEvent) => void
+) {
+    useEffect(() => {
+        WebSocketManager.addListener(clientContext, listener);
+    }, []);
+}
+
+export function useWebSocketListenerForOneMessage(
+    clientContext: string,
+    messageId: string,
+    listener: (message: string) => void
+) {
+    useEffect(() => {
+        WebSocketManager.addListener(clientContext, e => {
+            if (e.id === messageId && e.message) {
+                listener(e.message);
+            }
+        });
+    }, []);
 }
 
 // This class manages a websocket, currently at the WebSocketManager.socketMap level, currently with

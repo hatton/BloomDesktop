@@ -19,8 +19,10 @@ import { String } from "../../react_components/l10nComponents";
   </BasePublishScreen>
 */
 
-export const BasePublishScreen: React.FunctionComponent = props => (
-    <div className={"screen"}>
+export const BasePublishScreen: React.FunctionComponent<{
+    className: string;
+}> = props => (
+    <div className={"screen " + props.className}>
         <main className={"main"}>
             {findOne(props.children, PreviewPanel)}
             {findOne(props.children, PublishPanel)}

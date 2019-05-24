@@ -20,7 +20,7 @@ import theme from "../../bloomMaterialUITheme";
 
 export const LibraryPublishScreen = () => {
     return (
-        <BasePublishScreen>
+        <BasePublishScreen className="LibraryPublishScreen">
             <PreviewPanel>
                 <LibraryPreview />
             </PreviewPanel>

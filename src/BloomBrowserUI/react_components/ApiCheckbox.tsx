@@ -3,6 +3,7 @@ import { MuiCheckbox } from "./muiCheckBox";
 import { BloomApi } from "../utils/bloomApi";
 
 // A localized checkbox that is backed by a boolean API get/set
+// This is a "uncontrolled component".
 export const ApiCheckbox: React.FunctionComponent<{
     english: string;
     l10nKey: string;

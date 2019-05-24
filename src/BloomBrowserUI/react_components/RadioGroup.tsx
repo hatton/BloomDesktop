@@ -2,13 +2,13 @@ import * as React from "react";
 import {
     FormControlLabel,
     FormControl,
-    RadioGroup,
+    RadioGroup as MuiRadioGroup,
     Radio
 } from "@material-ui/core";
 
-/* This is a "controlled component".
+// This is a "controlled component".
 
-Example use:
+/* Example use:
     const [method, setMethod] = BloomApi.useApiString("publish/android/method", "wifi");
     return(
         <ConciseRadioGroup
@@ -22,7 +22,7 @@ Example use:
         />)
 */
 
-export const ConciseRadioGroup: React.FunctionComponent<{
+export const RadioGroup: React.FunctionComponent<{
     // the choices object should have an entry for each choice; the field of each is the key, and the value is the string
     choices: object;
     // the current value, must match one of the keys found in `choices`.
@@ -30,9 +30,9 @@ export const ConciseRadioGroup: React.FunctionComponent<{
     setter: (method: string) => void;
 }> = props => {
     return (
+        //this margin='dense' doesn't seem to do anything?
         <FormControl margin="dense">
-            {/* this 'dense' doesn't seem to do anything?*/}
-            <RadioGroup
+            <MuiRadioGroup
                 value={props.value}
                 onChange={(event, newValue) => props.setter(newValue)}
             >
@@ -45,7 +45,7 @@ export const ConciseRadioGroup: React.FunctionComponent<{
                         onChange={(e, n) => props.setter(key)}
                     />
                 ))}
-            </RadioGroup>
+            </MuiRadioGroup>
         </FormControl>
     );
 };

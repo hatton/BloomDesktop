@@ -1,7 +1,6 @@
 import * as React from "react";
-import { useState, useEffect } from "react";
 import "./ReaderPublish.less";
-import { ConciseRadioGroup } from "../commonPublish/ConciseRadioGroup";
+import { RadioGroup } from "../../react_components/RadioGroup";
 import BloomButton from "../../react_components/bloomButton";
 import { BloomApi } from "../../utils/bloomApi";
 import { isLinux } from "../../utils/isLinux";
@@ -28,7 +27,7 @@ export const MethodChooser: React.FunctionComponent = () => {
     return (
         <>
             <div className={"methodChooserRoot"}>
-                <ConciseRadioGroup
+                <RadioGroup
                     value={method}
                     setter={m => setMethod(m)}
                     choices={{
