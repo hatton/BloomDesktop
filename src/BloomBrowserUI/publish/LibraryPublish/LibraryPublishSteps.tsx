@@ -28,8 +28,7 @@ export const LibraryPublishSteps: React.FunctionComponent = () => {
                             InputLabelProps={{
                                 shrink: true
                             }}
-                            multiline
-                            rows="2"
+                            rows="1"
                             aria-label="Book summary"
                         />
                     </StepContent>
@@ -72,6 +71,7 @@ const AgreementCheckbox: React.FunctionComponent = props => {
         <FormControlLabel
             control={
                 <Checkbox
+                    color="primary"
                     checked={checked}
                     onChange={(e, newState) => setChecked(newState)}
                 />

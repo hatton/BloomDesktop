@@ -16,6 +16,8 @@ import { EPUBPublishScreen } from "./ePUBPublish/ePUBPublishScreen";
 import BookMetadataDialog from "./metadata/BookMetadataDialog";
 import "./storiesApiMocks";
 import { AccessibilityCheckScreen } from "./accessibilityCheck/accessibilityCheckScreen";
+import { LibraryPublishScreen } from "./LibraryPublish/LibraryPublishScreen";
+import { BloomApi } from "../utils/bloomApi";
 
 addDecorator(withA11y);
 
@@ -33,6 +35,8 @@ const testText =
         format: "html",
         units: "paragraphs"
     }) + "<a target='_blank' href='https://google.com'>google.com</a>";
+
+BloomApi.bloomServerPrefix = "http://localhost:8089/api/";
 
 storiesOf("Publish/ProgressDialog", module)
     .add("Working", () => (
@@ -102,7 +106,9 @@ storiesOf("Publish/DeviceFrame", module)
 storiesOf("Publish/Bloom Reader", module).add("ReaderPublishScreen", () => (
     <ReaderPublishScreen />
 ));
-
+storiesOf("Publish/Library Publish", module).add("LibraryPublishScreen", () => (
+    <LibraryPublishScreen />
+));
 storiesOf("Publish/ePUB", module)
     .add("EPUBPublishScreen", () => <EPUBPublishScreen />)
     .add("Book Metadata Dialog", () => <BookMetadataDialog startOpen={true} />)

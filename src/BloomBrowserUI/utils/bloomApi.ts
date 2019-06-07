@@ -15,7 +15,10 @@ import React = require("react");
 export let mockReplies = {};
 
 export class BloomApi {
-    private static kBloomApiPrefix = "/bloom/api/";
+    public static kBloomApiPrefix = "/bloom/api/";
+    // Storybook can set this to a running Bloom Desktop address
+    public static bloomServerPrefix = BloomApi.kBloomApiPrefix;
+
     private static pageIsClosing: boolean = false;
     // This function is designed to be used lilke this:
     // BloomApi.wrapAxios(axios.{get, post, etc}().then(...));
@@ -145,7 +148,7 @@ export class BloomApi {
             window.setTimeout(() => successCallback(mockReplies[urlSuffix]), 0);
         }
         BloomApi.wrapAxios(
-            axios.get(this.kBloomApiPrefix + urlSuffix).then(successCallback)
+            axios.get(this.bloomServerPrefix + urlSuffix).then(successCallback)
         );
     }
 
@@ -195,6 +198,35 @@ export class BloomApi {
         return [value, fn];
     }
 
+    // A react hook for controlling an API-backed boolean from a React pure functional component
+    // Returns a tuple of [theCurrentValue, aFunctionForChangingTheValue(newValue)]
+    // When you call the returned function, two things happen: 1) we POST the value to the Bloom API
+    // and 2) we tell react that the value changed. It will then re-render the component;
+    // the component will call this again, but this time the tuple will contain the new value.
+    public static useApiJson(urlSuffix: string): [any, (value: any) => void] {
+        const [value, setValue] = React.useState({});
+        React.useEffect(() => {
+            BloomApi.getObject(urlSuffix, c => {
+                setValue(c);
+            });
+        }, []);
+
+        const fn = (value: any) => {
+            BloomApi.postObject(urlSuffix, value);
+            setValue(value);
+        };
+        return [value, fn];
+    }
+
+    public static getObject(
+        urlSuffix: string,
+        successCallback: (value: object) => void
+    ) {
+        return BloomApi.get(urlSuffix, result => {
+            successCallback(result.data);
+        });
+    }
+
     public static getBoolean(
         urlSuffix: string,
         successCallback: (value: boolean) => void
@@ -212,14 +244,14 @@ export class BloomApi {
     ) {
         BloomApi.wrapAxios(
             axios
-                .get(this.kBloomApiPrefix + urlSuffix, config)
+                .get(this.bloomServerPrefix + urlSuffix, config)
                 .then(successCallback)
         );
     }
 
     public static postString(urlSuffix: string, value: string) {
         BloomApi.wrapAxios(
-            axios.post(this.kBloomApiPrefix + urlSuffix, value, {
+            axios.post(this.bloomServerPrefix + urlSuffix, value, {
                 headers: {
                     "Content-Type": "text/plain"
                 }
@@ -228,7 +260,16 @@ export class BloomApi {
     }
     public static postBoolean(urlSuffix: string, value: boolean) {
         BloomApi.wrapAxios(
-            axios.post(this.kBloomApiPrefix + urlSuffix, value, {
+            axios.post(this.bloomServerPrefix + urlSuffix, value, {
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+        );
+    }
+    public static postObject(urlSuffix: string, value: object) {
+        BloomApi.wrapAxios(
+            axios.post(this.bloomServerPrefix + urlSuffix, value, {
                 headers: {
                     "Content-Type": "application/json"
                 }
@@ -249,11 +290,11 @@ export class BloomApi {
         if (successCallback) {
             BloomApi.wrapAxios(
                 axios
-                    .post(this.kBloomApiPrefix + urlSuffix)
+                    .post(this.bloomServerPrefix + urlSuffix)
                     .then(successCallback)
             );
         } else {
-            BloomApi.wrapAxios(axios.post(this.kBloomApiPrefix + urlSuffix));
+            BloomApi.wrapAxios(axios.post(this.bloomServerPrefix + urlSuffix));
         }
     }
 
@@ -269,7 +310,7 @@ export class BloomApi {
         // The internal catch should suppress any errors. In case that fails (which it has), passing
         // false to wrapAxios further suppresses any error reporting.
         BloomApi.wrapAxios(
-            axios.post(this.kBloomApiPrefix + urlSuffix).catch(),
+            axios.post(this.bloomServerPrefix + urlSuffix).catch(),
             false
         );
     }
@@ -283,12 +324,12 @@ export class BloomApi {
         if (successCallback) {
             BloomApi.wrapAxios(
                 axios
-                    .post(this.kBloomApiPrefix + urlSuffix, data)
+                    .post(this.bloomServerPrefix + urlSuffix, data)
                     .then(successCallback)
             );
         } else {
             BloomApi.wrapAxios(
-                axios.post(this.kBloomApiPrefix + urlSuffix, data)
+                axios.post(this.bloomServerPrefix + urlSuffix, data)
             );
         }
     }
@@ -303,7 +344,7 @@ export class BloomApi {
     ) {
         BloomApi.wrapAxios(
             axios
-                .post(this.kBloomApiPrefix + urlSuffix, data, config)
+                .post(this.bloomServerPrefix + urlSuffix, data, config)
                 .then(successCallback ? successCallback : () => {})
                 .catch(r => {
                     if (errorCallback) {

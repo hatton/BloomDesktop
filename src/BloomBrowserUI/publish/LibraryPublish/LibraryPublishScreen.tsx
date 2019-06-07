@@ -1,4 +1,4 @@
-/*import * as React from "react";
+import * as React from "react";
 import ReactDOM = require("react-dom");
 import { Link } from "@material-ui/core";
 
@@ -20,9 +20,9 @@ import theme from "../../bloomMaterialUITheme";
 
 export const LibraryPublishScreen = () => {
     return (
-        <BasePublishScreen className="LibraryPublishScreen">
+        <BasePublishScreen className="libraryPublishScreen">
             <PreviewPanel>
-                <LibraryPreview />
+                <LibraryPreview serverPrefix="http://localhost:8089" />
             </PreviewPanel>
             <PublishPanel>
                 <LibraryPublishSteps />
@@ -49,4 +49,3 @@ if (document.getElementById("LibraryPublishScreen")) {
         document.getElementById("LibraryPublishScreen")
     );
 }
-*/

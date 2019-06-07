@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Bloom.Api;
 using Bloom.Book;
 using L10NSharp;
@@ -21,9 +22,16 @@ namespace Bloom.web.controllers
 		{
 			bool requiresSync = false; // Lets us open the dialog while the epub preview is being generated
 			apiHandler.RegisterEndpointHandler("book/metadata", HandleBookMetadata, false, requiresSync);
+			apiHandler.RegisterEndpointHandler("book/epubMetadata", HandleBookEpubMetadata, false, requiresSync);
 		}
 
 		private void HandleBookMetadata(ApiRequest request)
+		{
+			Debug.Assert(request.HttpMethod == HttpMethods.Get);
+			request.ReplyWithJson(_bookSelection.CurrentSelection.BookInfo.MetaData);
+		}
+
+		private void HandleBookEpubMetadata(ApiRequest request)
 		{
 			switch (request.HttpMethod)
 			{

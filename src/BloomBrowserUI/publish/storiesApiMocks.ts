@@ -2,7 +2,7 @@ import { mockReplies } from "../utils/bloomApi";
 
 // enough to get us a minimal BookMetadataDialog
 
-mockReplies["book/metadata"] = {
+mockReplies["book/epubMetadata"] = {
     data: {
         metadata: {
             author: {
