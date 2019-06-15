@@ -857,9 +857,9 @@ namespace Bloom.Workspace
 		private void StartProblemReport(object sender, EventArgs e)
 		{
 			Application.Idle -= StartProblemReport;
-			using (var dlg = _problemReportDialogFactory(this))
+			var rootFile = BloomFileLocator.GetBrowserFile(false,  "problemDialog", "loader.html");
+			using (var dlg = new BrowserDialog(rootFile.ToLocalhost()))
 			{
-				dlg.SetDefaultIncludeBookSetting(true);
 				dlg.ShowDialog();
 			}
 		}

@@ -16,6 +16,7 @@ import { PrivacyGroup } from "./PrivacyGroup";
 import { makeTheme, kindParams } from "./theme";
 import { EmailField } from "./EmailField";
 import { useDrawAttention } from "./UseDrawAttention";
+import ReactDOM = require("react-dom");
 
 export enum ProblemKind {
     User = "User",
@@ -43,6 +44,7 @@ export const ProblemDialog: React.FunctionComponent<{
                 // the behavior of fullWidth/maxWidth is very strange
                 //fullWidth={true}
                 maxWidth={"md"}
+                fullScreen={true}
             >
                 <DialogTitle>
                     {kindParams[props.kind.toString()].title}
@@ -85,17 +87,17 @@ export const ProblemDialog: React.FunctionComponent<{
                         <div className="column2">
                             <MuiCheckbox
                                 label="Include book 'foobar'"
-                                l10nKey="bogus"
+                                l10nKey="ReportProblemDialog.IncludeBookButton"
                                 checked={true}
                                 onCheckChanged={() => {}}
                             />
                             <MuiCheckbox
                                 label="Include this screenshot:"
-                                l10nKey="bogus"
+                                l10nKey="ReportProblemDialog.IncludeScreenshotButton"
                                 checked={true}
                                 onCheckChanged={() => {}}
                             />
-                            <img src="bogus" />
+                            <img src="images/madBloomScientist.svg" />
 
                             <PrivacyGroup />
                         </div>
@@ -104,7 +106,7 @@ export const ProblemDialog: React.FunctionComponent<{
                 <DialogActions>
                     <BloomButton
                         enabled={true}
-                        l10nKey="bogus"
+                        l10nKey="ReportProblemDialog.SubmitButton"
                         hasText={true}
                         onClick={() => {
                             setSubmitAttempts(submitAttempts + 1);
@@ -112,8 +114,28 @@ export const ProblemDialog: React.FunctionComponent<{
                     >
                         Submit
                     </BloomButton>
+                    <BloomButton
+                        enabled={true}
+                        l10nKey="Common.Cancel"
+                        hasText={true}
+                        variant="outlined"
+                        onClick={() => {
+                            BloomApi.post("dialog/close");
+                        }}
+                    >
+                        Cancel
+                    </BloomButton>
                 </DialogActions>
             </Dialog>
         </ThemeProvider>
     );
 };
+
+console.log("ProblemDialog ************");
+if (document.getElementById("problemDialogRoot")) {
+    console.log("ProblemDialog &&&&&&&&&&&&&");
+    ReactDOM.render(
+        <ProblemDialog kind={ProblemKind.User} />,
+        document.getElementById("problemDialogRoot")
+    );
+}

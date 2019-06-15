@@ -4,7 +4,7 @@ import { TextField } from "@material-ui/core";
 import { useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import { useDrawAttention } from "./UseDrawAttention";
-const Isemail = require("isemail");
+//const Isemail = require("isemail"); not compatible with geckofx 45
 
 export const EmailField: React.FunctionComponent<{
     submitAttempts: number;
@@ -14,10 +14,11 @@ export const EmailField: React.FunctionComponent<{
     const [emailValid, setEmailValid] = useState(false);
     const [debouncedEmailCheck] = useDebouncedCallback(value => {
         setEmailValid(
-            Isemail.validate(value, {
-                errorLevel: true,
-                minDomainAtoms: 2
-            }) === 0
+            // Isemail.validate(value, {
+            //     errorLevel: true,
+            //     minDomainAtoms: 2
+            // }) === 0
+            true
         );
     }, 100);
 
