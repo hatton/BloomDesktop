@@ -15,7 +15,14 @@ import { useDebouncedCallback } from "use-debounce";
 const Isemail = require("isemail");
 import WarningIcon from "@material-ui/icons/Warning";
 
-export const ProblemDialog: React.FunctionComponent<{}> = props => {
+export enum ProblemKind {
+    User,
+    NonFatal,
+    Fatal
+}
+export const ProblemDialog: React.FunctionComponent<{
+    kind: ProblemKind;
+}> = props => {
     const [emailValid, setEmailValid] = React.useState<boolean | undefined>(
         undefined
     );
@@ -29,7 +36,10 @@ export const ProblemDialog: React.FunctionComponent<{}> = props => {
                   }) === 0
         );
     }, 100);
-
+    let theme = null;
+    React.useEffect(() => {
+        theme = makeTheme(props.kind);
+    }, [props.kind]);
     return (
         <ThemeProvider theme={problemTheme}>
             <Dialog
@@ -151,42 +161,6 @@ export const ProblemDialog: React.FunctionComponent<{}> = props => {
 
 const kProblemColor = "#F3AA18";
 
-const problemTheme = createMuiTheme({
-    //this spacing doesn't seem to do anything. The example at https://material-ui.com/customization/default-theme/
-    // would be spacing{unit:23} but that gives an error saying to use a number
-    //spacing: 23,
-    palette: {
-        primary: { main: kProblemColor }
-    },
-    typography: {
-        fontSize: 12
-        //,fontFamily: ["NotoSans", "Roboto", "sans-serif"]
-    },
-    props: {
-        MuiLink: {
-            variant: "body1" // without this, they come out in times new roman :-)
-        }
-    },
-    overrides: {
-        MuiOutlinedInput: {
-            input: {
-                padding: "7px"
-            }
-        },
-        MuiDialogTitle: {
-            root: {
-                backgroundColor: kProblemColor,
-                "& h6": { fontWeight: "bold" }
-            }
-        },
-        MuiDialogActions: {
-            root: {
-                backgroundColor: "#FFFFFF"
-            }
-        }
-    }
-});
-
 // The classnames used have runtime numbers, so it's not possible to
 // do the styling just with css, have to use MUI's style system:
 const HowMuchSlider = withStyles({
@@ -210,3 +184,56 @@ const HowMuchSlider = withStyles({
         backgroundColor: "currentColor"
     }
 })(Slider);
+
+function makeTheme(kind: ProblemKind) {
+    let color = kProblemColor;
+    switch (kind) {
+        case ProblemKind.User:
+            color = "LightGray";
+            break;
+        case ProblemKind.Fatal:
+            color = "Red";
+            break;
+        case ProblemKind.NonFatal:
+            color = "#F3AA18";
+            break;
+        default:
+            break;
+    }
+
+    return createMuiTheme({
+        //this spacing doesn't seem to do anything. The example at https://material-ui.com/customization/default-theme/
+        // would be spacing{unit:23} but that gives an error saying to use a number
+        //spacing: 23,
+        palette: {
+            primary: { main: color }
+        },
+        typography: {
+            fontSize: 12
+            //,fontFamily: ["NotoSans", "Roboto", "sans-serif"]
+        },
+        props: {
+            MuiLink: {
+                variant: "body1" // without this, they come out in times new roman :-)
+            }
+        },
+        overrides: {
+            MuiOutlinedInput: {
+                input: {
+                    padding: "7px"
+                }
+            },
+            MuiDialogTitle: {
+                root: {
+                    backgroundColor: kProblemColor,
+                    "& h6": { fontWeight: "bold" }
+                }
+            },
+            MuiDialogActions: {
+                root: {
+                    backgroundColor: "#FFFFFF"
+                }
+            }
+        }
+    });
+}

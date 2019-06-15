@@ -4,7 +4,7 @@ import { ThemeProvider } from "@material-ui/styles";
 import { storiesOf } from "@storybook/react";
 import { addDecorator } from "@storybook/react";
 import { StorybookContext } from "../.storybook/StoryBookContext";
-import { ProblemDialog } from "./ProblemDialog";
+import { ProblemDialog, ProblemKind } from "./ProblemDialog";
 
 addDecorator(storyFn => (
     <ThemeProvider theme={theme}>
@@ -14,6 +14,7 @@ addDecorator(storyFn => (
     </ThemeProvider>
 ));
 
-storiesOf("Problem Report", module).add("NonFatalError", () => (
-    <ProblemDialog />
-));
+storiesOf("Problem Report", module)
+    .add("NonFatalError", () => <ProblemDialog kind={ProblemKind.NonFatal} />)
+    .add("FatalError", () => <ProblemDialog kind={ProblemKind.Fatal} />)
+    .add("UserProblem", () => <ProblemDialog kind={ProblemKind.User} />);
