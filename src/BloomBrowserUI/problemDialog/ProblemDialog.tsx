@@ -9,15 +9,13 @@ import { withStyles, ThemeProvider } from "@material-ui/styles";
 import "./ProblemDialog.less";
 import BloomButton from "../react_components/bloomButton";
 import { createMuiTheme, TextField, Button, Theme } from "@material-ui/core";
-
 import { MuiCheckbox } from "../react_components/muiCheckBox";
-import { useDebouncedCallback } from "use-debounce";
-const Isemail = require("isemail");
-
 import { useState } from "react";
 import { HowMuchGroup } from "./HowMuchGroup";
 import { PrivacyGroup } from "./PrivacyGroup";
 import { makeTheme, kindParams } from "./theme";
+import { EmailField } from "./EmailField";
+import { useDrawAttention } from "./UseDrawAttention";
 
 export enum ProblemKind {
     User = "User",
@@ -27,24 +25,16 @@ export enum ProblemKind {
 export const ProblemDialog: React.FunctionComponent<{
     kind: ProblemKind;
 }> = props => {
-    const [emailValid, setEmailValid] = useState(false);
-    const [emailErrorShake, setEmailErrorShake] = useState("");
-    const [submitAttempted, setSubmitAttempted] = useState(false);
+    const [submitAttempts, setSubmitAttempts] = useState(0);
     const [theme, setTheme] = useState<Theme | undefined>(undefined);
     const [whatDoing, setWhatDoing] = useState("");
-    const [email, setEmail] = useState("");
-    const [debouncedEmailCheck] = useDebouncedCallback(value => {
-        setEmailValid(
-            Isemail.validate(value, {
-                errorLevel: true,
-                minDomainAtoms: 2
-            }) === 0
-        );
-    }, 100);
     React.useEffect(() => {
         setTheme(makeTheme(props.kind));
     }, [props.kind]);
-
+    const whatWereYouDoingAttentionClass = useDrawAttention(
+        submitAttempts,
+        () => whatDoing.trim().length > 0
+    );
     return (
         <ThemeProvider theme={theme}>
             <Dialog
@@ -67,7 +57,11 @@ export const ProblemDialog: React.FunctionComponent<{
                     <div id="row2">
                         <div className="column1">
                             <TextField
-                                className="what_were_you_doing" // can't use id for css because that goes down to a child element
+                                // can't use id for css because that goes down to a child element
+                                className={
+                                    "what_were_you_doing " +
+                                    whatWereYouDoingAttentionClass
+                                }
                                 variant="outlined"
                                 label="What were you doing?"
                                 rows="3"
@@ -80,32 +74,13 @@ export const ProblemDialog: React.FunctionComponent<{
                                     setWhatDoing(event.target.value);
                                 }}
                                 error={
-                                    submitAttempted &&
+                                    submitAttempts > 0 &&
                                     whatDoing.trim().length == 0
                                 }
                             />
                             <HowMuchGroup />
 
-                            <TextField
-                                className={"email " + emailErrorShake}
-                                variant="outlined"
-                                label="Email"
-                                rows="1"
-                                InputLabelProps={{
-                                    shrink: true
-                                }}
-                                multiline={false}
-                                aria-label="email"
-                                error={
-                                    (email.length > 0 && !emailValid) ||
-                                    (submitAttempted && !emailValid)
-                                }
-                                //helperText={"ERROR"}
-                                onChange={event => {
-                                    setEmail(event.target.value);
-                                    debouncedEmailCheck(event.target.value);
-                                }}
-                            />
+                            <EmailField submitAttempts={submitAttempts} />
                         </div>
                         <div className="column2">
                             <MuiCheckbox
@@ -132,14 +107,7 @@ export const ProblemDialog: React.FunctionComponent<{
                         l10nKey="bogus"
                         hasText={true}
                         onClick={() => {
-                            setSubmitAttempted(true);
-                            if (!emailValid) {
-                                setEmailErrorShake("drawAttention");
-                                window.setTimeout(
-                                    () => setEmailErrorShake(""),
-                                    1000
-                                );
-                            }
+                            setSubmitAttempts(submitAttempts + 1);
                         }}
                     >
                         Submit
