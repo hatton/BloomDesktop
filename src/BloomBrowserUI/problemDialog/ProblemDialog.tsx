@@ -8,7 +8,13 @@ import DialogContent from "@material-ui/core/DialogContent";
 import { withStyles, ThemeProvider } from "@material-ui/styles";
 import "./ProblemDialog.less";
 import BloomButton from "../react_components/bloomButton";
-import { createMuiTheme, TextField, Checkbox, Button } from "@material-ui/core";
+import {
+    createMuiTheme,
+    TextField,
+    Checkbox,
+    Button,
+    Theme
+} from "@material-ui/core";
 import Slider from "@material-ui/lab/Slider";
 import { MuiCheckbox } from "../react_components/muiCheckBox";
 import { useDebouncedCallback } from "use-debounce";
@@ -26,6 +32,7 @@ export const ProblemDialog: React.FunctionComponent<{
     const [emailValid, setEmailValid] = React.useState<boolean | undefined>(
         undefined
     );
+    const [theme, setTheme] = React.useState<Theme | undefined>(undefined);
     const [debouncedEmailCheck] = useDebouncedCallback(value => {
         setEmailValid(
             value === ""
@@ -36,12 +43,11 @@ export const ProblemDialog: React.FunctionComponent<{
                   }) === 0
         );
     }, 100);
-    let theme = null;
     React.useEffect(() => {
-        theme = makeTheme(props.kind);
+        setTheme(makeTheme(props.kind));
     }, [props.kind]);
     return (
-        <ThemeProvider theme={problemTheme}>
+        <ThemeProvider theme={theme}>
             <Dialog
                 className="progress-dialog"
                 open={true}
@@ -185,7 +191,7 @@ const HowMuchSlider = withStyles({
     }
 })(Slider);
 
-function makeTheme(kind: ProblemKind) {
+function makeTheme(kind: ProblemKind): Theme {
     let color = kProblemColor;
     switch (kind) {
         case ProblemKind.User:
