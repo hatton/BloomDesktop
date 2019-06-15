@@ -8,44 +8,43 @@ import DialogContent from "@material-ui/core/DialogContent";
 import { withStyles, ThemeProvider } from "@material-ui/styles";
 import "./ProblemDialog.less";
 import BloomButton from "../react_components/bloomButton";
-import {
-    createMuiTheme,
-    TextField,
-    Checkbox,
-    Button,
-    Theme
-} from "@material-ui/core";
-import Slider from "@material-ui/lab/Slider";
+import { createMuiTheme, TextField, Button, Theme } from "@material-ui/core";
+
 import { MuiCheckbox } from "../react_components/muiCheckBox";
 import { useDebouncedCallback } from "use-debounce";
 const Isemail = require("isemail");
-import WarningIcon from "@material-ui/icons/Warning";
+
+import { useState } from "react";
+import { HowMuchGroup } from "./HowMuchGroup";
+import { PrivacyGroup } from "./PrivacyGroup";
+import { makeTheme, kindParams } from "./theme";
 
 export enum ProblemKind {
-    User,
-    NonFatal,
-    Fatal
+    User = "User",
+    NonFatal = "NonFatal",
+    Fatal = "Fatal"
 }
 export const ProblemDialog: React.FunctionComponent<{
     kind: ProblemKind;
 }> = props => {
-    const [emailValid, setEmailValid] = React.useState<boolean | undefined>(
-        undefined
-    );
-    const [theme, setTheme] = React.useState<Theme | undefined>(undefined);
+    const [emailValid, setEmailValid] = useState(false);
+    const [emailErrorShake, setEmailErrorShake] = useState("");
+    const [submitAttempted, setSubmitAttempted] = useState(false);
+    const [theme, setTheme] = useState<Theme | undefined>(undefined);
+    const [whatDoing, setWhatDoing] = useState("");
+    const [email, setEmail] = useState("");
     const [debouncedEmailCheck] = useDebouncedCallback(value => {
         setEmailValid(
-            value === ""
-                ? undefined
-                : Isemail.validate(value, {
-                      errorLevel: true,
-                      minDomainAtoms: 2
-                  }) === 0
+            Isemail.validate(value, {
+                errorLevel: true,
+                minDomainAtoms: 2
+            }) === 0
         );
     }, 100);
     React.useEffect(() => {
         setTheme(makeTheme(props.kind));
     }, [props.kind]);
+
     return (
         <ThemeProvider theme={theme}>
             <Dialog
@@ -55,7 +54,9 @@ export const ProblemDialog: React.FunctionComponent<{
                 //fullWidth={true}
                 maxWidth={"md"}
             >
-                <DialogTitle>{"Bloom encountered an error"}</DialogTitle>
+                <DialogTitle>
+                    {kindParams[props.kind.toString()].title}
+                </DialogTitle>
                 <DialogContent
                     className="content"
                     //style={{ width: "500px", height: "300px" }}
@@ -75,44 +76,18 @@ export const ProblemDialog: React.FunctionComponent<{
                                 }}
                                 multiline={true}
                                 aria-label="What were you doing?"
+                                onChange={event => {
+                                    setWhatDoing(event.target.value);
+                                }}
+                                error={
+                                    submitAttempted &&
+                                    whatDoing.trim().length == 0
+                                }
                             />
-                            <div id="how_much_group">
-                                <Typography>
-                                    How much has this happened?
-                                </Typography>
-                                <HowMuchSlider
-                                    id="slider"
-                                    defaultValue={1}
-                                    min={0}
-                                    max={2}
-                                    step={1}
-                                    //onChange={this.handleChange}
-                                    marks={[
-                                        {
-                                            value: 0,
-                                            label: "" //"First Time"
-                                        },
-                                        {
-                                            value: 1,
-                                            label: ""
-                                        },
-                                        {
-                                            value: 2,
-                                            label: "" //"It keeps happening"
-                                        }
-                                    ]}
-                                />
-                                <div id="scale_labels">
-                                    <Typography variant="body2">
-                                        First Time
-                                    </Typography>
-                                    <Typography variant="body2">
-                                        It keeps happening
-                                    </Typography>
-                                </div>
-                            </div>
+                            <HowMuchGroup />
+
                             <TextField
-                                className="email"
+                                className={"email " + emailErrorShake}
                                 variant="outlined"
                                 label="Email"
                                 rows="1"
@@ -121,11 +96,15 @@ export const ProblemDialog: React.FunctionComponent<{
                                 }}
                                 multiline={false}
                                 aria-label="email"
-                                error={!!!emailValid}
-                                //helperText={"ERROR"}
-                                onChange={event =>
-                                    debouncedEmailCheck(event.target.value)
+                                error={
+                                    (email.length > 0 && !emailValid) ||
+                                    (submitAttempted && !emailValid)
                                 }
+                                //helperText={"ERROR"}
+                                onChange={event => {
+                                    setEmail(event.target.value);
+                                    debouncedEmailCheck(event.target.value);
+                                }}
                             />
                         </div>
                         <div className="column2">
@@ -143,20 +122,26 @@ export const ProblemDialog: React.FunctionComponent<{
                             />
                             <img src="bogus" />
 
-                            <div id="privacy">
-                                <WarningIcon color="primary" />
-                                <Typography>
-                                    Bloom will include diagnostic information
-                                    with your report. Your report will not be
-                                    private.
-                                </Typography>
-                                <Button color="primary">Learn More...</Button>
-                            </div>
+                            <PrivacyGroup />
                         </div>
                     </div>
                 </DialogContent>
                 <DialogActions>
-                    <BloomButton enabled={true} l10nKey="bogus" hasText={true}>
+                    <BloomButton
+                        enabled={true}
+                        l10nKey="bogus"
+                        hasText={true}
+                        onClick={() => {
+                            setSubmitAttempted(true);
+                            if (!emailValid) {
+                                setEmailErrorShake("drawAttention");
+                                window.setTimeout(
+                                    () => setEmailErrorShake(""),
+                                    1000
+                                );
+                            }
+                        }}
+                    >
                         Submit
                     </BloomButton>
                 </DialogActions>
@@ -164,82 +149,3 @@ export const ProblemDialog: React.FunctionComponent<{
         </ThemeProvider>
     );
 };
-
-const kProblemColor = "#F3AA18";
-
-// The classnames used have runtime numbers, so it's not possible to
-// do the styling just with css, have to use MUI's style system:
-const HowMuchSlider = withStyles({
-    track: {
-        height: 2
-    },
-    rail: {
-        height: 2,
-        //opacity: 0.5,
-        backgroundColor: "#bfbfbf"
-    },
-    mark: {
-        width: 6,
-        height: 6,
-        // //border-radius: 4px;
-        backgroundColor: "lightgray",
-        marginTop: -2,
-        borderRadius: 3
-    },
-    markActive: {
-        backgroundColor: "currentColor"
-    }
-})(Slider);
-
-function makeTheme(kind: ProblemKind): Theme {
-    let color = kProblemColor;
-    switch (kind) {
-        case ProblemKind.User:
-            color = "LightGray";
-            break;
-        case ProblemKind.Fatal:
-            color = "Red";
-            break;
-        case ProblemKind.NonFatal:
-            color = "#F3AA18";
-            break;
-        default:
-            break;
-    }
-
-    return createMuiTheme({
-        //this spacing doesn't seem to do anything. The example at https://material-ui.com/customization/default-theme/
-        // would be spacing{unit:23} but that gives an error saying to use a number
-        //spacing: 23,
-        palette: {
-            primary: { main: color }
-        },
-        typography: {
-            fontSize: 12
-            //,fontFamily: ["NotoSans", "Roboto", "sans-serif"]
-        },
-        props: {
-            MuiLink: {
-                variant: "body1" // without this, they come out in times new roman :-)
-            }
-        },
-        overrides: {
-            MuiOutlinedInput: {
-                input: {
-                    padding: "7px"
-                }
-            },
-            MuiDialogTitle: {
-                root: {
-                    backgroundColor: kProblemColor,
-                    "& h6": { fontWeight: "bold" }
-                }
-            },
-            MuiDialogActions: {
-                root: {
-                    backgroundColor: "#FFFFFF"
-                }
-            }
-        }
-    });
-}
