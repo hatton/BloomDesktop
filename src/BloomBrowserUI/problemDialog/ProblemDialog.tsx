@@ -193,40 +193,63 @@ export const ProblemDialog: React.FunctionComponent<{
                     })()}
                 </DialogContent>
                 <DialogActions>
-                    <BloomButton
-                        enabled={true}
-                        l10nKey="ReportProblemDialog.SubmitButton"
-                        hasText={true}
-                        onClick={() => {
-                            AttemptSubmit();
-                        }}
-                    >
-                        Submit
-                    </BloomButton>
-                    <BloomButton
-                        enabled={true}
-                        l10nKey="Common.Cancel"
-                        hasText={true}
-                        variant="outlined"
-                        onClick={() => {
-                            BloomApi.post("dialog/close");
-                        }}
-                        ref={submitButton}
-                    >
-                        Cancel
-                    </BloomButton>
+                    {mode === Mode.submitted &&
+                        props.kind !== ProblemKind.Fatal && (
+                            <BloomButton
+                                enabled={true}
+                                l10nKey="ReportProblemDialog.Close"
+                                hasText={true}
+                                onClick={() => {
+                                    BloomApi.post("dialog/close");
+                                }}
+                            >
+                                Close
+                            </BloomButton>
+                        )}
+                    {mode === Mode.submitted &&
+                        props.kind === ProblemKind.Fatal && (
+                            <BloomButton
+                                enabled={true}
+                                l10nKey="ReportProblemDialog.Quit"
+                                hasText={true}
+                                onClick={() => {
+                                    BloomApi.post("dialog/close");
+                                }}
+                            >
+                                Quit
+                            </BloomButton>
+                        )}
+                    {mode === Mode.gather && (
+                        <BloomButton
+                            enabled={true}
+                            l10nKey="ReportProblemDialog.SubmitButton"
+                            hasText={true}
+                            onClick={() => {
+                                AttemptSubmit();
+                            }}
+                        >
+                            Submit
+                        </BloomButton>
+                    )}
+                    {mode === Mode.gather && props.kind === ProblemKind.User && (
+                        <BloomButton
+                            enabled={true}
+                            l10nKey="Common.Cancel"
+                            hasText={true}
+                            variant="outlined"
+                            onClick={() => {
+                                BloomApi.post("dialog/close");
+                            }}
+                            ref={submitButton}
+                        >
+                            Cancel
+                        </BloomButton>
+                    )}
                 </DialogActions>
             </Dialog>
         </ThemeProvider>
     );
 };
-
-if (document.getElementById("problemDialogRoot")) {
-    ReactDOM.render(
-        <ProblemDialog kind={ProblemKind.User} />,
-        document.getElementById("problemDialogRoot")
-    );
-}
 
 /* haven't got this to work yet; when the callback is called, `email` and other values are empty*/
 function useCtrlEnterToSubmit(callback) {
@@ -242,4 +265,10 @@ function useCtrlEnterToSubmit(callback) {
             window.removeEventListener("keydown", handler);
         };
     }, []);
+}
+if (document.getElementById("problemDialogRoot")) {
+    ReactDOM.render(
+        <ProblemDialog kind={ProblemKind.Fatal} />,
+        document.getElementById("problemDialogRoot")
+    );
 }

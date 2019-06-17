@@ -4017,6 +4017,11 @@ Do you want to go ahead?</note>
         <note>ID: ReportProblemDialog.Close</note>
         <note>Shown in the button that closes the dialog after a successful report submission.</note>
       </trans-unit>
+      <trans-unit id="ReportProblemDialog.Quit">
+        <source xml:lang="en">Quit</source>
+        <note>ID: ReportProblemDialog.Quit</note>
+        <note>Shown in the button that closes the dialog after a successful report submission, if there was a fatal error and we need to exit the program.</note>
+      </trans-unit>
       <trans-unit id="ReportProblemDialog.CouldNotSendToServer">
         <source xml:lang="en">Bloom was not able to submit your report directly to our server. Please retry or email {0} to {1}.</source>
         <note>ID: ReportProblemDialog.CouldNotSendToServer</note>
