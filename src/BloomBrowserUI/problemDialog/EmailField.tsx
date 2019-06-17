@@ -5,35 +5,32 @@ import { useState } from "react";
 import { BloomApi } from "../utils/bloomApi";
 import { useDebouncedCallback } from "use-debounce";
 import { useDrawAttention } from "./UseDrawAttention";
-//const Isemail = require("isemail"); not compatible with geckofx 45
 
+//Note: the "isemail" package was not compatible with geckofx 45, so I'm just going with regex
+// from https://stackoverflow.com/a/46181/723299
+// NB: should handle emails like 用户@例子.广告
+const emailPattern = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
+
+export function isValidEmail(email: string): boolean {
+    return emailPattern.test(email);
+}
 export const EmailField: React.FunctionComponent<{
     submitAttempts: number;
+    email: string;
+    onChange: (email: string) => void;
 }> = props => {
     //const [attentionClass, setAttentionClass] = useState("");
-    const [email, setEmail] = BloomApi.useApiString(
-        "problemReport/emailAddress",
-        ""
-    );
+
     const [emailValid, setEmailValid] = useState(false);
-    // from https://stackoverflow.com/a/46181/723299
-    // NB: should handle emails like 用户@例子.广告
-    const emailPattern = /^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i;
 
     const [debouncedEmailCheck] = useDebouncedCallback(value => {
-        setEmailValid(
-            emailPattern.test(email)
-            // Isemail.validate(value, {
-            //     errorLevel: true,
-            //     minDomainAtoms: 2
-            // }) === 0
-            //true
-        );
+        setEmailValid(isValidEmail(value));
     }, 100);
 
+    // This is needed in order to get the initial check, when we are loading the stored email address from the api
     React.useEffect(() => {
-        debouncedEmailCheck(email);
-    }, [email]);
+        debouncedEmailCheck(props.email);
+    }, [props.email]);
 
     const attentionClass = useDrawAttention(
         props.submitAttempts,
@@ -52,15 +49,14 @@ export const EmailField: React.FunctionComponent<{
             multiline={false}
             aria-label="email"
             error={
-                (email.length > 0 && !emailValid) ||
+                (props.email.length > 0 && !emailValid) ||
                 (props.submitAttempts > 0 && !emailValid)
             }
-            //helperText={"ERROR"}
             onChange={event => {
-                setEmail(event.target.value);
+                props.onChange(event.target.value);
                 //  debouncedEmailCheck(event.target.value);
             }}
-            value={email}
+            value={props.email}
         />
     );
 };

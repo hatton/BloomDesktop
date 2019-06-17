@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Threading;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
@@ -47,6 +48,14 @@ namespace Bloom.web.controllers
 				(ApiRequest request) =>
 				{
 					request.ReplyWithText(Logger.LogText);
+				}, true);
+
+			apiHandler.RegisterEndpointHandler("problemReport/submit",
+				(ApiRequest request) =>
+				{
+					//MessageBox.Show(request.RequiredPostJson()); 
+					Thread.Sleep(3000);
+					request.ReplyWithJson(new{issueLink="https://google.com"});
 				}, true);
 		}
 		public static void ShowProblemDialog(Control controlForScreenshotting)
