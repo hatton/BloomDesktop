@@ -47,13 +47,6 @@
     .column1
     #how_much_group
     #slider
-    .MuiSlider-track,
-.progress-dialog
-    .content
-    #row2
-    .column1
-    #how_much_group
-    #slider
     .MuiSlider-rail {
     background-color: darkgray;
 }
@@ -75,6 +68,7 @@
 }
 .progress-dialog .content #row2 .column1 .email input {
     padding: 15px;
+    font-family: "roboto";
 }
 .progress-dialog .content #row2 .column2 {
     margin-top: -12px;
@@ -99,4 +93,15 @@
 .progress-dialog .content #row2 .column2 #privacy button {
     padding-left: 0;
     margin-left: 29px;
+}
+.progress-dialog .content .drawAttention {
+    animation: shakeMe 75ms 5 ease-in alternate;
+}
+@keyframes shakeMe {
+    0% {
+        margin-left: 10px;
+    }
+    100% {
+        margin-left: 0;
+    }
 }

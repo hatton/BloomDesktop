@@ -134,7 +134,8 @@ namespace Bloom
 							typeof(I18NApi),
 							typeof(SignLanguageApi),
 							typeof(AudioSegmentationApi),
-							typeof(BrowserDialogApi)
+							typeof(BrowserDialogApi),
+							typeof(ProblemReportApi)
 						}.Contains(t));
 
 					builder.RegisterAssemblyTypes(Assembly.GetExecutingAssembly())
@@ -321,6 +322,7 @@ namespace Bloom
 			_scope.Resolve<SignLanguageApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<AudioSegmentationApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<BrowserDialogApi>().RegisterWithApiHandler(server.ApiHandler);
+			_scope.Resolve<ProblemReportApi>().RegisterWithApiHandler(server.ApiHandler);
 			_scope.Resolve<I18NApi>().RegisterWithApiHandler(server.ApiHandler);
 		}
 

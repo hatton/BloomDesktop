@@ -8,7 +8,7 @@ import DialogContent from "@material-ui/core/DialogContent";
 import { withStyles, ThemeProvider } from "@material-ui/styles";
 import "./ProblemDialog.less";
 import BloomButton from "../react_components/bloomButton";
-import { createMuiTheme, TextField, Button, Theme } from "@material-ui/core";
+import { TextField, Theme } from "@material-ui/core";
 import { MuiCheckbox } from "../react_components/muiCheckBox";
 import { useState } from "react";
 import { HowMuchGroup } from "./HowMuchGroup";
@@ -26,9 +26,12 @@ export enum ProblemKind {
 export const ProblemDialog: React.FunctionComponent<{
     kind: ProblemKind;
 }> = props => {
+    const [includeBook, setIncludeBloom] = useState(true);
+    const [includeScreenshot, setIncludeScreenshot] = useState(true);
     const [submitAttempts, setSubmitAttempts] = useState(0);
     const [theme, setTheme] = useState<Theme | undefined>(undefined);
     const [whatDoing, setWhatDoing] = useState("");
+    const [bookName] = BloomApi.useApiString("problemReport/bookName", "??");
     React.useEffect(() => {
         setTheme(makeTheme(props.kind));
     }, [props.kind]);
@@ -36,6 +39,7 @@ export const ProblemDialog: React.FunctionComponent<{
         submitAttempts,
         () => whatDoing.trim().length > 0
     );
+
     return (
         <ThemeProvider theme={theme}>
             <Dialog
@@ -45,14 +49,12 @@ export const ProblemDialog: React.FunctionComponent<{
                 //fullWidth={true}
                 maxWidth={"md"}
                 fullScreen={true}
+                onClose={() => BloomApi.post("dialog/close")}
             >
                 <DialogTitle>
                     {kindParams[props.kind.toString()].title}
                 </DialogTitle>
-                <DialogContent
-                    className="content"
-                    //style={{ width: "500px", height: "300px" }}
-                >
+                <DialogContent className="content">
                     <Typography id="please_help_us">
                         Please help us reproduce this problem on our computers.
                     </Typography>
@@ -64,6 +66,7 @@ export const ProblemDialog: React.FunctionComponent<{
                                     "what_were_you_doing " +
                                     whatWereYouDoingAttentionClass
                                 }
+                                autoFocus={true}
                                 variant="outlined"
                                 label="What were you doing?"
                                 rows="3"
@@ -86,18 +89,23 @@ export const ProblemDialog: React.FunctionComponent<{
                         </div>
                         <div className="column2">
                             <MuiCheckbox
-                                label="Include book 'foobar'"
+                                label="Include book '{0}'"
                                 l10nKey="ReportProblemDialog.IncludeBookButton"
-                                checked={true}
-                                onCheckChanged={() => {}}
+                                l10nParam0={bookName}
+                                checked={includeBook}
+                                onCheckChanged={v =>
+                                    setIncludeBloom(v as boolean)
+                                }
                             />
                             <MuiCheckbox
                                 label="Include this screenshot:"
                                 l10nKey="ReportProblemDialog.IncludeScreenshotButton"
-                                checked={true}
-                                onCheckChanged={() => {}}
+                                checked={includeScreenshot}
+                                onCheckChanged={v =>
+                                    setIncludeScreenshot(v as boolean)
+                                }
                             />
-                            <img src="images/madBloomScientist.svg" />
+                            <img src={"/bloom/api/problemReport/screenshot"} />
 
                             <PrivacyGroup />
                         </div>
@@ -131,9 +139,7 @@ export const ProblemDialog: React.FunctionComponent<{
     );
 };
 
-console.log("ProblemDialog ************");
 if (document.getElementById("problemDialogRoot")) {
-    console.log("ProblemDialog &&&&&&&&&&&&&");
     ReactDOM.render(
         <ProblemDialog kind={ProblemKind.User} />,
         document.getElementById("problemDialogRoot")

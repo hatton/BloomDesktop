@@ -51,7 +51,7 @@ namespace Bloom.MiscUI
 			};
 			///			_browser.Navigate(rootFile.ToLocalhost(), false);
 			_browser.Navigate(url, false);
-
+			_browser.Focus();
 			CurrentDialog = this;
 		}
 	}
