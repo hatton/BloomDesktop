@@ -12,11 +12,12 @@ import { TextField, Theme } from "@material-ui/core";
 import { MuiCheckbox } from "../react_components/muiCheckBox";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { HowMuchGroup } from "./HowMuchGroup";
-import { PrivacyGroup } from "./PrivacyGroup";
+import { PrivacyNotice } from "./PrivacyNotice";
 import { makeTheme, kindParams } from "./theme";
 import { EmailField, isValidEmail } from "./EmailField";
 import { useDrawAttention } from "./UseDrawAttention";
 import ReactDOM = require("react-dom");
+import { PrivacyScreen } from "./PrivacyScreen";
 
 export enum ProblemKind {
     User = "User",
@@ -26,7 +27,8 @@ export enum ProblemKind {
 enum Mode {
     gather,
     submitting,
-    submitted
+    submitted,
+    showPrivacyDetails
 }
 export const ProblemDialog: React.FunctionComponent<{
     kind: ProblemKind;
@@ -111,6 +113,13 @@ export const ProblemDialog: React.FunctionComponent<{
                                         <Typography>Done</Typography>
                                     </>
                                 );
+                            case Mode.showPrivacyDetails:
+                                return (
+                                    <PrivacyScreen
+                                        includeBook={includeBook}
+                                        onBack={() => setMode(Mode.gather)}
+                                    />
+                                );
                             case Mode.gather:
                                 return (
                                     <>
@@ -184,7 +193,13 @@ export const ProblemDialog: React.FunctionComponent<{
                                                     }
                                                 />
 
-                                                <PrivacyGroup />
+                                                <PrivacyNotice
+                                                    onLearnMore={() =>
+                                                        setMode(
+                                                            Mode.showPrivacyDetails
+                                                        )
+                                                    }
+                                                />
                                             </div>
                                         </div>
                                     </>

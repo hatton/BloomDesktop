@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using Bloom.Api;
 using Bloom.Book;
 using Bloom.MiscUI;
 using Bloom.ToPalaso;
-using Bloom.Workspace;
 using SIL.IO;
 using SIL.Reporting;
 
@@ -44,10 +45,11 @@ namespace Bloom.web.controllers
 					request.ReplyWithText(SIL.Windows.Forms.Registration.Registration.Default.Email);
 				}, true);
 
-			apiHandler.RegisterEndpointHandler("problemReport/log",
+			apiHandler.RegisterEndpointHandler("problemReport/diagnosticInfo",
 				(ApiRequest request) =>
 				{
-					request.ReplyWithText(Logger.LogText);
+					var includeBook = request.RequiredParam("includeBook") == "true";
+					request.ReplyWithText(GetDiagnosticInfo(includeBook));
 				}, true);
 
 			apiHandler.RegisterEndpointHandler("problemReport/submit",
@@ -88,6 +90,142 @@ namespace Bloom.web.controllers
 						dlg.ShowDialog();
 					}
 				}));
+		}
+
+		private string GetDiagnosticInfo(bool includeBook)
+		{
+			//string obfuscatedEmail;
+			//try
+			//{
+			//	var m = new MailAddress(_email.Text);
+			//	obfuscatedEmail = string.Format("{1} {0}", m.User, m.Host).Replace(".", "/");
+			//}
+			//catch (Exception)
+			//{
+			//	obfuscatedEmail = _email.Text; // ah well, it's not valid anyhow, so no need to obfuscate (other code may not let the user get this far anyhow)
+			//}
+
+			var bldr = new StringBuilder();
+			//bldr.AppendLine("Error Report from " + _name.Text + " (" + obfuscatedEmail + ") on " + DateTime.UtcNow.ToUniversalTime());
+			//bldr.AppendLine("=Problem Description=");
+			//bldr.AppendLine(_description.Text);
+			//bldr.AppendLine();
+
+			GetStandardErrorReportingProperties(bldr, true);
+			GetAdditionalEnvironmentInfo(bldr);
+			GetAdditionalFileInfo(bldr, includeBook);
+			return bldr.ToString();
+		}
+
+			private static void GetStandardErrorReportingProperties(StringBuilder bldr, bool appendLog)
+		{
+			bldr.AppendLine();
+			bldr.AppendLine("=Error Reporting Properties=");
+			foreach (string label in ErrorReport.Properties.Keys)
+			{
+				bldr.Append(label);
+				bldr.Append(": ");
+				bldr.AppendLine(ErrorReport.Properties[label]);
+			}
+
+			if (appendLog || Logger.Singleton == null)
+			{
+				bldr.AppendLine();
+				bldr.AppendLine("=Log=");
+				try
+				{
+					bldr.Append(Logger.LogText);
+				}
+				catch (Exception err)
+				{
+					//We have more than one report of dieing while logging an exception.
+					bldr.AppendLine("****Could not read from log: " + err.Message);
+				}
+			}
+		}
+
+		private void GetAdditionalEnvironmentInfo(StringBuilder bldr)
+		{
+			var book = _bookSelection.CurrentSelection;
+			var projectName = book?.CollectionSettings.CollectionName;
+			bldr.AppendLine("=Additional User Environment Information=");
+			if (book == null)
+			{
+				if (!string.IsNullOrEmpty(projectName))
+					bldr.AppendLine("Collection name: " + projectName);
+				bldr.AppendLine("No Book was selected.");
+				return;
+			}
+			try
+			{
+				var sizeOrient = book.GetLayout().SizeAndOrientation;
+				bldr.AppendLine("Page Size/Orientation: " + sizeOrient);
+			}
+			catch (Exception)
+			{
+				bldr.AppendLine("GetLayout() or SizeAndOrientation threw an exception.");
+			}
+			var settings = book.CollectionSettings;
+			if (settings == null)
+			{
+				// paranoia, shouldn't happen
+				bldr.AppendLine("Book's CollectionSettings was null.");
+				return;
+			}
+			bldr.AppendLine("Collection name: " + settings.CollectionName);
+			bldr.AppendLine("xMatter pack name: " + settings.XMatterPackName);
+			bldr.AppendLine("Language1 iso: " + settings.Language1Iso639Code + " font: " +
+							settings.DefaultLanguage1FontName + (settings.IsLanguage1Rtl ? " RTL" : string.Empty));
+			bldr.AppendLine("Language2 iso: " + settings.Language2Iso639Code + " font: " +
+							settings.DefaultLanguage2FontName + (settings.IsLanguage2Rtl ? " RTL" : string.Empty));
+			bldr.AppendLine("Language3 iso: " + settings.Language3Iso639Code + " font: " +
+							settings.DefaultLanguage3FontName + (settings.IsLanguage3Rtl ? " RTL" : string.Empty));
+		}
+
+		private void GetAdditionalFileInfo(StringBuilder bldr, bool includeBook)
+		{
+			var book = _bookSelection.CurrentSelection;
+			if (book == null || String.IsNullOrEmpty(book.FolderPath))
+				return;
+			bldr.AppendLine();
+			bldr.AppendLine("=Additional Files Bundled With Book=");
+			var collectionFolder = Path.GetDirectoryName(book.FolderPath);
+			if (WantReaderInfo( includeBook))
+			{
+				foreach (var file in Directory.GetFiles(collectionFolder, "ReaderTools*-*.json"))
+					bldr.AppendLine(file);
+				ListFolderContents(Path.Combine(collectionFolder, "Allowed Words"), bldr);
+				ListFolderContents(Path.Combine(collectionFolder, "Sample Texts"), bldr);
+			}
+			foreach (var file in Directory.GetFiles(collectionFolder, "*CollectionStyles.css"))
+				bldr.AppendLine(file);
+			foreach (var file in Directory.GetFiles(collectionFolder, "*.bloomCollection"))
+				bldr.AppendLine(file);
+		}
+
+		private bool WantReaderInfo(bool includeBook)
+		{
+			var book = _bookSelection.CurrentSelection;
+
+			if (book==null || !includeBook)
+				return false;
+			foreach (var tool in book.BookInfo.Tools)
+			{
+				if (tool.ToolId == "decodableReader" || tool.ToolId == "leveledReader")
+					return true;
+			}
+			return false;
+		}
+
+		private void ListFolderContents(string folder, StringBuilder bldr)
+		{
+			if (!Directory.Exists(folder))
+				return;
+			foreach (var file in Directory.GetFiles(folder))
+				bldr.AppendLine(file);
+			// Probably overkill, but if there are subfolders, they will be zipped up with the book.
+			foreach (var sub in Directory.GetDirectories(folder))
+				ListFolderContents(sub, bldr);
 		}
 
 		public void Dispose()
