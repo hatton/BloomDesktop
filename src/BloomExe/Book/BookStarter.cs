@@ -391,7 +391,7 @@ namespace Bloom.Book
 				// Yes, we want the English word Template in the vernacular Title. Ugly, but that's
 				// what determines the file name, and that's what determines whether Add Page will
 				// include it.
-				storage.Dom.SetBookSetting("bookTitle", _collectionSettings.Language1Iso639Code, "My Template");
+				storage.Dom.SetBookSetting("bookTitle", _collectionSettings.TextLanguage1Iso639Code, "My Template");
 			}
 		}
 
@@ -401,11 +401,11 @@ namespace Bloom.Book
 			if (!TestingSoSkipAddingXMatter)
 			{
 				var data = new DataSet();
-				Debug.Assert(!string.IsNullOrEmpty(_collectionSettings.Language1Iso639Code));
-				Debug.Assert(!string.IsNullOrEmpty(_collectionSettings.Language2Iso639Code));
-				data.WritingSystemAliases.Add("V", _collectionSettings.Language1Iso639Code);
-				data.WritingSystemAliases.Add("N1", _collectionSettings.Language2Iso639Code);
-				data.WritingSystemAliases.Add("N2", _collectionSettings.Language3Iso639Code);
+				Debug.Assert(!string.IsNullOrEmpty(_collectionSettings.TextLanguage1Iso639Code));
+				Debug.Assert(!string.IsNullOrEmpty(_collectionSettings.TextLanguage2Iso639Code));
+				data.WritingSystemAliases.Add("V", _collectionSettings.TextLanguage1Iso639Code);
+				data.WritingSystemAliases.Add("N1", _collectionSettings.TextLanguage2Iso639Code);
+				data.WritingSystemAliases.Add("N2", _collectionSettings.TextLanguage3Iso639Code);
 
 				var helper = new XMatterHelper(storage.Dom, _collectionSettings.XMatterPackName, _fileLocator);
 				helper.FolderPathForCopyingXMatterFiles = storage.FolderPath;

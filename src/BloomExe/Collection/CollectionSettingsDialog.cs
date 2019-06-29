@@ -117,15 +117,15 @@ namespace Bloom.Collection
 		{
 			string defaultFontText =
 				LocalizationManager.GetString("CollectionSettingsDialog.BookMakingTab.DefaultFontFor", "Default Font for {0}", "{0} is a language name.");
-			var lang1UiName = _collectionSettings.GetLanguage1Name(LocalizationManager.UILanguageId);
-			var lang2UiName = _collectionSettings.GetLanguage2Name(LocalizationManager.UILanguageId);
-			_language1Name.Text = string.Format("{0} ({1})", lang1UiName, _collectionSettings.Language1Iso639Code);
-			_language2Name.Text = string.Format("{0} ({1})", lang2UiName, _collectionSettings.Language2Iso639Code);
+			var lang1UiName = _collectionSettings.GetLanguage1Name(LocalizationManager.UILanguageId, true);
+			var lang2UiName = _collectionSettings.GetLanguage2Name(LocalizationManager.UILanguageId, true);
+			_language1Name.Text = string.Format("{0} ({1})", lang1UiName, _collectionSettings.AbsoluteLanguage1Iso639Code);
+			_language2Name.Text = string.Format("{0} ({1})", lang2UiName, _collectionSettings.AbsoluteLanguage2Iso639Code);
 			_language1FontLabel.Text = string.Format(defaultFontText, lang1UiName);
 			_language2FontLabel.Text = string.Format(defaultFontText, lang2UiName);
 
 			var lang3UiName = string.Empty;
-			if (string.IsNullOrEmpty(_collectionSettings.Language3Iso639Code))
+			if (string.IsNullOrEmpty(_collectionSettings.AbsoluteLanguage3Iso639Code))
 			{
 				_language3Name.Text = "--";
 				_removeLanguage3Link.Visible = false;
@@ -137,7 +137,7 @@ namespace Bloom.Collection
 			else
 			{
 				lang3UiName = _collectionSettings.GetLanguage3Name(LocalizationManager.UILanguageId);
-				_language3Name.Text = string.Format("{0} ({1})", lang3UiName, _collectionSettings.Language3Iso639Code);
+				_language3Name.Text = string.Format("{0} ({1})", lang3UiName, _collectionSettings.AbsoluteLanguage3Iso639Code);
 				_language3FontLabel.Text = string.Format(defaultFontText, lang3UiName);
 				_removeLanguage3Link.Visible = true;
 				_language3FontLabel.Visible = true;
@@ -154,11 +154,11 @@ namespace Bloom.Collection
 		{
 			var potentiallyCustomName = _collectionSettings.Language1Name;
 
-			var l = ChangeLanguage(_collectionSettings.Language1Iso639Code, potentiallyCustomName);
+			var l = ChangeLanguage(_collectionSettings.AbsoluteLanguage1Iso639Code, potentiallyCustomName);
 
 			if (l != null)
 			{
-				_collectionSettings.Language1Iso639Code = l.LanguageTag;
+				_collectionSettings.AbsoluteLanguage1Iso639Code = l.LanguageTag;
 				_collectionSettings.Language1Name = l.DesiredName;
 				ChangeThatRequiresRestart();
 			}
@@ -166,10 +166,10 @@ namespace Bloom.Collection
 		private void _language2ChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
 			var potentiallyCustomName = _collectionSettings.Language2Name;
-			var l = ChangeLanguage(_collectionSettings.Language2Iso639Code, potentiallyCustomName);
+			var l = ChangeLanguage(_collectionSettings.AbsoluteLanguage2Iso639Code, potentiallyCustomName);
 			if (l != null)
 			{
-				_collectionSettings.Language2Iso639Code = l.LanguageTag;
+				_collectionSettings.AbsoluteLanguage2Iso639Code = l.LanguageTag;
 				_collectionSettings.Language2Name = l.DesiredName;
 				ChangeThatRequiresRestart();
 			}
@@ -178,17 +178,17 @@ namespace Bloom.Collection
 		private void _language3ChangeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
 			var potentiallyCustomName = _collectionSettings.Language3Name;
-			var l = ChangeLanguage(_collectionSettings.Language3Iso639Code, potentiallyCustomName);
+			var l = ChangeLanguage(_collectionSettings.AbsoluteLanguage3Iso639Code, potentiallyCustomName);
 			if (l != null)
 			{
-				_collectionSettings.Language3Iso639Code = l.LanguageTag;
+				_collectionSettings.AbsoluteLanguage3Iso639Code = l.LanguageTag;
 				_collectionSettings.Language3Name = l.DesiredName;
 				ChangeThatRequiresRestart();
 			}
 		}
 		private void _removeSecondNationalLanguageButton_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			_collectionSettings.Language3Iso639Code = String.Empty;	// null causes a crash in trying to set it again (BL-5795)
+			_collectionSettings.AbsoluteLanguage3Iso639Code = String.Empty;	// null causes a crash in trying to set it again (BL-5795)
 			ChangeThatRequiresRestart();
 		}
 
@@ -253,8 +253,8 @@ namespace Bloom.Collection
 			_collectionSettings.SubscriptionCode = _subscriptionCode;
 
 			//no point in letting them have the Nat lang 2 be the same as 1
-			if (_collectionSettings.Language2Iso639Code == _collectionSettings.Language3Iso639Code)
-				_collectionSettings.Language3Iso639Code = null;
+			if (_collectionSettings.AbsoluteLanguage2Iso639Code == _collectionSettings.AbsoluteLanguage3Iso639Code)
+				_collectionSettings.AbsoluteLanguage3Iso639Code = null;
 
 			if(_bloomCollectionName.Text.Trim()!=_collectionSettings.CollectionName)
 			{
@@ -492,12 +492,12 @@ namespace Bloom.Collection
 
 		private void _fontSettings1Link_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			FontSettingsLinkClicked(_collectionSettings.GetLanguage1Name(LocalizationManager.UILanguageId), 1);
+			FontSettingsLinkClicked(_collectionSettings.GetLanguage1Name(LocalizationManager.UILanguageId, true), 1);
 		}
 
 		private void _fontSettings2Link_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			FontSettingsLinkClicked(_collectionSettings.GetLanguage2Name(LocalizationManager.UILanguageId), 2);
+			FontSettingsLinkClicked(_collectionSettings.GetLanguage2Name(LocalizationManager.UILanguageId, true), 2);
 		}
 
 		private void _fontSettings3Link_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)

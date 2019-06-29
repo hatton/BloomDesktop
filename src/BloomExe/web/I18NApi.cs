@@ -60,9 +60,9 @@ namespace Bloom.Api
 					string id = parameters["key"];
 					string englishText = parameters["englishText"];
 					string langId = parameters["langId"];
-					langId = langId.Replace("V", request.CurrentCollectionSettings.Language1Iso639Code);
-					langId = langId.Replace("N1", request.CurrentCollectionSettings.Language2Iso639Code);
-					langId = langId.Replace("N2", request.CurrentCollectionSettings.Language3Iso639Code);
+					langId = langId.Replace("V", request.CurrentCollectionSettings.TextLanguage1Iso639Code);
+					langId = langId.Replace("N1", request.CurrentCollectionSettings.TextLanguage2Iso639Code);
+					langId = langId.Replace("N2", request.CurrentCollectionSettings.TextLanguage3Iso639Code);
 					langId = langId.Replace("UI", LocalizationManager.UILanguageId);
 					string localizedString;
 					if (GetSomeTranslation(id, langId, out localizedString))

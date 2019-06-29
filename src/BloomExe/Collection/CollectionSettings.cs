@@ -102,7 +102,7 @@ namespace Bloom.Collection
 			BrandingProjectKey = "Default";
 			PageNumberStyle = "Decimal";
 			XMatterPackName = kDefaultXmatterName;
-			Language2Iso639Code = "en";
+			AbsoluteLanguage2Iso639Code = "en";
 			AllowNewBooks = true;
 			CollectionName = "dummy collection";
 			AudioRecordingMode = TalkingBookApi.AudioRecordingMode.Sentence;
@@ -124,9 +124,9 @@ namespace Bloom.Collection
 			IsLanguage1Rtl = collectionInfo.IsLanguage1Rtl;
 			DefaultLanguage2FontName = DefaultLanguage3FontName = GetDefaultFontName();
 
-			Language1Iso639Code = collectionInfo.Language1Iso639Code;
-			Language2Iso639Code = collectionInfo.Language2Iso639Code;
-			Language3Iso639Code = collectionInfo.Language3Iso639Code;
+			AbsoluteLanguage1Iso639Code = collectionInfo.TextLanguage1Iso639Code;
+			AbsoluteLanguage2Iso639Code = collectionInfo.TextLanguage2Iso639Code;
+			AbsoluteLanguage3Iso639Code = collectionInfo.TextLanguage3Iso639Code;
 			Language1Name = collectionInfo.Language1Name;
 			Country = collectionInfo.Country;
 			Province = collectionInfo.Province;
@@ -188,35 +188,54 @@ namespace Bloom.Collection
 				Environment.Exit(-1);
 			}
 		}
+		private Boolean Lang1IsSignLanguage = true;
 
 		#region Persisted properties
 
 		//these are virtual for the sake of the unit test mock framework
-		public virtual string Language1Iso639Code
+		public virtual string TextLanguage1Iso639Code
 		{
+			get { return Lang1IsSignLanguage ? _language2Iso639Code : _language1Iso639Code; }
+		}
+
+		/// <summary>
+		/// Warning: for use only by code that won't be messed up if lang1 is sign language
+		/// </summary>
+		public virtual string AbsoluteLanguage1Iso639Code{
 			get { return _language1Iso639Code; }
 			set
 			{
 				_language1Iso639Code = value;
-				Language1Name = GetLanguage1Name_NoCache(Language2Iso639Code);
+				Language1Name = GetLanguage1Name_NoCache(_language2Iso639Code, true); 
 			}
 		}
-		public virtual string Language2Iso639Code
+
+		public virtual string TextLanguage2Iso639Code
+		{
+			get { return Lang1IsSignLanguage ? _language3Iso639Code : _language2Iso639Code; }
+		}
+
+		public virtual string AbsoluteLanguage2Iso639Code
 		{
 			get { return _language2Iso639Code; }
 			set
 			{
 				_language2Iso639Code = value;
-				Language2Name = GetLanguage2Name_NoCache(_language2Iso639Code);
+				Language2Name = GetLanguage2Name_NoCache(_language2Iso639Code, true);
 			}
 		}
-		public virtual string Language3Iso639Code
+
+		public virtual string TextLanguage3Iso639Code
+		{
+			get { return Lang1IsSignLanguage ? "" : _language3Iso639Code; }
+		}
+		public virtual string AbsoluteLanguage3Iso639Code
 		{
 			get { return _language3Iso639Code; }
 			set
 			{
 				_language3Iso639Code = value;
-				Language3Name = GetLanguage3Name_NoCache(Language2Iso639Code);
+				Language3Name = GetLanguage3Name_NoCache(_language2Iso639Code);
 			}
 		}
 
@@ -350,22 +369,23 @@ namespace Bloom.Collection
 		/// </summary>
 		public virtual bool IsSourceCollection { get; set; }
 
-		public string GetLanguage1Name(string inLanguage)
+		public string GetLanguage1Name(string inLanguage, bool absolute = false)
 		{
-			if(!string.IsNullOrEmpty(this.Language1Name))
-				return Language1Name;
+			//if(!string.IsNullOrEmpty(this.Language1Name))
+			//	return Language1Name;
 
-			return GetLanguage1Name_NoCache(inLanguage);
+			return GetLanguage1Name_NoCache(inLanguage, absolute);
 		}
 
-		private string GetLanguage1Name_NoCache(string inLanguage)
+		private string GetLanguage1Name_NoCache(string inLanguage, bool absolute=false)
 		{
-			var name = _lookupIsoCode.GetLocalizedLanguageName(Language1Iso639Code, inLanguage);
-			if (name == Language1Iso639Code)
+			var code = absolute ? AbsoluteLanguage1Iso639Code : TextLanguage1Iso639Code;
+			var name = _lookupIsoCode.GetLocalizedLanguageName(TextLanguage1Iso639Code, inLanguage);
+			if (name == TextLanguage1Iso639Code)
 			{
 				string exactLanguageMatch;
-				if (!_lookupIsoCode.GetBestLanguageName(Language1Iso639Code, out exactLanguageMatch))
-					return "L1-Unknown-" + Language1Iso639Code;
+				if (!_lookupIsoCode.GetBestLanguageName(TextLanguage1Iso639Code, out exactLanguageMatch))
+					return "L1-Unknown-" + TextLanguage1Iso639Code;
 				return exactLanguageMatch;
 			}
 			return name;
@@ -384,31 +404,33 @@ namespace Bloom.Collection
 				languageName, (current, character) => current.Replace(character, ' '));
 		}
 
-		public string GetLanguage2Name(string inLanguage)
+
+		public string GetLanguage2Name(string inLanguage, bool absolute=false)
 		{
-			if(!string.IsNullOrEmpty(Language2Iso639Code) && !string.IsNullOrEmpty(Language2Name))
+			if(!string.IsNullOrEmpty(TextLanguage2Iso639Code) && !string.IsNullOrEmpty(Language2Name))
 				return Language2Name;
-			return GetLanguage2Name_NoCache(inLanguage);
+			return GetLanguage2Name_NoCache(inLanguage, absolute);
 		}
 
-		private string GetLanguage2Name_NoCache(string inLanguage)
+		private string GetLanguage2Name_NoCache(string inLanguage, bool absolute)
 		{
+			var code = absolute ? AbsoluteLanguage2Iso639Code : TextLanguage2Iso639Code;
 			try
 			{
-				if (string.IsNullOrEmpty(Language2Iso639Code))
+				if (string.IsNullOrEmpty(code))
 					return string.Empty;
 
 				//TODO: we are going to need to show "French" as "Français"... but if the name isn't available, we should have a fall-back mechanism, at least to english
 				//So, we'd rather have GetBestLanguageMatch()
 
-				return GetLanguageName(Language2Iso639Code, inLanguage);
+				return GetLanguageName(code, inLanguage);
 			}
 			catch (Exception)
 			{
 				Debug.Fail("check this out. BL-193 Reproduction");
 				// a user reported this, and I saw it happen once: had just installed 0.8.38, made a new vernacular
 				//project, added a picture dictionary, the above failed (no debugger, so I don't know why).
-				return "L2-Unknown-" + Language2Iso639Code;
+				return "L2-Unknown-" + code;
 			}
 		}
 
@@ -423,7 +445,7 @@ namespace Bloom.Collection
 
 		public string GetLanguage3Name(string inLanguage)
 		{
-			if (!string.IsNullOrEmpty(Language3Iso639Code) && !string.IsNullOrEmpty(Language3Name))
+			if (!string.IsNullOrEmpty(TextLanguage3Iso639Code) && !string.IsNullOrEmpty(Language3Name))
 				return Language3Name;
 			return GetLanguage3Name_NoCache(inLanguage);
 		}
@@ -431,14 +453,14 @@ namespace Bloom.Collection
 		{
 			try
 			{
-				if (string.IsNullOrEmpty(Language3Iso639Code))
+				if (string.IsNullOrEmpty(TextLanguage3Iso639Code))
 					return string.Empty;
 
-				return GetLanguageName(Language3Iso639Code, inLanguage);
+				return GetLanguageName(TextLanguage3Iso639Code, inLanguage);
 			}
 			catch (Exception)
 			{
-				return "L2N-Unknown-" + Language3Iso639Code;
+				return "L2N-Unknown-" + TextLanguage3Iso639Code;
 			}
 		}
 		#endregion
@@ -453,9 +475,9 @@ namespace Bloom.Collection
 			library.Add(new XElement("Language1Name", Language1Name));
 			library.Add(new XElement("Language2Name", Language2Name));
 			library.Add(new XElement("Language3Name", Language3Name));
-			library.Add(new XElement("Language1Iso639Code", Language1Iso639Code));
-			library.Add(new XElement("Language2Iso639Code", Language2Iso639Code));
-			library.Add(new XElement("Language3Iso639Code", Language3Iso639Code));
+			library.Add(new XElement("Language1Iso639Code", TextLanguage1Iso639Code));
+			library.Add(new XElement("Language2Iso639Code", TextLanguage2Iso639Code));
+			library.Add(new XElement("Language3Iso639Code", TextLanguage3Iso639Code));
 			library.Add(new XElement("DefaultLanguage1FontName", DefaultLanguage1FontName));
 			library.Add(new XElement("DefaultLanguage2FontName", DefaultLanguage2FontName));
 			library.Add(new XElement("DefaultLanguage3FontName", DefaultLanguage3FontName));
@@ -504,11 +526,11 @@ namespace Bloom.Collection
 				// note: css pseudo elements  cannot have a @lang attribute. So this is needed to show page numbers in scripts
 				// not covered by Andika New Basic.
 				AddSelectorCssRule(sb, ".numberedPage::after", DefaultLanguage1FontName, IsLanguage1Rtl, Language1LineHeight, Language1BreaksLinesOnlyAtSpaces, omitDirection);
-				AddSelectorCssRule(sb, "[lang='" + Language1Iso639Code + "']", DefaultLanguage1FontName, IsLanguage1Rtl, Language1LineHeight, Language1BreaksLinesOnlyAtSpaces, omitDirection);
-				AddSelectorCssRule(sb, "[lang='" + Language2Iso639Code + "']", DefaultLanguage2FontName, IsLanguage2Rtl, Language2LineHeight, Language2BreaksLinesOnlyAtSpaces, omitDirection);
-				if (!string.IsNullOrEmpty(Language3Iso639Code))
+				AddSelectorCssRule(sb, "[lang='" + TextLanguage1Iso639Code + "']", DefaultLanguage1FontName, IsLanguage1Rtl, Language1LineHeight, Language1BreaksLinesOnlyAtSpaces, omitDirection);
+				AddSelectorCssRule(sb, "[lang='" + TextLanguage2Iso639Code + "']", DefaultLanguage2FontName, IsLanguage2Rtl, Language2LineHeight, Language2BreaksLinesOnlyAtSpaces, omitDirection);
+				if (!string.IsNullOrEmpty(TextLanguage3Iso639Code))
 				{
-					AddSelectorCssRule(sb, "[lang='" + Language3Iso639Code + "']", DefaultLanguage3FontName, IsLanguage3Rtl, Language3LineHeight, Language3BreaksLinesOnlyAtSpaces, omitDirection);
+					AddSelectorCssRule(sb, "[lang='" + TextLanguage3Iso639Code + "']", DefaultLanguage3FontName, IsLanguage3Rtl, Language3LineHeight, Language3BreaksLinesOnlyAtSpaces, omitDirection);
 				}
 				RobustFile.WriteAllText(path, sb.ToString());
 			}
@@ -557,9 +579,9 @@ namespace Bloom.Collection
 				var settingsContent = RobustFile.ReadAllText(SettingsFilePath, Encoding.UTF8);
 				XElement library = XElement.Parse(settingsContent);
 
-				Language1Iso639Code = GetValue(library, "Language1Iso639Code", /* old name */GetValue(library, "Language1Iso639Code", ""));
-				Language2Iso639Code = GetValue(library, "Language2Iso639Code",  /* old name */GetValue(library, "National1Iso639Code", "en"));
-				Language3Iso639Code = GetValue(library, "Language3Iso639Code",  /* old name */GetValue(library, "National2Iso639Code", ""));
+				AbsoluteLanguage1Iso639Code = GetValue(library, "Language1Iso639Code", /* old name */GetValue(library, "Language1Iso639Code", ""));
+				AbsoluteLanguage2Iso639Code = GetValue(library, "Language2Iso639Code",  /* old name */GetValue(library, "National1Iso639Code", "en"));
+				AbsoluteLanguage3Iso639Code = GetValue(library, "Language3Iso639Code",  /* old name */GetValue(library, "National2Iso639Code", ""));
 				XMatterPackName = GetValue(library, "XMatterPack", "Factory");
 
 				var style = GetValue(library, "PageNumberStyle", "Decimal");
@@ -588,8 +610,8 @@ namespace Bloom.Collection
 				}
 
 				Language1Name = GetValue(library, "Language1Name",  /* old name */GetValue(library, "LanguageName", ""));
-				Language2Name = GetValue(library, "Language2Name", GetLanguage2Name_NoCache(Language2Iso639Code));
-				Language3Name = GetValue(library, "Language3Name", GetLanguage3Name_NoCache(Language2Iso639Code));
+				Language2Name = GetValue(library, "Language2Name", GetLanguage2Name_NoCache(AbsoluteLanguage2Iso639Code, true));
+				Language3Name = GetValue(library, "Language3Name", GetLanguage3Name_NoCache(AbsoluteLanguage2Iso639Code));
 				DefaultLanguage1FontName = GetValue(library, "DefaultLanguage1FontName", GetDefaultFontName());
 				DefaultLanguage2FontName = GetValue(library, "DefaultLanguage2FontName", GetDefaultFontName());
 				DefaultLanguage3FontName = GetValue(library, "DefaultLanguage3FontName", GetDefaultFontName());
@@ -697,7 +719,7 @@ namespace Bloom.Collection
 			if(DefaultLanguage1FontName == oldFont)
 			{
 				DefaultLanguage1FontName = newFont;
-				if (!safeLanguages.Contains(Language1Iso639Code))
+				if (!safeLanguages.Contains(TextLanguage1Iso639Code))
 				{
 					msg += String.Format(basicMessage, Language1Name) + Environment.NewLine;
 				}
@@ -705,17 +727,17 @@ namespace Bloom.Collection
 			if (DefaultLanguage2FontName == oldFont)
 			{
 				DefaultLanguage2FontName = newFont;
-				if (!String.IsNullOrEmpty(Language2Iso639Code) && !safeLanguages.Contains(Language2Iso639Code))
+				if (!String.IsNullOrEmpty(TextLanguage2Iso639Code) && !safeLanguages.Contains(TextLanguage2Iso639Code))
 				{
-					msg += String.Format(basicMessage, GetLanguage2Name(Language2Iso639Code)) + Environment.NewLine;
+					msg += String.Format(basicMessage, GetLanguage2Name(TextLanguage2Iso639Code)) + Environment.NewLine;
 				}
 			}
 			if (DefaultLanguage3FontName == oldFont)
 			{
 				DefaultLanguage3FontName = newFont;
-				if (!String.IsNullOrEmpty(Language3Iso639Code) && !safeLanguages.Contains(Language3Iso639Code))
+				if (!String.IsNullOrEmpty(TextLanguage3Iso639Code) && !safeLanguages.Contains(TextLanguage3Iso639Code))
 				{
-					msg += String.Format(basicMessage, GetLanguage3Name(Language2Iso639Code)) + Environment.NewLine;
+					msg += String.Format(basicMessage, GetLanguage3Name(TextLanguage2Iso639Code)) + Environment.NewLine;
 				}
 			}
 			// Only notify the user if the change involves a language that is not known to be okay with
@@ -911,7 +933,7 @@ namespace Bloom.Collection
 			{
 				var code = isoCodes[i];
 				string name = Language1Name;
-				if (code != Language1Iso639Code)
+				if (code != TextLanguage1Iso639Code)
 					_lookupIsoCode.GetBestLanguageName(code, out name);
 				string ethCode;
 				LanguageSubtag data;
@@ -935,7 +957,7 @@ namespace Bloom.Collection
 		{
 			get
 			{
-				var result = new[] { Language1Iso639Code, Language2Iso639Code, Language3Iso639Code, "en" };
+				var result = new[] { TextLanguage1Iso639Code, TextLanguage2Iso639Code, TextLanguage3Iso639Code, "en" };
 				// reverse-order loop so that given e.g. zh-Hans followed by zh-Hant we insert zh-CN after the second one.
 				// That is, we'll prefer either of the explicit variants to the fall-back.
 				// The part before the hyphen (if there is one) is the main language.
@@ -1037,9 +1059,9 @@ namespace Bloom.Collection
 			// but then adding an unambiguous duplicate with CollectionCountry
 			Analytics.SetApplicationProperty("Country", Country);
 			Analytics.SetApplicationProperty("CollectionCountry", Country);
-			Analytics.SetApplicationProperty("Language1Iso639Code", Language1Iso639Code);
-			Analytics.SetApplicationProperty("Language2Iso639Code", Language2Iso639Code);
-			Analytics.SetApplicationProperty("Language3Iso639Code", Language3Iso639Code ?? "---");
+			Analytics.SetApplicationProperty("Language1Iso639Code", TextLanguage1Iso639Code);
+			Analytics.SetApplicationProperty("Language2Iso639Code", TextLanguage2Iso639Code);
+			Analytics.SetApplicationProperty("Language3Iso639Code", TextLanguage3Iso639Code ?? "---");
 			Analytics.SetApplicationProperty("Language1Iso639Name", Language1Name);
 			Analytics.SetApplicationProperty("BrandingProjectName", BrandingProjectKey);
 		}

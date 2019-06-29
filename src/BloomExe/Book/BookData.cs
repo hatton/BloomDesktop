@@ -202,7 +202,7 @@ namespace Bloom.Book
 
 			var itemsToDelete = new HashSet<Tuple<string, string>>();
 			DataSet incomingData = SynchronizeDataItemsFromContentsOfElement(elementToReadFrom, itemsToDelete);
-			incomingData.UpdateGenericLanguageString("contentLanguage1", _collectionSettings.Language1Iso639Code, false);
+			incomingData.UpdateGenericLanguageString("contentLanguage1", _collectionSettings.TextLanguage1Iso639Code, false);
 			incomingData.UpdateGenericLanguageString("contentLanguage2",
 											 String.IsNullOrEmpty(MultilingualContentLanguage2)
 												 ? null
@@ -377,18 +377,18 @@ namespace Bloom.Book
 			var stringId = "Topics." + englishTopic;
 
 			//get the topic in the most prominent language for which we have a translation
-			var langOfTopicToShowOnCover = _collectionSettings.Language1Iso639Code;
-			if (LocalizationManager.GetIsStringAvailableForLangId(stringId, _collectionSettings.Language1Iso639Code))
+			var langOfTopicToShowOnCover = _collectionSettings.TextLanguage1Iso639Code;
+			if (LocalizationManager.GetIsStringAvailableForLangId(stringId, _collectionSettings.TextLanguage1Iso639Code))
 			{
-				langOfTopicToShowOnCover = _collectionSettings.Language1Iso639Code;
+				langOfTopicToShowOnCover = _collectionSettings.TextLanguage1Iso639Code;
 			}
-			else if (LocalizationManager.GetIsStringAvailableForLangId(stringId, _collectionSettings.Language2Iso639Code))
+			else if (LocalizationManager.GetIsStringAvailableForLangId(stringId, _collectionSettings.TextLanguage2Iso639Code))
 			{
-				langOfTopicToShowOnCover = _collectionSettings.Language2Iso639Code;
+				langOfTopicToShowOnCover = _collectionSettings.TextLanguage2Iso639Code;
 			}
-			else if (LocalizationManager.GetIsStringAvailableForLangId(stringId, _collectionSettings.Language3Iso639Code))
+			else if (LocalizationManager.GetIsStringAvailableForLangId(stringId, _collectionSettings.TextLanguage3Iso639Code))
 			{
-				langOfTopicToShowOnCover = _collectionSettings.Language3Iso639Code;
+				langOfTopicToShowOnCover = _collectionSettings.TextLanguage3Iso639Code;
 			}
 			else
 			{
@@ -624,8 +624,8 @@ namespace Bloom.Book
 		{
 			var data = new DataSet();
 
-			data.WritingSystemAliases.Add("N1", collectionSettings.Language2Iso639Code);
-			data.WritingSystemAliases.Add("N2", collectionSettings.Language3Iso639Code);
+			data.WritingSystemAliases.Add("N1", collectionSettings.TextLanguage2Iso639Code);
+			data.WritingSystemAliases.Add("N2", collectionSettings.TextLanguage3Iso639Code);
 
 //            if (makeGeneric)
 //            {
@@ -643,18 +643,18 @@ namespace Bloom.Book
 //            }
 //            else
 			{
-				data.WritingSystemAliases.Add("V", collectionSettings.Language1Iso639Code);
+				data.WritingSystemAliases.Add("V", collectionSettings.TextLanguage1Iso639Code);
 				data.AddLanguageString("nameOfLanguage", collectionSettings.Language1Name, "*", true);
 				data.AddLanguageString("nameOfNationalLanguage1",
-									   collectionSettings.GetLanguage2Name(collectionSettings.Language2Iso639Code), "*", true);
+									   collectionSettings.GetLanguage2Name(collectionSettings.TextLanguage2Iso639Code), "*", true);
 				data.AddLanguageString("nameOfNationalLanguage2",
-									   collectionSettings.GetLanguage3Name(collectionSettings.Language2Iso639Code), "*", true);
-				data.UpdateGenericLanguageString("iso639Code", collectionSettings.Language1Iso639Code, true);
+									   collectionSettings.GetLanguage3Name(collectionSettings.TextLanguage2Iso639Code), "*", true);
+				data.UpdateGenericLanguageString("iso639Code", collectionSettings.TextLanguage1Iso639Code, true);
 				data.UpdateGenericLanguageString("country", collectionSettings.Country, true);
 				data.UpdateGenericLanguageString("province", collectionSettings.Province, true);
 				data.UpdateGenericLanguageString("district", collectionSettings.District, true);
 				string location = "";
-				var preferredLanguageIds = new[] { collectionSettings.Language2Iso639Code, LocalizationManager.UILanguageId, "en" };
+				var preferredLanguageIds = new[] { collectionSettings.TextLanguage2Iso639Code, LocalizationManager.UILanguageId, "en" };
 				string languageIdUsed;
 				var separator = LocalizationManager.GetString("EditTab.FrontMatter.ListSeparator", ", ",
 					"This is used to separate items in a list, such as 'Province, District, Country' on the Title Page. For English, that means comma followed by a space. Don't forget the space if your script uses them.",
@@ -696,13 +696,13 @@ namespace Bloom.Book
 		/// <returns></returns>
 		public string PrettyPrintLanguage(string code)
 		{
-			if (code == _collectionSettings.Language1Iso639Code && !string.IsNullOrWhiteSpace(_collectionSettings.Language1Name))
+			if (code == _collectionSettings.TextLanguage1Iso639Code && !string.IsNullOrWhiteSpace(_collectionSettings.Language1Name))
 				return _collectionSettings.Language1Name;
-			if (code == _collectionSettings.Language2Iso639Code)
-				return _collectionSettings.GetLanguage2Name(_collectionSettings.Language2Iso639Code);
-			if (code == _collectionSettings.Language3Iso639Code)
-				return _collectionSettings.GetLanguage3Name(_collectionSettings.Language2Iso639Code);
-			return _collectionSettings.GetLanguageName(code, _collectionSettings.Language2Iso639Code);
+			if (code == _collectionSettings.TextLanguage2Iso639Code)
+				return _collectionSettings.GetLanguage2Name(_collectionSettings.TextLanguage2Iso639Code);
+			if (code == _collectionSettings.TextLanguage3Iso639Code)
+				return _collectionSettings.GetLanguage3Name(_collectionSettings.TextLanguage2Iso639Code);
+			return _collectionSettings.GetLanguageName(code, _collectionSettings.TextLanguage2Iso639Code);
 		}
 
 		/// <summary>
@@ -770,11 +770,11 @@ namespace Bloom.Book
 					if (lang == "") //the above doesn't stop a "" from getting through
 						lang = "*";
 					if (lang == "{V}")
-						lang = _collectionSettings.Language1Iso639Code;
+						lang = _collectionSettings.TextLanguage1Iso639Code;
 					if (lang == "{N1}")
-						lang = _collectionSettings.Language2Iso639Code;
+						lang = _collectionSettings.TextLanguage2Iso639Code;
 					if (lang == "{N2}")
-						lang = _collectionSettings.Language3Iso639Code;
+						lang = _collectionSettings.TextLanguage3Iso639Code;
 
 					if (StringAlternativeHasNoText(value))
 					{
@@ -1063,8 +1063,8 @@ namespace Bloom.Book
 			LanguageForm formToCopyFromSinceOursIsMissing = null;
 			string s = "";
 
-			if ((languageCodeOfTargetField == _collectionSettings.Language2Iso639Code || //is it a national language?
-				 languageCodeOfTargetField == _collectionSettings.Language3Iso639Code) ||
+			if ((languageCodeOfTargetField == _collectionSettings.TextLanguage2Iso639Code || //is it a national language?
+				 languageCodeOfTargetField == _collectionSettings.TextLanguage3Iso639Code) ||
 				//this one is a kludge as we clearly have this case of a vernacular field that people have used
 				//to hold stuff that should be copied to every shell. So we can either remove the restriction of the
 				//first two clauses in this if statement, or add another bloom-___ class in order to make execptions.
@@ -1249,15 +1249,15 @@ namespace Bloom.Book
 		{
 			get
 			{
-				return new string[] {_collectionSettings.Language1Iso639Code??"", _collectionSettings.Language2Iso639Code??"", _collectionSettings.Language3Iso639Code ?? "", "en", "fr", "th", "pt", "*" };
+				return new string[] {_collectionSettings.TextLanguage1Iso639Code??"", _collectionSettings.TextLanguage2Iso639Code??"", _collectionSettings.TextLanguage3Iso639Code ?? "", "en", "fr", "th", "pt", "*" };
 			}
 		}
 
 		public void SetMultilingualContentLanguages(string language2Code, string language3Code)
 		{
-			if (language2Code == _collectionSettings.Language1Iso639Code) //can't have the vernacular twice
+			if (language2Code == _collectionSettings.TextLanguage1Iso639Code) //can't have the vernacular twice
 				language2Code = null;
-			if (language3Code == _collectionSettings.Language1Iso639Code)
+			if (language3Code == _collectionSettings.TextLanguage1Iso639Code)
 				language3Code = null;
 			if (language2Code == language3Code)	//can't use the same lang twice
 				language3Code = null;

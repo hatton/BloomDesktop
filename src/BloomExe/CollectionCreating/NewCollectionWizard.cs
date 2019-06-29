@@ -125,7 +125,7 @@ namespace Bloom.CollectionCreating
 
 				if(_collectionInfo.IsSourceCollection)
 				{
-					_collectionInfo.Language1Iso639Code = "en";
+					_collectionInfo.AbsoluteLanguage1Iso639Code = "en";
 				}
 			}
 
@@ -194,8 +194,8 @@ namespace Bloom.CollectionCreating
 			//this both saves a step for the country with the most languages, but also helps get the order between en and tpi to what will be most useful
 			if (_collectionInfo.Country == "Papua New Guinea")
 			{
-				_collectionInfo.Language2Iso639Code = "en";
-				_collectionInfo.Language3Iso639Code = "tpi";
+				_collectionInfo.AbsoluteLanguage2Iso639Code = "en";
+				_collectionInfo.AbsoluteLanguage3Iso639Code = "tpi";
 			}
 			_collectionInfo.SetAnalyticsProperties();
 

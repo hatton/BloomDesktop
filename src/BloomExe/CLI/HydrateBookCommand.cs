@@ -46,9 +46,9 @@ namespace Bloom.CLI
 			var collectionSettings = new CollectionSettings
 			{
 				XMatterPackName = options.XMatter,
-				Language1Iso639Code = options.VernacularIsoCode,
-				Language2Iso639Code = options.NationalLanguage1IsoCode,
-				Language3Iso639Code = options.NationalLanguage2IsoCode
+				AbsoluteLanguage1Iso639Code = options.VernacularIsoCode,
+				AbsoluteLanguage2Iso639Code = options.NationalLanguage1IsoCode,
+				AbsoluteLanguage3Iso639Code = options.NationalLanguage2IsoCode
 			};
 
 			XMatterPackFinder xmatterFinder = new XMatterPackFinder(new[] { BloomFileLocator.GetInstalledXMatterDirectory() });

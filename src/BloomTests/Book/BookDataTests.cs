@@ -30,9 +30,9 @@ namespace BloomTests.Book
 			_collectionSettings = new CollectionSettings(new NewCollectionSettings()
 			{
 				PathToSettingsFile = CollectionSettings.GetPathForNewSettings(new TemporaryFolder("BookDataTests").Path, "test"),
-				Language1Iso639Code = "xyz",
-				Language2Iso639Code = "en",
-				Language3Iso639Code = "fr"
+				AbsoluteLanguage1Iso639Code = "xyz",
+				AbsoluteLanguage2Iso639Code = "en",
+				AbsoluteLanguage3Iso639Code = "fr"
 			});
 			ErrorReport.IsOkToInteractWithUser = false;
 
@@ -609,7 +609,7 @@ namespace BloomTests.Book
 				</body></html>");
 			var data = new BookData(dom, _collectionSettings, null);
 			data.UpdateVariablesAndDataDivThroughDOM();
-			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='bookTitle' and @lang='"+_collectionSettings.Language1Iso639Code+"' and text()='the title']",1);
+			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//div[@data-book='bookTitle' and @lang='"+_collectionSettings.TextLanguage1Iso639Code+"' and text()='the title']",1);
 		}
 
 		[Test]
@@ -670,7 +670,7 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='xyz'  and @id='2' and text()='xyzTitle']", 1);
 			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='2']");
 			textarea2.InnerText = "newXyzTitle";
-			var data = new BookData(dom, new CollectionSettings() { Language1Iso639Code = "etr" }, null);
+			var data = new BookData(dom, new CollectionSettings() { AbsoluteLanguage1Iso639Code = "etr" }, null);
 			data.SynchronizeDataItemsThroughoutDOM();
 			var textarea3 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='3']");
 			Assert.AreEqual("newXyzTitle", textarea3.InnerText);
@@ -697,7 +697,7 @@ namespace BloomTests.Book
 			AssertThatXmlIn.Dom(dom.RawDom).HasSpecifiedNumberOfMatchesForXpath("//textarea[@lang='xyz'  and @id='2' and text()='xyzTitle']", 1);
 			var textarea1 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='1']");
 			textarea1.InnerText = "newEnglishTitle";
-			var data = new BookData(dom,   new CollectionSettings(){Language1Iso639Code = "etr"}, null);
+			var data = new BookData(dom,   new CollectionSettings(){AbsoluteLanguage1Iso639Code = "etr"}, null);
 			data.SynchronizeDataItemsThroughoutDOM();
 			var textarea2 = dom.SelectSingleNodeHonoringDefaultNS("//textarea[@id='2']");
 			Assert.AreEqual("xyzTitle", textarea2.InnerText);
@@ -724,7 +724,7 @@ namespace BloomTests.Book
 				</body></html>");
 			var collectionSettings = new CollectionSettings()
 				{
-					Language1Iso639Code = "etr"
+					AbsoluteLanguage1Iso639Code = "etr"
 				};
 			var data = new BookData(dom,   collectionSettings, null);
 			data.SynchronizeDataItemsThroughoutDOM();
@@ -733,7 +733,7 @@ namespace BloomTests.Book
 
 			//now switch the national language to Tok Pisin
 
-			collectionSettings.Language2Iso639Code = "tpi";
+			collectionSettings.AbsoluteLanguage2Iso639Code = "tpi";
 			data.SynchronizeDataItemsThroughoutDOM();
 			nationalTitle = (XmlElement)dom.SelectSingleNodeHonoringDefaultNS("//h2[@data-book='bookTitle']");
 			Assert.AreEqual("Tambu Sut", nationalTitle.InnerText);
@@ -751,7 +751,7 @@ namespace BloomTests.Book
 				</body></html>");
             var collectionSettings = new CollectionSettings()
             {
-                Language1Iso639Code = "etr"
+                AbsoluteLanguage1Iso639Code = "etr"
             };
             var data = new BookData(dom, collectionSettings, null);
             data.SynchronizeDataItemsThroughoutDOM();
@@ -929,14 +929,14 @@ namespace BloomTests.Book
 		public void Constructor_CollectionSettingsHasISO639Code_iso639CodeFilledIn()
 		{
 			var dom = new HtmlDom();
-			var data = new BookData(dom, new CollectionSettings() { Language1Iso639Code = "xyz" }, null);
+			var data = new BookData(dom, new CollectionSettings() { AbsoluteLanguage1Iso639Code = "xyz" }, null);
 			Assert.AreEqual("xyz", data.GetVariableOrNull("iso639Code", "*"));
 		}
 		[Test]
 		public void Constructor_CollectionSettingsHasISO639Code_DataSetContainsProperV()
 		{
 			var dom = new HtmlDom();
-			var data = new BookData(dom, new CollectionSettings() { Language1Iso639Code = "xyz" }, null);
+			var data = new BookData(dom, new CollectionSettings() { AbsoluteLanguage1Iso639Code = "xyz" }, null);
 			Assert.AreEqual("xyz", data.GetWritingSystemCodes()["V"]);
 		}
 		[Test]
@@ -953,14 +953,14 @@ namespace BloomTests.Book
 		public void Constructor_CollectionSettingsHasLanguage2Iso639Code_nameOfNationalLanguage1FilledIn()
 		{
 			var dom = new HtmlDom();
-			var data = new BookData(dom, new CollectionSettings() { Language2Iso639Code = "tpi" }, null);
+			var data = new BookData(dom, new CollectionSettings() { AbsoluteLanguage2Iso639Code = "tpi" }, null);
 			Assert.AreEqual("Tok Pisin", data.GetVariableOrNull("nameOfNationalLanguage1", "*"));
 		}
 		[Test]
 		public void Constructor_CollectionSettingsHasLanguage3Iso639Code_nameOfNationalLanguage2FilledIn()
 		{
 			var dom = new HtmlDom();
-			var data = new BookData(dom, new CollectionSettings() { Language3Iso639Code = "tpi" }, null);
+			var data = new BookData(dom, new CollectionSettings() { AbsoluteLanguage3Iso639Code = "tpi" }, null);
 			Assert.AreEqual("Tok Pisin", data.GetVariableOrNull("nameOfNationalLanguage2", "*"));
 		}
 
@@ -1105,7 +1105,7 @@ namespace BloomTests.Book
 		public void PrettyPrintLanguage_DoesNotModifyUnknownCodes()
 		{
 			var htmlDom = new HtmlDom();
-			var settingsettings = new CollectionSettings() { Language1Iso639Code = "pdc", Language1Name = "German, Kludged" };
+			var settingsettings = new CollectionSettings() { AbsoluteLanguage1Iso639Code = "pdc", Language1Name = "German, Kludged" };
 			var data = new BookData(htmlDom, settingsettings, null);
 			Assert.That(data.PrettyPrintLanguage("xyz"), Is.EqualTo("xyz"));
 		}
@@ -1114,7 +1114,7 @@ namespace BloomTests.Book
 		public void PrettyPrintLanguage_AdjustsLang1()
 		{
 			var htmlDom = new HtmlDom();
-			var settingsettings = new CollectionSettings() {Language1Iso639Code = "pdc", Language1Name = "German, Kludged"};
+			var settingsettings = new CollectionSettings() {AbsoluteLanguage1Iso639Code = "pdc", Language1Name = "German, Kludged"};
 			var data = new BookData(htmlDom, settingsettings, null);
 			Assert.That(data.PrettyPrintLanguage("pdc"), Is.EqualTo("German, Kludged"));
 		}
@@ -1123,7 +1123,7 @@ namespace BloomTests.Book
 		public void PrettyPrintLanguage_AdjustsKnownLanguages_German()
 		{
 			var htmlDom = new HtmlDom();
-			var settingsettings = new CollectionSettings() { Language1Iso639Code = "pdc", Language1Name = "German, Kludged", Language2Iso639Code = "de", Language3Iso639Code = "fr"};
+			var settingsettings = new CollectionSettings() { AbsoluteLanguage1Iso639Code = "pdc", Language1Name = "German, Kludged", AbsoluteLanguage2Iso639Code = "de", AbsoluteLanguage3Iso639Code = "fr"};
 			var data = new BookData(htmlDom, settingsettings, null);
 			Assert.That(data.PrettyPrintLanguage("de"), Is.EqualTo("Deutsch"));
 			Assert.That(data.PrettyPrintLanguage("fr"), Is.EqualTo("français"));
@@ -1135,7 +1135,7 @@ namespace BloomTests.Book
 		public void PrettyPrintLanguage_AdjustsKnownLanguages_English()
 		{
 			var htmlDom = new HtmlDom();
-			var settingsettings = new CollectionSettings() { Language1Iso639Code = "pdc", Language1Name = "German, Kludged", Language2Iso639Code = "en", Language3Iso639Code = "fr"};
+			var settingsettings = new CollectionSettings() { AbsoluteLanguage1Iso639Code = "pdc", Language1Name = "German, Kludged", AbsoluteLanguage2Iso639Code = "en", AbsoluteLanguage3Iso639Code = "fr"};
 			var data = new BookData(htmlDom, settingsettings, null);
 			Assert.That(data.PrettyPrintLanguage("de"), Is.EqualTo("German"));
 			Assert.That(data.PrettyPrintLanguage("fr"), Is.EqualTo("French"));
@@ -1170,9 +1170,9 @@ namespace BloomTests.Book
 		}
 		private void TestTopicHandling(string topicKey, string expectedLanguage, string expectedTranslation, string lang1, string lang2, string lang3, string description)
 		{
-			_collectionSettings.Language1Iso639Code = lang1;
-			_collectionSettings.Language2Iso639Code = lang2;
-			_collectionSettings.Language3Iso639Code = lang3;
+			_collectionSettings.AbsoluteLanguage1Iso639Code = lang1;
+			_collectionSettings.AbsoluteLanguage2Iso639Code = lang2;
+			_collectionSettings.AbsoluteLanguage3Iso639Code = lang3;
 
 			var bookDom = new HtmlDom(@"<html><body>
 				<div id='bloomDataDiv'>
@@ -1415,8 +1415,8 @@ namespace BloomTests.Book
 				</body></html>");
 			var collectionSettings = new CollectionSettings()
 				{
-					  Language1Iso639Code = "etr",
-					  Language2Iso639Code = "fr"
+					  AbsoluteLanguage1Iso639Code = "etr",
+					  AbsoluteLanguage2Iso639Code = "fr"
 				};
 			var data = new BookData(dom, collectionSettings, null);
 			data.SynchronizeDataItemsThroughoutDOM();
@@ -1444,8 +1444,8 @@ namespace BloomTests.Book
 				</body></html>");
 			var collectionSettings = new CollectionSettings()
 			{
-				Language1Iso639Code = "etr",
-				Language2Iso639Code = "fr"
+				AbsoluteLanguage1Iso639Code = "etr",
+				AbsoluteLanguage2Iso639Code = "fr"
 			};
 			var data = new BookData(dom, collectionSettings, null);
 			data.SynchronizeDataItemsThroughoutDOM();
@@ -1470,8 +1470,8 @@ namespace BloomTests.Book
 				</body></html>");
 			var collectionSettings = new CollectionSettings()
 			{
-				Language1Iso639Code = "xyz",
-				Language2Iso639Code = "fr"
+				AbsoluteLanguage1Iso639Code = "xyz",
+				AbsoluteLanguage2Iso639Code = "fr"
 			};
 			var data = new BookData(dom, collectionSettings, null);
 			data.SynchronizeDataItemsThroughoutDOM();
@@ -1499,8 +1499,8 @@ namespace BloomTests.Book
 				</body></html>");
 			var collectionSettings = new CollectionSettings
 			{
-					  Language1Iso639Code = "xyz",
-					  Language2Iso639Code = "fr"
+					  AbsoluteLanguage1Iso639Code = "xyz",
+					  AbsoluteLanguage2Iso639Code = "fr"
 			};
 			var data = new BookData(dom, collectionSettings, null);
 			data.SynchronizeDataItemsThroughoutDOM();
@@ -1528,8 +1528,8 @@ namespace BloomTests.Book
 				</body></html>");
 			var collectionSettings = new CollectionSettings()
 			{
-				Language1Iso639Code = "xyz",
-				Language2Iso639Code = "en"
+				AbsoluteLanguage1Iso639Code = "xyz",
+				AbsoluteLanguage2Iso639Code = "en"
 			};
 			var data = new BookData(dom, collectionSettings, null);
 			data.SynchronizeDataItemsThroughoutDOM();

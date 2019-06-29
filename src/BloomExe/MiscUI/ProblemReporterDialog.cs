@@ -561,11 +561,11 @@ namespace Bloom.MiscUI
 			}
 			bldr.AppendLine("Collection name: " + settings.CollectionName);
 			bldr.AppendLine("xMatter pack name: " + settings.XMatterPackName);
-			bldr.AppendLine("Language1 iso: " + settings.Language1Iso639Code + " font: " +
+			bldr.AppendLine("Language1 iso: " + settings.TextLanguage1Iso639Code + " font: " +
 			                settings.DefaultLanguage1FontName + (settings.IsLanguage1Rtl ? " RTL" : string.Empty));
-			bldr.AppendLine("Language2 iso: " + settings.Language2Iso639Code + " font: " +
+			bldr.AppendLine("Language2 iso: " + settings.TextLanguage2Iso639Code + " font: " +
 			                settings.DefaultLanguage2FontName + (settings.IsLanguage2Rtl ? " RTL" : string.Empty));
-			bldr.AppendLine("Language3 iso: " + settings.Language3Iso639Code + " font: " +
+			bldr.AppendLine("Language3 iso: " + settings.TextLanguage3Iso639Code + " font: " +
 			                settings.DefaultLanguage3FontName + (settings.IsLanguage3Rtl ? " RTL" : string.Empty));
 		}
 

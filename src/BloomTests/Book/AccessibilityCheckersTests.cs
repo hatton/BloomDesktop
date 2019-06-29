@@ -52,7 +52,7 @@ namespace BloomTests.Book
 		{
 			var testBook = GetBookWithImage(
 				$@"<div class='bloom-translationGroup bloom-imageDescription'>
-					<div class='bloom-editable' lang='{this._collectionSettings.Language1Iso639Code}'>
+					<div class='bloom-editable' lang='{this._collectionSettings.TextLanguage1Iso639Code}'>
 						<p>A flower.</p>
 					</div>
 				</div>");
@@ -67,7 +67,7 @@ namespace BloomTests.Book
 		{
 			var testBook = GetBookWithImage(
 				$@"<div class='bloom-translationGroup bloom-imageDescription'>
-					<div class='bloom-editable' lang='{this._collectionSettings.Language1Iso639Code}'>
+					<div class='bloom-editable' lang='{this._collectionSettings.TextLanguage1Iso639Code}'>
 						<p>  </p>
 					</div>
 				</div>",
@@ -84,14 +84,14 @@ namespace BloomTests.Book
 		{
 			var divWithoutCorrectLangDescription =
 				$@"<div class='bloom-translationGroup bloom-imageDescription'>
-					<div class='bloom-editable' lang='{this._collectionSettings.Language1Iso639Code}'>
+					<div class='bloom-editable' lang='{this._collectionSettings.TextLanguage1Iso639Code}'>
 						<p>  </p>
 					</div>
 				</div>";
 
 			var divWithDescription =
 				$@"<div class='bloom-translationGroup bloom-imageDescription'>
-					<div class='bloom-editable' lang='{this._collectionSettings.Language1Iso639Code}'>
+					<div class='bloom-editable' lang='{this._collectionSettings.TextLanguage1Iso639Code}'>
 						<p>A nice flower</p>
 					</div>
 				</div>";
@@ -112,14 +112,14 @@ namespace BloomTests.Book
 		{
 			var divWithoutCorrectLangDescription =
 				$@"<div class='bloom-translationGroup bloom-imageDescription'>
-					<div class='bloom-editable' lang='{this._collectionSettings.Language1Iso639Code}'>
+					<div class='bloom-editable' lang='{this._collectionSettings.TextLanguage1Iso639Code}'>
 						<p>  </p>
 					</div>
 				</div>";
 
 			var divWithDescription =
 				$@"<div class='bloom-translationGroup bloom-imageDescription'>
-					<div class='bloom-editable' lang='{this._collectionSettings.Language1Iso639Code}'>
+					<div class='bloom-editable' lang='{this._collectionSettings.TextLanguage1Iso639Code}'>
 						<p>A nice flower</p>
 					</div>
 				</div>";
@@ -150,7 +150,7 @@ namespace BloomTests.Book
 		{
 			var testBook = MakeBookWithOneAudioFile($@"<div class='bloom-translationGroup'>
 										<div class='bloom-editable normal-style bloom-content1 bloom-contentNational1 bloom-visibility-code-on' lang='{
-					_collectionSettings.Language1Iso639Code
+					_collectionSettings.TextLanguage1Iso639Code
 				}'>
 											{content}
 										</div>
@@ -166,7 +166,7 @@ namespace BloomTests.Book
 		{
 			var testBook = MakeBookWithOneAudioFile($@"<div class='bloom-translationGroup'>
 										<div class='bloom-editable normal-style bloom-content1 bloom-contentNational1 bloom-visibility-code-on audio-sentence' id='iExist' lang='{
-					_collectionSettings.Language1Iso639Code
+					_collectionSettings.TextLanguage1Iso639Code
 				}'>
 											<p>This is the text</p>
 										</div>
@@ -188,7 +188,7 @@ namespace BloomTests.Book
 		{
 			var testBook = MakeBookWithOneAudioFile($@"<div class='bloom-translationGroup'>
 										<div class='bloom-editable normal-style bloom-content1 bloom-contentNational1 bloom-visibility-code-on' lang='{
-					_collectionSettings.Language1Iso639Code
+					_collectionSettings.TextLanguage1Iso639Code
 				}'>
 											{content}
 										</div>
@@ -208,7 +208,7 @@ namespace BloomTests.Book
 		{
 			var testBook = MakeBookWithOneAudioFile($@"<div class='bloom-translationGroup'>
 										<div class='bloom-editable normal-style bloom-content1 bloom-contentNational1 bloom-visibility-code-on' lang='{
-					_collectionSettings.Language1Iso639Code
+					_collectionSettings.TextLanguage1Iso639Code
 				}'>
 											{content}
 										</div>
@@ -236,7 +236,7 @@ namespace BloomTests.Book
 		{
 			var testBook = MakeBookWithOneAudioFile($@"<div class='bloom-translationGroup'>
 										<div class='bloom-editable bloom-visibility-code-off' lang='{
-					_collectionSettings.Language2Iso639Code
+					_collectionSettings.TextLanguage2Iso639Code
 				}'>
 											<p>hello</p>
 										</div>
@@ -251,7 +251,7 @@ namespace BloomTests.Book
 		{
 			var testBook = GetBookWithImage($@"<div class='bloom-translationGroup bloom-imageDescription'>
 										<div class='bloom-editable normal-style bloom-content1 bloom-contentNational1 bloom-visibility-code-on' lang='{
-					_collectionSettings.Language1Iso639Code
+					_collectionSettings.TextLanguage1Iso639Code
 				}'>
 											<p>record me!</p>
 										</div>
@@ -275,7 +275,7 @@ namespace BloomTests.Book
 		{
 			var testBook = MakeBookWithOneAudioFile($@"<div class='bloom-translationGroup bloom-imageDescription'>
 								<div class='bloom-editable normal-style bloom-content1 bloom-contentNational1 bloom-visibility-code-on' lang='{
-					_collectionSettings.Language1Iso639Code
+					_collectionSettings.TextLanguage1Iso639Code
 				}'>
 									{content}
 								</div>
@@ -290,7 +290,7 @@ namespace BloomTests.Book
 		{
 			var testBook = MakeBookWithOneAudioFile($@"<div class='bloom-translationGroup bloom-imageDescription'>
 								<div class='bloom-editable normal-style bloom-content1 bloom-contentNational1 bloom-visibility-code-on' lang='{
-					_collectionSettings.Language1Iso639Code
+					_collectionSettings.TextLanguage1Iso639Code
 				}'>
 									{"<p><span id='bogus123' class='audio-sentence'>A flower.</span></p>"}
 								</div>

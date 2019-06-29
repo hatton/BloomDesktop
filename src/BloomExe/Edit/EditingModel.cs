@@ -383,12 +383,12 @@ namespace Bloom.Edit
 				//_contentLanguages.Clear();		CAREFUL... the tags in the dropdown are ContentLanguage's, so changing them breaks that binding
 				if (_contentLanguages.Count() == 0)
 				{
-					_contentLanguages.Add(new ContentLanguage(_collectionSettings.Language1Iso639Code,
+					_contentLanguages.Add(new ContentLanguage(_collectionSettings.TextLanguage1Iso639Code,
 															  _collectionSettings.GetLanguage1Name("en"))
 											{Locked = true, Selected = true, IsRtl = _collectionSettings.IsLanguage1Rtl});
 
 					//NB: these won't *always* be tied to the national and regional languages, but they are for now. We would need more UI, without making for extra complexity
-					var item2 = new ContentLanguage(_collectionSettings.Language2Iso639Code,
+					var item2 = new ContentLanguage(_collectionSettings.TextLanguage2Iso639Code,
 													_collectionSettings.GetLanguage2Name("en"))
 									{
 										IsRtl = _collectionSettings.IsLanguage1Rtl
@@ -397,14 +397,14 @@ namespace Bloom.Edit
 //					            			_librarySettings.Language2Iso639Code
 									};
 					_contentLanguages.Add(item2);
-					if (!String.IsNullOrEmpty(_collectionSettings.Language3Iso639Code))
+					if (!String.IsNullOrEmpty(_collectionSettings.TextLanguage3Iso639Code))
 					{
 						//NB: this could be the 2nd language (when the national 1 language is not selected)
 //						bool selected = CurrentBook.MultilingualContentLanguage2 ==
 //						                _librarySettings.Language3Iso639Code ||
 //						                CurrentBook.MultilingualContentLanguage3 ==
 //						                _librarySettings.Language3Iso639Code;
-						var item3 = new ContentLanguage(_collectionSettings.Language3Iso639Code,
+						var item3 = new ContentLanguage(_collectionSettings.TextLanguage3Iso639Code,
 														_collectionSettings.GetLanguage3Name("en"))
 						{
 							IsRtl = _collectionSettings.IsLanguage3Rtl
@@ -413,28 +413,28 @@ namespace Bloom.Edit
 					}
 				}
 				//update the selections
-				var lang2 = _contentLanguages.FirstOrDefault(l => l.Iso639Code == _collectionSettings.Language2Iso639Code);
+				var lang2 = _contentLanguages.FirstOrDefault(l => l.Iso639Code == _collectionSettings.TextLanguage2Iso639Code);
 				if (lang2 != null)
-					lang2.Selected = CurrentBook.MultilingualContentLanguage2 == _collectionSettings.Language2Iso639Code;
+					lang2.Selected = CurrentBook.MultilingualContentLanguage2 == _collectionSettings.TextLanguage2Iso639Code;
 				else
 					Logger.WriteEvent("Found no Lang2 in ContentLanguages; count= " + _contentLanguages.Count);
 
 				//the first language is always selected. This covers the common situation in shellbook collections where
 				//we have English as both the 1st and national language. https://jira.sil.org/browse/BL-756
-				var lang1 = _contentLanguages.FirstOrDefault(l => l.Iso639Code == _collectionSettings.Language1Iso639Code);
+				var lang1 = _contentLanguages.FirstOrDefault(l => l.Iso639Code == _collectionSettings.TextLanguage1Iso639Code);
 				if (lang1 != null)
 					lang1.Selected = true;
 				else
 					Logger.WriteEvent("Hit BL-2780 condition in ContentLanguages; count= " + _contentLanguages.Count);
 
 				var contentLanguageMatchingNatLan2 =
-					_contentLanguages.Where(l => l.Iso639Code == _collectionSettings.Language3Iso639Code).FirstOrDefault();
+					_contentLanguages.Where(l => l.Iso639Code == _collectionSettings.TextLanguage3Iso639Code).FirstOrDefault();
 
 				if(contentLanguageMatchingNatLan2!=null)
 				{
 					contentLanguageMatchingNatLan2.Selected =
-					CurrentBook.MultilingualContentLanguage2 ==_collectionSettings.Language3Iso639Code
-					|| CurrentBook.MultilingualContentLanguage3 == _collectionSettings.Language3Iso639Code;
+					CurrentBook.MultilingualContentLanguage2 ==_collectionSettings.TextLanguage3Iso639Code
+					|| CurrentBook.MultilingualContentLanguage3 == _collectionSettings.TextLanguage3Iso639Code;
 				}
 
 

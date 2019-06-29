@@ -40,12 +40,12 @@ namespace Bloom.Book
 		{
 			GenerateEditableDivsWithPreTranslatedContent(pageOrDocumentNode);
 
-			PrepareElementsOnPageOneLanguage(pageOrDocumentNode, collectionSettings.Language1Iso639Code);
-			PrepareElementsOnPageOneLanguage(pageOrDocumentNode, collectionSettings.Language2Iso639Code);
+			PrepareElementsOnPageOneLanguage(pageOrDocumentNode, collectionSettings.TextLanguage1Iso639Code);
+			PrepareElementsOnPageOneLanguage(pageOrDocumentNode, collectionSettings.TextLanguage2Iso639Code);
 
-			if (!string.IsNullOrEmpty(collectionSettings.Language3Iso639Code))
+			if (!string.IsNullOrEmpty(collectionSettings.TextLanguage3Iso639Code))
 			{
-				PrepareElementsOnPageOneLanguage(pageOrDocumentNode, collectionSettings.Language3Iso639Code);
+				PrepareElementsOnPageOneLanguage(pageOrDocumentNode, collectionSettings.TextLanguage3Iso639Code);
 			}
 			FixGroupStyleSettings(pageOrDocumentNode);
 		}
@@ -110,7 +110,7 @@ namespace Bloom.Book
 
 			PrepareElementsInPageOrDocument(containerElement, currentBook.CollectionSettings);
 
-			TranslationGroupManager.UpdateContentLanguageClasses(wrapper, currentBook.CollectionSettings, currentBook.CollectionSettings.Language1Iso639Code,
+			TranslationGroupManager.UpdateContentLanguageClasses(wrapper, currentBook.CollectionSettings, currentBook.CollectionSettings.TextLanguage1Iso639Code,
 				currentBook.MultilingualContentLanguage2, currentBook.MultilingualContentLanguage3);
 
 			return containerElement.InnerXml;
@@ -157,16 +157,16 @@ namespace Bloom.Book
 			if (oneTwoOrThreeContentLanguages < 2)
 				bookData.RemoveAllForms("contentLanguage2");
 
-			bookData.Set("contentLanguage1", collectionSettings.Language1Iso639Code, false);
+			bookData.Set("contentLanguage1", collectionSettings.TextLanguage1Iso639Code, false);
 			bookData.Set("contentLanguage1Rtl", collectionSettings.IsLanguage1Rtl.ToString(), false);
 			if (oneTwoOrThreeContentLanguages > 1)
 			{
-				bookData.Set("contentLanguage2", collectionSettings.Language2Iso639Code, false);
+				bookData.Set("contentLanguage2", collectionSettings.TextLanguage2Iso639Code, false);
 				bookData.Set("contentLanguage2Rtl", collectionSettings.IsLanguage2Rtl.ToString(), false);
 			}
-			if (oneTwoOrThreeContentLanguages > 2 && !string.IsNullOrEmpty(collectionSettings.Language3Iso639Code))
+			if (oneTwoOrThreeContentLanguages > 2 && !string.IsNullOrEmpty(collectionSettings.TextLanguage3Iso639Code))
 			{
-				bookData.Set("contentLanguage3", collectionSettings.Language3Iso639Code, false);
+				bookData.Set("contentLanguage3", collectionSettings.TextLanguage3Iso639Code, false);
 				bookData.Set("contentLanguage3Rtl", collectionSettings.IsLanguage3Rtl.ToString(), false);
 			}
 		}
@@ -231,11 +231,11 @@ namespace Bloom.Book
 					}
 
 					//Enhance: it's even more likely that we can get rid of these by replacing them with bloom-content2, bloom-content3
-					if (lang == settings.Language2Iso639Code)
+					if (lang == settings.TextLanguage2Iso639Code)
 					{
 						HtmlDom.AddClass(e, "bloom-contentNational1");
 					}
-					if (lang == settings.Language3Iso639Code)
+					if (lang == settings.TextLanguage3Iso639Code)
 					{
 						HtmlDom.AddClass(e, "bloom-contentNational2");
 					}
@@ -254,9 +254,9 @@ namespace Bloom.Book
 		private static void UpdateRightToLeftSetting(CollectionSettings settings, XmlElement e, string lang)
 		{
 			HtmlDom.RemoveRtlDir(e);
-			if((lang == settings.Language1Iso639Code && settings.IsLanguage1Rtl) ||
-			   (lang == settings.Language2Iso639Code && settings.IsLanguage2Rtl) ||
-			   (lang == settings.Language3Iso639Code && settings.IsLanguage3Rtl))
+			if((lang == settings.TextLanguage1Iso639Code && settings.IsLanguage1Rtl) ||
+			   (lang == settings.TextLanguage2Iso639Code && settings.IsLanguage2Rtl) ||
+			   (lang == settings.TextLanguage3Iso639Code && settings.IsLanguage3Rtl))
 			{
 				HtmlDom.AddRtlDir(e);
 			}
@@ -273,21 +273,21 @@ namespace Bloom.Book
 				|| string.IsNullOrWhiteSpace(dataDefaultLanguages[0])
 				|| dataDefaultLanguages[0].Equals("auto",StringComparison.InvariantCultureIgnoreCase))
 			{
-					return lang == settings.Language1Iso639Code || lang == contentLanguageIso2 || lang == contentLanguageIso3;
+					return lang == settings.TextLanguage1Iso639Code || lang == contentLanguageIso2 || lang == contentLanguageIso3;
 			}
 			else
 			{
 				// Hote there are (perhaps unfortunately) two different labelling systems, but they have a 1-to-1 correspondence:
 				// The V/N1/N2 system feels natural in vernacular book contexts
 				// The L1/L2/L3 system is more natural in source book contexts.
-				return (lang == settings.Language1Iso639Code && dataDefaultLanguages.Contains("V")) ||
-				   (lang == settings.Language1Iso639Code && dataDefaultLanguages.Contains("L1")) ||
+				return (lang == settings.TextLanguage1Iso639Code && dataDefaultLanguages.Contains("V")) ||
+				   (lang == settings.TextLanguage1Iso639Code && dataDefaultLanguages.Contains("L1")) ||
 
-				   (lang == settings.Language2Iso639Code && dataDefaultLanguages.Contains("N1")) ||
-				   (lang == settings.Language2Iso639Code && dataDefaultLanguages.Contains("L2")) ||
+				   (lang == settings.TextLanguage2Iso639Code && dataDefaultLanguages.Contains("N1")) ||
+				   (lang == settings.TextLanguage2Iso639Code && dataDefaultLanguages.Contains("L2")) ||
 
-				   (lang == settings.Language3Iso639Code && dataDefaultLanguages.Contains("N2")) ||
-				   (lang == settings.Language3Iso639Code && dataDefaultLanguages.Contains("L3")) ||
+				   (lang == settings.TextLanguage3Iso639Code && dataDefaultLanguages.Contains("N2")) ||
+				   (lang == settings.TextLanguage3Iso639Code && dataDefaultLanguages.Contains("L3")) ||
 
 				   dataDefaultLanguages.Contains(lang); // a literal language id, e.g. "en" (used by template starter)
 			}

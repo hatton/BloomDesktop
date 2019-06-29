@@ -35,7 +35,7 @@ namespace Bloom.WebLibraryIntegration
 					Path.GetFileName(downloadFolder));
 				var settings = new NewCollectionSettings()
 				{
-					Language1Iso639Code = "en",
+					AbsoluteLanguage1Iso639Code = "en",
 					Language1Name = "English",
 					IsSourceCollection = true,
 					PathToSettingsFile = pathToSettingsFile

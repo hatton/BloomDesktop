@@ -744,9 +744,9 @@ namespace BloomTests.Book
 				new CollectionSettings(new NewCollectionSettings()
 				{
 					PathToSettingsFile = CollectionSettings.GetPathForNewSettings(folder, "test"),
-					Language1Iso639Code = "xyz",
-					Language2Iso639Code = "en",
-					Language3Iso639Code = "fr"
+					AbsoluteLanguage1Iso639Code = "xyz",
+					AbsoluteLanguage2Iso639Code = "en",
+					AbsoluteLanguage3Iso639Code = "fr"
 				});
 			var book = new Bloom.Book.Book(new BookInfo(folder, true), storage, new Mock<ITemplateFinder>().Object,
 				collectionSettings,
@@ -781,9 +781,9 @@ namespace BloomTests.Book
 				new CollectionSettings(new NewCollectionSettings()
 				{
 					PathToSettingsFile = CollectionSettings.GetPathForNewSettings(folder, "test"),
-					Language1Iso639Code = "xyz",
-					Language2Iso639Code = "en",
-					Language3Iso639Code = "fr"
+					AbsoluteLanguage1Iso639Code = "xyz",
+					AbsoluteLanguage2Iso639Code = "en",
+					AbsoluteLanguage3Iso639Code = "fr"
 				});
 			var book = new Bloom.Book.Book(new BookInfo(folder, true), storage, new Mock<ITemplateFinder>().Object,
 				collectionSettings,

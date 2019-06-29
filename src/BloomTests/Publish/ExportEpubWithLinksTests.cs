@@ -119,9 +119,9 @@ namespace BloomTests.Publish
 			string content = GetFileData(fileName + ".xhtml");
 			XDocument doc = null;
 			Assert.DoesNotThrow(() => doc = XDocument.Parse(content));
-			Assert.That(doc.Root.Attribute("lang")?.Value, Is.EqualTo(_collectionSettings.Language1Iso639Code));
+			Assert.That(doc.Root.Attribute("lang")?.Value, Is.EqualTo(_collectionSettings.TextLanguage1Iso639Code));
 			XNamespace xmlns = "http://www.w3.org/XML/1998/namespace";
-			Assert.That(doc.Root.Attribute(xmlns + "lang")?.Value, Is.EqualTo(_collectionSettings.Language1Iso639Code));
+			Assert.That(doc.Root.Attribute(xmlns + "lang")?.Value, Is.EqualTo(_collectionSettings.TextLanguage1Iso639Code));
 			var assertThatPage = AssertThatXmlIn.String(content);
 			assertThatPage.HasSpecifiedNumberOfMatchesForXpath(
 				"//xhtml:div[contains(@class, 'bloom-page')]/xhtml:div[@class='marginBox']/xhtml:aside[text()='" + asideContent +

@@ -37,18 +37,18 @@ namespace Bloom.Book
 			dictionaryScriptElement.SetAttribute("id", "ui-dictionary");
 			var d = new Dictionary<string, string>();
 
-			d.Add(collectionSettings.Language1Iso639Code, collectionSettings.Language1Name);
-			if (!String.IsNullOrEmpty(collectionSettings.Language2Iso639Code))
-				SafelyAddLanguage(d, collectionSettings.Language2Iso639Code,
-					collectionSettings.GetLanguage2Name(collectionSettings.Language2Iso639Code));
-			if (!String.IsNullOrEmpty(collectionSettings.Language3Iso639Code))
-				SafelyAddLanguage(d, collectionSettings.Language3Iso639Code,
-					collectionSettings.GetLanguage3Name(collectionSettings.Language3Iso639Code));
+			d.Add(collectionSettings.TextLanguage1Iso639Code, collectionSettings.Language1Name);
+			if (!String.IsNullOrEmpty(collectionSettings.TextLanguage2Iso639Code))
+				SafelyAddLanguage(d, collectionSettings.TextLanguage2Iso639Code,
+					collectionSettings.GetLanguage2Name(collectionSettings.TextLanguage2Iso639Code));
+			if (!String.IsNullOrEmpty(collectionSettings.TextLanguage3Iso639Code))
+				SafelyAddLanguage(d, collectionSettings.TextLanguage3Iso639Code,
+					collectionSettings.GetLanguage3Name(collectionSettings.TextLanguage3Iso639Code));
 
-			SafelyAddLanguage(d, "vernacularLang", collectionSettings.Language1Iso639Code);//use for making the vernacular the first tab
+			SafelyAddLanguage(d, "vernacularLang", collectionSettings.TextLanguage1Iso639Code);//use for making the vernacular the first tab
 			SafelyAddLanguage(d, "{V}", collectionSettings.Language1Name);
-			SafelyAddLanguage(d, "{N1}", collectionSettings.GetLanguage2Name(collectionSettings.Language2Iso639Code));
-			SafelyAddLanguage(d, "{N2}", collectionSettings.GetLanguage3Name(collectionSettings.Language3Iso639Code));
+			SafelyAddLanguage(d, "{N1}", collectionSettings.GetLanguage2Name(collectionSettings.TextLanguage2Iso639Code));
+			SafelyAddLanguage(d, "{N2}", collectionSettings.GetLanguage3Name(collectionSettings.TextLanguage3Iso639Code));
 
 			// TODO: Eventually we need to look through all .bloom-translationGroup elements on the current page to determine
 			// whether there is text in a language not yet added to the dictionary.
@@ -307,17 +307,17 @@ namespace Bloom.Book
 				d.Add("defaultSourceLanguage", Settings.Default.LastSourceLanguageViewed);
 			}
 
-			d.Add("languageForNewTextBoxes", collectionSettings.Language1Iso639Code);
+			d.Add("languageForNewTextBoxes", collectionSettings.TextLanguage1Iso639Code);
 			d.Add("isSourceCollection", collectionSettings.IsSourceCollection.ToString());
 
 			// BL-2357 To aid in smart ordering of source languages in source bubble
-			if (!String.IsNullOrEmpty(collectionSettings.Language2Iso639Code))
+			if (!String.IsNullOrEmpty(collectionSettings.TextLanguage2Iso639Code))
 			{
-				d.Add("currentCollectionLanguage2", collectionSettings.Language2Iso639Code);
+				d.Add("currentCollectionLanguage2", collectionSettings.TextLanguage2Iso639Code);
 			}
-			if (!String.IsNullOrEmpty(collectionSettings.Language3Iso639Code))
+			if (!String.IsNullOrEmpty(collectionSettings.TextLanguage3Iso639Code))
 			{
-				d.Add("currentCollectionLanguage3", collectionSettings.Language3Iso639Code);
+				d.Add("currentCollectionLanguage3", collectionSettings.TextLanguage3Iso639Code);
 			}
 
 			d.Add("browserRoot", FileLocationUtilities.GetDirectoryDistributedWithApplication(BloomFileLocator.BrowserRoot).ToLocalhost());

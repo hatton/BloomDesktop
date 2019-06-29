@@ -86,7 +86,7 @@ namespace Bloom.Publish.Android.wifi
 			_wifiAdvertiser = new WiFiAdvertiser(_progress)
 			{
 				BookTitle = BookStorage.SanitizeNameForFileSystem(book.Title), // must be the exact same name as the file we will send if requested
-				TitleLanguage = collectionSettings.Language1Iso639Code,
+				TitleLanguage = collectionSettings.TextLanguage1Iso639Code,
 				BookVersion = Book.Book.MakeVersionCode(File.ReadAllText(pathHtmlFile), pathHtmlFile)
 			};
 

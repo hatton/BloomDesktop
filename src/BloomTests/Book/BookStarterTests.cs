@@ -32,9 +32,9 @@ namespace BloomTests.Book
 		{
 			_librarySettings = new Mock<CollectionSettings>();
 			_librarySettings.SetupGet(x => x.IsSourceCollection).Returns(false);
-			_librarySettings.SetupGet(x => x.Language1Iso639Code).Returns("xyz");
-			_librarySettings.SetupGet(x => x.Language2Iso639Code).Returns("fr");
-			_librarySettings.SetupGet(x => x.Language3Iso639Code).Returns("es");
+			_librarySettings.SetupGet(x => x.TextLanguage1Iso639Code).Returns("xyz");
+			_librarySettings.SetupGet(x => x.TextLanguage2Iso639Code).Returns("fr");
+			_librarySettings.SetupGet(x => x.TextLanguage3Iso639Code).Returns("es");
 			_librarySettings.SetupGet(x => x.XMatterPackName).Returns("Factory");
 			ErrorReport.IsOkToInteractWithUser = false;
 			_projectFolder = new TemporaryFolder("BookStarterTests_ProjectCollection");
@@ -51,9 +51,9 @@ namespace BloomTests.Book
 			_collectionSettings = new CollectionSettings(new NewCollectionSettings()
 			{
 				PathToSettingsFile = CollectionSettings.GetPathForNewSettings(new TemporaryFolder("BookDataTests").Path, "test"),
-				Language1Iso639Code = "xyz",
-				Language2Iso639Code = "en",
-				Language3Iso639Code = "fr"
+				AbsoluteLanguage1Iso639Code = "xyz",
+				AbsoluteLanguage2Iso639Code = "en",
+				AbsoluteLanguage3Iso639Code = "fr"
 			});
 		}
 
@@ -133,7 +133,7 @@ namespace BloomTests.Book
 				new CollectionSettings(new NewCollectionSettings()
 				{
 					PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_projectFolder.Path, "test"),
-					Language1Iso639Code = "xyz"
+					AbsoluteLanguage1Iso639Code = "xyz"
 				});
 			var server = new BookServer((bookInfo, storage) =>
 			{

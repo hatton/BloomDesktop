@@ -86,7 +86,7 @@ namespace Bloom.Edit
 		public static string GetReaderToolsSettingsFilePath(CollectionSettings collectionSettings)
 		{
 			return Path.Combine(Path.GetDirectoryName(collectionSettings.SettingsFilePath),
-				DecodableReaderToolSettings.ReaderToolsSettingsPrefix + collectionSettings.Language1Iso639Code + ".json");
+				DecodableReaderToolSettings.ReaderToolsSettingsPrefix + collectionSettings.TextLanguage1Iso639Code + ".json");
 		}
 
 		/// <summary>

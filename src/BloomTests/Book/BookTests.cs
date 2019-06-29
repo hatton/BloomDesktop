@@ -326,19 +326,19 @@ namespace BloomTests.Book
 			");
 
 			_collectionSettings = new CollectionSettings(new NewCollectionSettings() { PathToSettingsFile = CollectionSettings.GetPathForNewSettings(_testFolder.Path, "test"),
-				Language1Iso639Code = "th", Language2Iso639Code = "fr", Language3Iso639Code = "es" });
+				AbsoluteLanguage1Iso639Code = "th", AbsoluteLanguage2Iso639Code = "fr", AbsoluteLanguage3Iso639Code = "es" });
 			var book =  new Bloom.Book.Book(_metadata, _storage.Object, _templateFinder.Object,
 				_collectionSettings,
 				_pageSelection.Object, _pageListChangedEvent, new BookRefreshEvent());
 
-			book.SetMultilingualContentLanguages(_collectionSettings.Language2Iso639Code, _collectionSettings.Language3Iso639Code);
+			book.SetMultilingualContentLanguages(_collectionSettings.TextLanguage2Iso639Code, _collectionSettings.TextLanguage3Iso639Code);
 
 			//note: our code currently only knows how to display French *in French* and Spanish *in Spanish*; Thai comes out in English.
 			//It may be better to be writing "Thai" in Thai (or possibly French) or "Spanish" in French.
 			//That's not part of this test, and will have to be changed as we improve that aspect of things.
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//span[text()='Thai, français, español']", 1);
 
-			book.SetMultilingualContentLanguages(_collectionSettings.Language2Iso639Code, null);
+			book.SetMultilingualContentLanguages(_collectionSettings.TextLanguage2Iso639Code, null);
 			AssertThatXmlIn.Dom(book.RawDom).HasSpecifiedNumberOfMatchesForXpath("//span[text()='Thai, français']", 1);
 
 			book.SetMultilingualContentLanguages("", null);
@@ -1910,7 +1910,7 @@ namespace BloomTests.Book
 		public void Constructor_LanguagesOfBookIsSet()
 		{
 			var collectionSettings = CreateDefaultCollectionsSettings();
-			collectionSettings.Language1Iso639Code = "en";
+			collectionSettings.AbsoluteLanguage1Iso639Code = "en";
 			var book = CreateBook(collectionSettings);
 			var langs = book.RawDom.SelectSingleNode("//div[@id='bloomDataDiv']/div[@data-book='languagesOfBook']") as XmlElement;
 			Assert.AreEqual("English", langs.InnerText);
@@ -2419,7 +2419,7 @@ namespace BloomTests.Book
 		public void HasFullAudioCoverage_ContainsMissingAudioElements_ReturnsFalse(string elementName)
 		{
 			// Test setup
-			string lang = CreateDefaultCollectionsSettings().Language1Iso639Code;
+			string lang = CreateDefaultCollectionsSettings().TextLanguage1Iso639Code;
 			_bookDom = new HtmlDom($@"
 				<html><head></head><body>
 					<div class='bloom-page numberedPage' id='guid1'>
@@ -2447,7 +2447,7 @@ namespace BloomTests.Book
 		public void HasFullAudioCoverage_ContainsAllAudioElements_ReturnsTrue(string elementName)
 		{
 			// Test setup
-			string lang = CreateDefaultCollectionsSettings().Language1Iso639Code;
+			string lang = CreateDefaultCollectionsSettings().TextLanguage1Iso639Code;
 			_bookDom = new HtmlDom($@"
 				<html><head></head><body>
 					<div class='bloom-page numberedPage' id='guid1'>

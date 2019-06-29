@@ -233,14 +233,14 @@ namespace Bloom.Publish.Epub
 
 			progress.Message("BuildingEPub", comment: "Shown in a progress box when Bloom is starting to create an ePUB",
 				message: "Building ePUB");
-			if (String.IsNullOrEmpty(Book.CollectionSettings.Language3Iso639Code))
+			if (String.IsNullOrEmpty(Book.CollectionSettings.TextLanguage3Iso639Code))
 				_langsForLocalization = new string[]
-					{Book.CollectionSettings.Language1Iso639Code, Book.CollectionSettings.Language2Iso639Code};
+					{Book.CollectionSettings.TextLanguage1Iso639Code, Book.CollectionSettings.TextLanguage2Iso639Code};
 			else
 				_langsForLocalization = new string[]
 				{
-					Book.CollectionSettings.Language1Iso639Code, Book.CollectionSettings.Language2Iso639Code,
-					Book.CollectionSettings.Language3Iso639Code
+					Book.CollectionSettings.TextLanguage1Iso639Code, Book.CollectionSettings.TextLanguage2Iso639Code,
+					Book.CollectionSettings.TextLanguage3Iso639Code
 				};
 
 			// robustly come up with a directory we can use, even if previously used directories are locked somehow
@@ -411,7 +411,7 @@ namespace Bloom.Publish.Epub
 				new XAttribute(XNamespace.Xmlns + "opf", opf.NamespaceName),
 				// attribute makes the namespace have a prefix, not be a default.
 				new XElement(dc + "title", Book.Title),
-				new XElement(dc + "language", Book.CollectionSettings.Language1Iso639Code),
+				new XElement(dc + "language", Book.CollectionSettings.TextLanguage1Iso639Code),
 				new XElement(dc + "identifier",
 					new XAttribute("id", "I" + Book.ID), "bloomlibrary.org." + Book.ID),
 					new XElement(dc + "source", source));
@@ -920,11 +920,11 @@ namespace Bloom.Publish.Epub
 			// REVIEW: is BODY always ltr, or should it be the same as Language1?  Having BODY be ltr for a book in Arabic or Hebrew
 			// seems counterintuitive even if all the div elements are marked correctly.
 			_directionSettings.Add("body", "ltr");
-			_directionSettings.Add(this.Book.CollectionSettings.Language1Iso639Code, this.Book.CollectionSettings.IsLanguage1Rtl ? "rtl" : "ltr");
-			if (!_directionSettings.ContainsKey(this.Book.CollectionSettings.Language2Iso639Code))
-				_directionSettings.Add(this.Book.CollectionSettings.Language2Iso639Code, this.Book.CollectionSettings.IsLanguage2Rtl ? "rtl" : "ltr");
-			if (!String.IsNullOrEmpty(this.Book.CollectionSettings.Language3Iso639Code) && !_directionSettings.ContainsKey(this.Book.CollectionSettings.Language3Iso639Code))
-				_directionSettings.Add(this.Book.CollectionSettings.Language3Iso639Code, this.Book.CollectionSettings.IsLanguage3Rtl ? "rtl" : "ltr");
+			_directionSettings.Add(this.Book.CollectionSettings.TextLanguage1Iso639Code, this.Book.CollectionSettings.IsLanguage1Rtl ? "rtl" : "ltr");
+			if (!_directionSettings.ContainsKey(this.Book.CollectionSettings.TextLanguage2Iso639Code))
+				_directionSettings.Add(this.Book.CollectionSettings.TextLanguage2Iso639Code, this.Book.CollectionSettings.IsLanguage2Rtl ? "rtl" : "ltr");
+			if (!String.IsNullOrEmpty(this.Book.CollectionSettings.TextLanguage3Iso639Code) && !_directionSettings.ContainsKey(this.Book.CollectionSettings.TextLanguage3Iso639Code))
+				_directionSettings.Add(this.Book.CollectionSettings.TextLanguage3Iso639Code, this.Book.CollectionSettings.IsLanguage3Rtl ? "rtl" : "ltr");
 
 			using (var tmpdir = new BloomTemp.TemporaryFolder("settings"))
 			{
@@ -1326,7 +1326,7 @@ namespace Bloom.Publish.Epub
 						// note that we are looking for languages useful in the book, not for the UI
 						// language currently used in Bloom.
 						var preferredLanguages = new List<string>();
-						preferredLanguages.Add(Book.CollectionSettings.Language1Iso639Code);
+						preferredLanguages.Add(Book.CollectionSettings.TextLanguage1Iso639Code);
 						if (!string.IsNullOrWhiteSpace(Book.MultilingualContentLanguage2))
 							preferredLanguages.Add(Book.MultilingualContentLanguage2);
 						if (!string.IsNullOrWhiteSpace(Book.MultilingualContentLanguage3))
@@ -1757,8 +1757,8 @@ namespace Bloom.Publish.Epub
 			// Provide the general language of this document.
 			// (Required for intermediate (AA) conformance with WCAG 2.0.)
 			div = pageDom.RawDom.SelectSingleNode("/html") as XmlElement;
-			div.SetAttribute("lang", Book.CollectionSettings.Language1Iso639Code);
-			div.SetAttribute("xml:lang", Book.CollectionSettings.Language1Iso639Code);
+			div.SetAttribute("lang", Book.CollectionSettings.TextLanguage1Iso639Code);
+			div.SetAttribute("xml:lang", Book.CollectionSettings.TextLanguage1Iso639Code);
 		}
 
 		private bool SetRoleAndLabelForMatchingDiv(XmlElement div, string attributeValue, string labelId, string labelEnglish)

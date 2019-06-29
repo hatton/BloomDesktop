@@ -21,9 +21,9 @@ namespace BloomTests.Book
 		{
 			_collectionSettings = new Mock<CollectionSettings>();
 			_collectionSettings.SetupGet(x => x.IsSourceCollection).Returns(false);
-			_collectionSettings.SetupGet(x => x.Language1Iso639Code).Returns("xyz");
-			_collectionSettings.SetupGet(x => x.Language2Iso639Code).Returns("fr");
-			_collectionSettings.SetupGet(x => x.Language3Iso639Code).Returns("es");
+			_collectionSettings.SetupGet(x => x.TextLanguage1Iso639Code).Returns("xyz");
+			_collectionSettings.SetupGet(x => x.TextLanguage2Iso639Code).Returns("fr");
+			_collectionSettings.SetupGet(x => x.TextLanguage3Iso639Code).Returns("es");
 			_collectionSettings.SetupGet(x => x.XMatterPackName).Returns("Factory");
 			ErrorReport.IsOkToInteractWithUser = false;
 

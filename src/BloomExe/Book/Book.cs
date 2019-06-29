@@ -196,7 +196,7 @@ namespace Bloom.Book
 			get
 			{
 				var title = _bookData.GetMultiTextVariableOrEmpty("bookTitle");
-				var display = title.GetExactAlternative(CollectionSettings.Language1Iso639Code);
+				var display = title.GetExactAlternative(CollectionSettings.TextLanguage1Iso639Code);
 
 				if (string.IsNullOrEmpty(display))
 				{
@@ -222,10 +222,10 @@ namespace Bloom.Book
 						orderedPreferences.Add(LocalizationManager.UILanguageId);
 
 						//already checked for this, previsouly. orderedPreferences.Add(_collectionSettings.Language1Iso639Code);
-						if (CollectionSettings.Language2Iso639Code != null)
-							orderedPreferences.Add(CollectionSettings.Language2Iso639Code);
-						if (CollectionSettings.Language3Iso639Code != null)
-							orderedPreferences.Add(CollectionSettings.Language3Iso639Code);
+						if (CollectionSettings.TextLanguage2Iso639Code != null)
+							orderedPreferences.Add(CollectionSettings.TextLanguage2Iso639Code);
+						if (CollectionSettings.TextLanguage3Iso639Code != null)
+							orderedPreferences.Add(CollectionSettings.TextLanguage3Iso639Code);
 
 						orderedPreferences.Add("en");
 						orderedPreferences.Add("fr");
@@ -372,7 +372,7 @@ namespace Bloom.Book
 
 		private void UpdateMultilingualSettings(HtmlDom dom)
 		{
-			TranslationGroupManager.UpdateContentLanguageClasses(dom.RawDom, CollectionSettings, CollectionSettings.Language1Iso639Code, _bookData.MultilingualContentLanguage2,
+			TranslationGroupManager.UpdateContentLanguageClasses(dom.RawDom, CollectionSettings, CollectionSettings.TextLanguage1Iso639Code, _bookData.MultilingualContentLanguage2,
 													 _bookData.MultilingualContentLanguage3);
 			BookInfo.IsRtl = CollectionSettings.IsLanguage1Rtl;
 
@@ -713,7 +713,7 @@ namespace Bloom.Book
 			BringBookUpToDate(previewDom, new NullProgress());
 
 			// this is normally the vernacular, but when we're previewing a shell, well it won't have anything for the vernacular
-			var primaryLanguage = CollectionSettings.Language1Iso639Code;
+			var primaryLanguage = CollectionSettings.TextLanguage1Iso639Code;
 			if (IsShellOrTemplate)
 			{
 				//TODO: this won't be enough, if our national language isn't, say, English, and the shell just doesn't have our national language. But it might have some other language we understand.
@@ -721,7 +721,7 @@ namespace Bloom.Book
 				// If it DOES have text in the Language1Iso639Code (e.g., a French collection, and we're looking at Moon and Cap...BL-6465),
 				// don't mess with it.
 				if (previewDom.SelectSingleNode($"//*[@lang='{primaryLanguage}' and contains(@class, 'bloom-editable') and text()!='']") == null)
-					primaryLanguage = CollectionSettings.Language2Iso639Code;
+					primaryLanguage = CollectionSettings.TextLanguage2Iso639Code;
 			}
 
 			TranslationGroupManager.UpdateContentLanguageClasses(previewDom.RawDom, CollectionSettings, primaryLanguage, _bookData.MultilingualContentLanguage2, _bookData.MultilingualContentLanguage3);
@@ -760,7 +760,7 @@ namespace Bloom.Book
 
 			if (SHRP_TeachersGuideExtension.ExtensionIsApplicable(this))
 			{
-				SHRP_TeachersGuideExtension.UpdateBook(OurHtmlDom, CollectionSettings.Language1Iso639Code);
+				SHRP_TeachersGuideExtension.UpdateBook(OurHtmlDom, CollectionSettings.TextLanguage1Iso639Code);
 			}
 
 			Save();
@@ -795,12 +795,12 @@ namespace Bloom.Book
 			{
 				// Even though the user only had duplicate vernacular divs, let's check all three
 				// languages just to be safe.
-				var lang1 = CollectionSettings.Language1Iso639Code;
+				var lang1 = CollectionSettings.TextLanguage1Iso639Code;
 				TranslationGroupManager.FixDuplicateLanguageDivs(groupElement, lang1);
-				var lang2 = CollectionSettings.Language2Iso639Code;
+				var lang2 = CollectionSettings.TextLanguage2Iso639Code;
 				if (!String.IsNullOrEmpty(lang2) && lang2 != lang1)
 					TranslationGroupManager.FixDuplicateLanguageDivs(groupElement, lang2);
-				var lang3 = CollectionSettings.Language3Iso639Code;
+				var lang3 = CollectionSettings.TextLanguage3Iso639Code;
 				if (!String.IsNullOrEmpty(lang3) && lang3 != lang2 && lang3 != lang1)
 					TranslationGroupManager.FixDuplicateLanguageDivs(groupElement, lang3);
 			}
@@ -1037,7 +1037,7 @@ namespace Bloom.Book
 
 			UpdateTextsNewlyChangedToRequiresParagraph(bookDOM);
 
-			bookDOM.SetImageAltAttrsFromDescriptions(CollectionSettings.Language1Iso639Code);
+			bookDOM.SetImageAltAttrsFromDescriptions(CollectionSettings.TextLanguage1Iso639Code);
 
 			//we've removed and possible added pages, so our page cache is invalid
 			_pagesCache = null;
@@ -1419,7 +1419,7 @@ namespace Bloom.Book
 			get
 			{
 				//is there a textarea with something other than the vernacular, which has a containing element marked as a translation group?
-				var x = OurHtmlDom.SafeSelectNodes($"//*[contains(@class,'bloom-translationGroup')]//textarea[@lang and @lang!='{CollectionSettings.Language1Iso639Code}']");
+				var x = OurHtmlDom.SafeSelectNodes($"//*[contains(@class,'bloom-translationGroup')]//textarea[@lang and @lang!='{CollectionSettings.TextLanguage1Iso639Code}']");
 				return x.Count > 0;
 			}
 
@@ -1642,12 +1642,12 @@ namespace Bloom.Book
 		/// </summary>
 		private void InjectStringListingActiveLanguagesOfBook()
 		{
-			string codeOfNationalLanguage = CollectionSettings.Language2Iso639Code;
+			string codeOfNationalLanguage = CollectionSettings.TextLanguage2Iso639Code;
 			var languagesOfBook = CollectionSettings.GetLanguage1Name(codeOfNationalLanguage);
 
 			if (MultilingualContentLanguage2 != null)
 			{
-				languagesOfBook += ", " + ((MultilingualContentLanguage2 == CollectionSettings.Language2Iso639Code) ?
+				languagesOfBook += ", " + ((MultilingualContentLanguage2 == CollectionSettings.TextLanguage2Iso639Code) ?
 					CollectionSettings.GetLanguage2Name(codeOfNationalLanguage) :
 					CollectionSettings.GetLanguage3Name(codeOfNationalLanguage));
 			}
@@ -1751,7 +1751,7 @@ namespace Bloom.Book
 					if (!HtmlDom.HasClass(div, "bloom-editable"))
 						continue;
 					var lang = div.GetStringAttribute("lang");
-					if (lang != CollectionSettings.Language1Iso639Code)
+					if (lang != CollectionSettings.TextLanguage1Iso639Code)
 						continue;   // this won't go into the book -- it's a different language.
 					// TODO: Ensure handles image descriptions once those get implemented.
 					var textOfDiv = div.InnerText.Trim();
@@ -2350,7 +2350,7 @@ namespace Bloom.Book
 				var pageFromStorage = GetPageFromStorage(pageId);
 
 				HtmlDom.ProcessPageAfterEditing(pageFromStorage, pageFromEditedDom);
-				HtmlDom.SetImageAltAttrsFromDescriptions(pageFromStorage, CollectionSettings.Language1Iso639Code);
+				HtmlDom.SetImageAltAttrsFromDescriptions(pageFromStorage, CollectionSettings.TextLanguage1Iso639Code);
 
 				// The main condition for being able to just write the page is that no shareable data on the
 				// page changed during editing. If that's so we can skip this step.
@@ -2702,13 +2702,13 @@ namespace Bloom.Book
 		/// <param name="elementToUpdate"></param>
 		public void UpdateEditableAreasOfElement(HtmlDom dom)
 		{
-			var language1Iso639Code = CollectionSettings.Language1Iso639Code;
+			var textLang1Iso639Code = CollectionSettings.TextLanguage1Iso639Code;
 			var multilingualContentLanguage2 = _bookData.MultilingualContentLanguage2;
 			var multilingualContentLanguage3 = _bookData.MultilingualContentLanguage3;
 			foreach (XmlElement div in dom.SafeSelectNodes("//div[contains(@class,'bloom-page')]"))
 			{
 				TranslationGroupManager.PrepareElementsInPageOrDocument(div, CollectionSettings);
-				TranslationGroupManager.UpdateContentLanguageClasses(div, CollectionSettings, language1Iso639Code, multilingualContentLanguage2, multilingualContentLanguage3);
+				TranslationGroupManager.UpdateContentLanguageClasses(div, CollectionSettings, textLang1Iso639Code, multilingualContentLanguage2, multilingualContentLanguage3);
 			}
 		}
 

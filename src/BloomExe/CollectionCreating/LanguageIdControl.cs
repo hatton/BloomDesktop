@@ -27,7 +27,7 @@ namespace Bloom.CollectionCreating
 
 			if (_lookupISOControl.SelectedLanguage != null)
 			{
-				_collectionInfo.Language1Iso639Code = _lookupISOControl.SelectedLanguage.LanguageTag;
+				_collectionInfo.AbsoluteLanguage1Iso639Code = _lookupISOControl.SelectedLanguage.LanguageTag;
 				_collectionInfo.Language1Name = _lookupISOControl.SelectedLanguage.DesiredName;
 				_collectionInfo.Country = _lookupISOControl.SelectedLanguage.PrimaryCountry ?? string.Empty;
 

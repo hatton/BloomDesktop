@@ -334,7 +334,7 @@ namespace Bloom.Book
 
 			var license = metadata.License.GetMinimalFormForCredits(languagePriorityIds, out idOfLanguageUsed);
 			string originalLicenseSentence;
-			var preferredLanguageIds = new[] {collectionSettings.Language2Iso639Code, LocalizationManager.UILanguageId, "en"};
+			var preferredLanguageIds = new[] {collectionSettings.TextLanguage2Iso639Code, LocalizationManager.UILanguageId, "en"};
 			if (metadata.License is CustomLicense)
 			{
 				// I can imagine being more fancy... something like "Licensed under custom license:", and get localizations

@@ -44,9 +44,9 @@ namespace BloomTests.Collection
 		{
 			const string collectionName = "test";
 			var settings = CreateCollectionSettings(_folder.Path, collectionName);
-			settings.Language1Iso639Code = "fr";
+			settings.AbsoluteLanguage1Iso639Code = "fr";
 			Assert.AreEqual("French", settings.GetLanguage1Name("en"));
-			settings.Language1Iso639Code = "en";
+			settings.AbsoluteLanguage1Iso639Code = "en";
 			Assert.AreEqual("English", settings.GetLanguage1Name("en"));
 		}
 
@@ -89,7 +89,7 @@ namespace BloomTests.Collection
 			const string style = "Gurmukhi";
 			const string collectionName = "test";
 			var settings = CreateCollectionSettings(_folder.Path, collectionName);
-			settings.Language1Iso639Code = "en";
+			settings.AbsoluteLanguage1Iso639Code = "en";
 			settings.PageNumberStyle = style;
 			settings.Save();
 			var newSettings = CreateCollectionSettings(_folder.Path, collectionName);
@@ -119,9 +119,9 @@ namespace BloomTests.Collection
 		public void LicenseDescriptionLanguagePriorities_Results(string lang1, string lang2, string lang3, string[] results)
 		{
 			var settings = CreateCollectionSettings(_folder.Path, "test");
-			settings.Language1Iso639Code = lang1;
-			settings.Language2Iso639Code = lang2;
-			settings.Language3Iso639Code = lang3;
+			settings.AbsoluteLanguage1Iso639Code = lang1;
+			settings.AbsoluteLanguage2Iso639Code = lang2;
+			settings.AbsoluteLanguage3Iso639Code = lang3;
 			Assert.That(settings.LicenseDescriptionLanguagePriorities, Is.EqualTo(results));
 		}
 

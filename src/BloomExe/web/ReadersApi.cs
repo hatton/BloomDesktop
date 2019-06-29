@@ -281,7 +281,7 @@ namespace Bloom.Api
 				Directory.CreateDirectory(path);
 
 			var fileList1 = new List<string>();
-			var langFileName = String.Format(DecodableReaderToolSettings.kSynphonyLanguageDataFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
+			var langFileName = String.Format(DecodableReaderToolSettings.kSynphonyLanguageDataFileNameFormat, CurrentBook.CollectionSettings.TextLanguage1Iso639Code);
 			var langFile = Path.Combine(path, langFileName);
 
 			// if the Sample Texts directory is empty, check for ReaderToolsWords-<iso>.json in ProjectContext.GetBloomAppDataFolder()
@@ -430,9 +430,9 @@ namespace Bloom.Api
 				jsonString = jsonString.Replace("\"LangName\":\"\"", "\"LangName\":\"" + CurrentBook.CollectionSettings.Language1Name + "\"");
 
 			if (jsonString.Contains("\"LangID\":\"\""))
-				jsonString = jsonString.Replace("\"LangID\":\"\"", "\"LangID\":\"" + CurrentBook.CollectionSettings.Language1Iso639Code + "\"");
+				jsonString = jsonString.Replace("\"LangID\":\"\"", "\"LangID\":\"" + CurrentBook.CollectionSettings.TextLanguage1Iso639Code + "\"");
 
-			var fileName = String.Format(DecodableReaderToolSettings.kSynphonyLanguageDataFileNameFormat, CurrentBook.CollectionSettings.Language1Iso639Code);
+			var fileName = String.Format(DecodableReaderToolSettings.kSynphonyLanguageDataFileNameFormat, CurrentBook.CollectionSettings.TextLanguage1Iso639Code);
 			fileName = Path.Combine(CurrentBook.CollectionSettings.FolderPath, fileName);
 
 			RobustFile.WriteAllText(fileName, jsonString, Encoding.UTF8);
