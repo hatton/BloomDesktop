@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Net.Mail;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -9,6 +10,7 @@ using Bloom.Api;
 using Bloom.Book;
 using Bloom.MiscUI;
 using Bloom.ToPalaso;
+using Newtonsoft.Json;
 using SIL.IO;
 using SIL.Reporting;
 
@@ -20,7 +22,7 @@ namespace Bloom.web.controllers
 		private readonly BookSelection _bookSelection;
 		private static TempFile _screenshotPath;
 
-		public ProblemReportApi(BookSelection bookSelection)//WorkspaceView workspaceView)
+		public ProblemReportApi(BookSelection bookSelection)
 		{
 			_bookSelection = bookSelection;
 		}
@@ -30,7 +32,7 @@ namespace Bloom.web.controllers
 			apiHandler.RegisterEndpointHandler("problemReport/screenshot",
 				(ApiRequest request) =>
 				{
-					request.ReplyWithImage(_screenshotPath.Path); //"images/madBloomScientist.svg");
+					request.ReplyWithImage(_screenshotPath.Path); 
 				}, true);
 
 			apiHandler.RegisterEndpointHandler("problemReport/bookName",
@@ -49,14 +51,31 @@ namespace Bloom.web.controllers
 				(ApiRequest request) =>
 				{
 					var includeBook = request.RequiredParam("includeBook") == "true";
-					request.ReplyWithText(GetDiagnosticInfo(includeBook));
+					request.ReplyWithText(GetDiagnosticInfo());// todo includeBook));
 				}, true);
 
 			apiHandler.RegisterEndpointHandler("problemReport/submit",
 				(ApiRequest request) =>
 				{
-					//MessageBox.Show(request.RequiredPostJson()); 
-					Thread.Sleep(3000);
+					var report = DynamicJson.Parse(request.RequiredPostJson());
+					var subject = report.kind == "User" ? "User Problem" : report.kind == "Fatal" ? "Crash Report" : "Error Report";
+
+					var issueSubmission = new YouTrackIssueSubmitter("BL");
+					if (report.includeScreenshot && _screenshotPath !=null && RobustFile.Exists(_screenshotPath.Path))
+					{
+						// Enhance: this won't have a nice name like "screenshot.png"
+						issueSubmission.AddAttachment(_screenshotPath.Path);
+					}
+					if(report.includeBook)
+					{
+					//	submitter.AddAttachment(book);
+					}
+					if (report.email?.length > 0)
+					{
+						// remember their email
+						SIL.Windows.Forms.Registration.Registration.Default.Email = report.email;
+					}
+					issueSubmission.SubmitToYouTrack(subject,  report.userInput);
 					request.ReplyWithJson(new{issueLink="https://google.com"});
 				}, true);
 		}
@@ -92,24 +111,39 @@ namespace Bloom.web.controllers
 				}));
 		}
 
-		private string GetDiagnosticInfo(bool includeBook)
+		private string GetObfuscatedEmail()
 		{
-			//string obfuscatedEmail;
-			//try
-			//{
-			//	var m = new MailAddress(_email.Text);
-			//	obfuscatedEmail = string.Format("{1} {0}", m.User, m.Host).Replace(".", "/");
-			//}
-			//catch (Exception)
-			//{
-			//	obfuscatedEmail = _email.Text; // ah well, it's not valid anyhow, so no need to obfuscate (other code may not let the user get this far anyhow)
-			//}
+			var email = SIL.Windows.Forms.Registration.Registration.Default.Email;
+			var description = GetDiagnosticInfo();
+			string obfuscatedEmail;
+			try
+			{
+				var m = new MailAddress(email);
+				// note: we have code in YouTrack we de-obfuscates this particular format, so don't mess with it
+				obfuscatedEmail = string.Format("{1} {0}", m.User, m.Host).Replace(".", "/");
+			}
+			catch (Exception)
+			{
+				obfuscatedEmail = email; // ah well, it's not valid anyhow, so no need to obfuscate (other code may not let the user get this far anyhow)
+			}
+			return obfuscatedEmail;
+		}
+		private string GetInformationAboutUser()
+		{
 
 			var bldr = new StringBuilder();
-			//bldr.AppendLine("Error Report from " + _name.Text + " (" + obfuscatedEmail + ") on " + DateTime.UtcNow.ToUniversalTime());
-			//bldr.AppendLine("=Problem Description=");
-			//bldr.AppendLine(_description.Text);
-			//bldr.AppendLine();
+			bldr.AppendLine("Error Report from " + _name.Text + " (" + GetObfuscatedEmail() + ") on " + DateTime.UtcNow.ToUniversalTime());
+		}
+		private string GetDiagnosticInfo()
+		{
+			
+
+			var bldr = new StringBuilder();
+
+			
+			bldr.AppendLine("=Problem Description=");
+			bldr.AppendLine(_description.Text);
+			bldr.AppendLine();
 
 			GetStandardErrorReportingProperties(bldr, true);
 			GetAdditionalEnvironmentInfo(bldr);
@@ -228,6 +262,7 @@ namespace Bloom.web.controllers
 				ListFolderContents(sub, bldr);
 		}
 
+	
 		public void Dispose()
 		{
 			_screenshotPath?.Dispose();

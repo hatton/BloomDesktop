@@ -42,7 +42,7 @@ export const ProblemDialog: React.FunctionComponent<{
     );
     const [submitAttempts, setSubmitAttempts] = useState(0);
     const [theme, setTheme] = useState<Theme | undefined>(undefined);
-    const [whatDoing, setWhatDoing] = useState("");
+    const [userInput, setWhatDoing] = useState("");
     const [bookName] = BloomApi.useApiString("problemReport/bookName", "??");
 
     //REVIEW: the theme gets used before useEffect returns, and we see an error in the console. How to
@@ -58,7 +58,7 @@ export const ProblemDialog: React.FunctionComponent<{
 
     const whatWereYouDoingAttentionClass = useDrawAttention(
         submitAttempts,
-        () => whatDoing.trim().length > 0
+        () => userInput.trim().length > 0
     );
     const submitButton = useRef(null);
     // Haven't got to work yet, see comment on the declaration of this function, below
@@ -68,15 +68,16 @@ export const ProblemDialog: React.FunctionComponent<{
         }
     });
     const AttemptSubmit = () => {
-        if (!isValidEmail(email) || whatDoing.trim().length == 0) {
+        if (!isValidEmail(email) || userInput.trim().length == 0) {
             setSubmitAttempts(submitAttempts + 1);
         } else {
             setMode(Mode.submitting);
             BloomApi.postJson(
                 "problemReport/submit",
                 {
+                    kind: props.kind,
                     email,
-                    whatDoing,
+                    userInput: `How much: TODO<br/>${userInput}`,
                     includeBook,
                     includeScreenshot
                 },
@@ -151,7 +152,7 @@ export const ProblemDialog: React.FunctionComponent<{
                                                     }}
                                                     error={
                                                         submitAttempts > 0 &&
-                                                        whatDoing.trim()
+                                                        userInput.trim()
                                                             .length == 0
                                                     }
                                                 />
