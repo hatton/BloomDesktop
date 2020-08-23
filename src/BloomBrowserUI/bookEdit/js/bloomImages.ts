@@ -1,4 +1,5 @@
-﻿import "../../lib/jquery.resize"; // makes jquery resize work on all elements
+﻿///<reference path="../../lib/jquery.myimgscale.d.ts" />
+import "../../lib/jquery.resize"; // makes jquery resize work on all elements
 import { BloomApi } from "../../utils/bloomApi";
 
 // Enhance: this could be turned into a Typescript Module with only two public methods
@@ -64,18 +65,13 @@ export function SetupImagesInContainer(container) {
 }
 
 export function SetupImage(image) {
-    // Remove any obsolete explicit image size and position left over from earlier versions of Bloom, before we had object-fit:contain.
+    // Remove any obsolete explicit image size and position left over from earlier versions of Bloom.
     if (image.style) {
         image.style.width = "";
         image.style.height = "";
         image.style.marginLeft = "";
         image.style.marginTop = "";
     }
-    if (image.getAttribute("style") === "") {
-        image.removeAttribute("style");
-    }
-    image.removeAttribute("width");
-    image.removeAttribute("height");
 }
 
 export function GetButtonModifier(container) {
@@ -428,7 +424,10 @@ export function SetupResizableElement(element) {
         $(element).resizable({
             handles: "nw, ne, sw, se",
             containment: "parent",
-            alsoResize: childImgContainer
+            alsoResize: childImgContainer,
+            resize: (event, ui) => {
+                img.scaleImage({ scale: "fit" });
+            }
         });
     }
     //An Image Container div (which must have an inner <img>
@@ -436,7 +435,10 @@ export function SetupResizableElement(element) {
         const img = $(element).find("img");
         $(element).resizable({
             handles: "nw, ne, sw, se",
-            containment: "parent"
+            containment: "parent",
+            resize: (event, ui) => {
+                img.scaleImage({ scale: "fit" });
+            }
         });
     }
     // some other kind of resizable
